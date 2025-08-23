@@ -5,8 +5,8 @@ use lambda_runtime::tracing::init_default_subscriber;
 use lambda_runtime::tracing::{debug, error, info};
 use lambda_runtime::{Error, LambdaEvent};
 use serde_json::ser;
-use std::env;
 use serde_json::{json, Value};
+use std::env;
 
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
 struct Story {
@@ -46,7 +46,7 @@ async fn handler(event: LambdaEvent<AppSyncRequest>) -> Result<Value, Error> {
 
         info!(
             "Starting story with target language: {}, explain language: {}, story type: {}",
-                target_language_code, explain_language_code, story_type
+            target_language_code, explain_language_code, story_type
         );
 
         // start_story(target_language_code, explain_language_code, story_type).await;
@@ -66,7 +66,7 @@ async fn handler(event: LambdaEvent<AppSyncRequest>) -> Result<Value, Error> {
 
         return Ok(response);
     } else {
-        error!("Unsupported field in AppSync request");    
+        error!("Unsupported field in AppSync request");
     }
 
     Err(Error::from("Unsupported field in AppSync request"))

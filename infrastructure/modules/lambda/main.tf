@@ -47,7 +47,7 @@ data "aws_iam_policy_document" "lambda_execute" {
       "logs:CreateLogStream",
       "logs:PutLogEvents",
     ]
-  }  
+  }
 }
 
 data "archive_file" "bootstrap_graphql_api_lambda" {

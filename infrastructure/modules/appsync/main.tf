@@ -75,13 +75,29 @@ resource "aws_appsync_resolver" "start_story_resolver" {
     "version": "2018-05-29",
     "operation": "Invoke",
     "payload": {
-      "field": "$context.info.fieldName",
-      "arguments": $util.toJson($context.arguments)
+      "arguments": $util.toJson($context.arguments),
+      "identity": $util.toJson($context.identity),
+      "request": {
+        "headers": $util.toJson($context.request.headers),
+        "domainName": $util.toJson($context.request.domainName),
+        "sourceIp": $util.toJson($context.request.sourceIp),
+        "userAgent": $util.toJson($context.request.userAgent)
+      },
+      "source": $util.toJson($context.source),
+      "prev": $util.toJson($context.prev),
+      "stash": $util.toJson($context.stash),
+      "info": {
+        "selectionSetGraphQL": $util.toJson($context.info.selectionSetGraphQL),
+        "selectionSetList": $util.toJson($context.info.selectionSetList),
+        "variables": $util.toJson($context.info.variables),
+        "parentTypeName": $util.toJson($context.info.parentTypeName),
+        "fieldName": $util.toJson($context.info.fieldName)
+      }
     }
   }
   EOF
 
   response_template = <<EOF
-    $utils.toJson($context.result)
+    $utils.toJson($context.result.data)
   EOF
 }

@@ -4,10 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-aws-config = "1.5.8"
-aws_lambda_events = { version = "0.17.0", features = ["catch-all-fields"] }
-lambda_runtime = { version = "0.14.3", features = ["tracing"] }
-serde_json = "1.0.128"
-tokio = { version = "1.40.0", features = ["full"] }
 serde = "1.0.219"
 aws-sdk-dynamodb = "1.89.0"
+lambda-appsync = "0.6.0"

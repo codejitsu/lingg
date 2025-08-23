@@ -1,12 +1,9 @@
-use aws_config::BehaviorVersion;
 use aws_lambda_events::event::appsync::AppSyncRequest;
 use lambda_runtime::service_fn;
 use lambda_runtime::tracing::init_default_subscriber;
-use lambda_runtime::tracing::{debug, error, info};
+use lambda_runtime::tracing::{error, info};
 use lambda_runtime::{Error, LambdaEvent};
-use serde_json::ser;
 use serde_json::{json, Value};
-use std::env;
 
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
 struct Story {
@@ -19,11 +16,6 @@ struct Story {
 }
 
 async fn handler(event: LambdaEvent<AppSyncRequest>) -> Result<Value, Error> {
-    let config = aws_config::defaults(BehaviorVersion::v2024_03_28())
-        .region("us-east-1")
-        .load()
-        .await;
-
     if event.payload.other.get("field") == Some(&"startStory".into()) {
         let arguments = event.payload.other.get("arguments").clone();
         let target_language_code = arguments

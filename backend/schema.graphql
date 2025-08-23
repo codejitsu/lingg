@@ -1,0 +1,21 @@
+schema {
+    query: Query
+    mutation: Mutation
+}
+
+type Query {
+    _noop: String
+}
+
+type Story {
+    storyId: ID!
+    targetLanguageCode: String!
+    explainLanguageCode: String!
+    storyType: String!
+    content: String!
+    createdAt: AWSDateTime!
+}
+
+type Mutation {
+    startStory(targetLanguageCode: String!, explainLanguageCode: String!, storyType: String!): Story!
+}

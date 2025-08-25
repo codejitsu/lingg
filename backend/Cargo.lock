@@ -947,6 +947,7 @@ dependencies = [
  "aws-sdk-dynamodb",
  "lambda-appsync",
  "serde",
+ "uuid",
 ]
 
 [[package]]

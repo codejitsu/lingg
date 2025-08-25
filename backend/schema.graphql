@@ -7,15 +7,56 @@ type Query {
     _noop: String
 }
 
-type Story {
+enum LanguageName {
+    English
+    Spanish
+    French
+    German
+    Russian
+    Ukrainian
+}
+
+enum StoryType {
+    BedtimeStory
+    Adventure
+    SciFi
+    Fantasy
+    Pirates
+    Superheroes
+    Animals
+    FairyTales
+}
+
+type User {
+    userId: ID!
+    username: String!
+    email: String!
+    createdAt: AWSDateTime!
+    stories: [Story!]
+}
+
+type Chapter {
+    chapterId: ID!
     storyId: ID!
-    targetLanguageCode: String!
-    explainLanguageCode: String!
-    storyType: String!
     content: String!
     createdAt: AWSDateTime!
 }
 
+type Story {
+    storyId: ID!
+    targetLanguage: LanguageName!
+    explainLanguage: LanguageName!
+    storyType: StoryType!
+    startedAt: AWSDateTime!
+    chapters: [Chapter!]!
+}
+
+input StartStoryArguments {
+    targetLanguage: LanguageName!
+    explainLanguage: LanguageName!
+    storyType: StoryType!
+}
+
 type Mutation {
-    startStory(targetLanguageCode: String!, explainLanguageCode: String!, storyType: String!): Story!
+    startStory(args: StartStoryArguments!): Story!
 }

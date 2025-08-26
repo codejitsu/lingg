@@ -18,3 +18,15 @@ variable "log_level" {
   description = "AWS Lambda log level"
   type        = string
 }
+
+variable "allowed_bedrock_model_arns" {
+  description = "List of allowed Bedrock model ARNs."
+  type        = list(string)
+  default     = []
+}
+
+variable "bedrock_model_id" {
+  description = "The model ID to use for Bedrock."
+  type        = string
+  default     = "amazon.nova-premier-v1:0"
+}

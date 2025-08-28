@@ -1,12 +1,12 @@
+use aws_config::BehaviorVersion;
 use aws_config::Region;
+use aws_sdk_bedrockruntime::operation::converse::{ConverseError, ConverseOutput};
+use aws_sdk_bedrockruntime::types::{ContentBlock, ConversationRole, Message};
+use aws_sdk_bedrockruntime::Client;
 use lambda_appsync::appsync_lambda_main;
 use lambda_appsync::ID;
 use lambda_appsync::{appsync_operation, AppsyncError, AppsyncEvent};
 use uuid::Uuid;
-use aws_sdk_bedrockruntime::Client;
-use aws_sdk_bedrockruntime::types::{ConversationRole, ContentBlock, Message};
-use aws_sdk_bedrockruntime::operation::converse::{ConverseOutput, ConverseError};
-use aws_config::BehaviorVersion;
 
 #[derive(Debug)]
 struct BedrockConverseError(String);
@@ -42,7 +42,7 @@ appsync_lambda_main!(
 #[appsync_operation(mutation(startStory), with_appsync_event)]
 async fn start_story(
     args: StartStoryArguments,
-    _event: &AppsyncEvent<Operation>
+    _event: &AppsyncEvent<Operation>,
 ) -> Result<Story, AppsyncError> {
     let aws_region = env::var("REGION").unwrap();
     let bedrock_model_id = env::var("BEDROCK_MODEL_ID").unwrap();
@@ -102,9 +102,7 @@ async fn start_story(
 
             Ok(story)
         }
-        Err(e) => {
-            Err(AppsyncError::new("ModelError", e.to_string()))
-        },
+        Err(e) => Err(AppsyncError::new("ModelError", e.to_string())),
     }
 }
 
@@ -122,4 +120,3 @@ fn get_converse_output_text(output: ConverseOutput) -> Result<String, BedrockCon
         .to_string();
     Ok(text)
 }
-

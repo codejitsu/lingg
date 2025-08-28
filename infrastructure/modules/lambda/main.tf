@@ -53,7 +53,7 @@ data "aws_iam_policy_document" "lambda_execute" {
     sid       = "AllowUsingBedrock"
     effect    = "Allow"
     resources = ["*"] # TODO fix the access denied issue with specific ARNs and use the var.allowed_bedrock_model_arns
-    actions   = [
+    actions = [
       "bedrock:InvokeModel",
       "bedrock:InvokeModelWithResponseStream",
     ]
@@ -63,7 +63,7 @@ data "aws_iam_policy_document" "lambda_execute" {
     sid       = "AllowUsingDynamoDB"
     effect    = "Allow"
     resources = [var.dynamodb_table_arn]
-    actions   = [
+    actions = [
       "dynamodb:PutItem",
       "dynamodb:GetItem",
       "dynamodb:UpdateItem",
@@ -99,7 +99,7 @@ resource "aws_lambda_function" "graphql_api_lambda" {
       AWS_LAMBDA_LOG_FORMAT = "json",
       AWS_LAMBDA_LOG_LEVEL  = var.log_level
       BEDROCK_MODEL_ID      = var.bedrock_model_id
-      REGION                = var.aws_region      
+      REGION                = var.aws_region
     }
   }
 }

@@ -1,3 +1,3 @@
 output "dynamodb_table_arn" {
-    value = aws_dynamodb_table.lingg-table.arn
+  value = aws_dynamodb_table.lingg-table.arn
 }

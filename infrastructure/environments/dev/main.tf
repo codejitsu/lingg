@@ -1,7 +1,7 @@
 module "bedrock" {
   source = "../../modules/bedrock"
-  
-  aws_region           = var.region
+
+  aws_region = var.region
 }
 
 module "dynamodb" {
@@ -13,13 +13,13 @@ module "dynamodb" {
 }
 
 module "lambda" {
-  source                      = "../../modules/lambda"
-  lambda_runtime              = "provided.al2023"
-  aws_region                  = var.region
-  log_level                   = "trace"
-  allowed_bedrock_model_arns  = module.bedrock.bedrock_model_arns
-  bedrock_model_id            = var.bedrock_model_id
-  dynamodb_table_arn          = module.dynamodb.dynamodb_table_arn
+  source                     = "../../modules/lambda"
+  lambda_runtime             = "provided.al2023"
+  aws_region                 = var.region
+  log_level                  = "trace"
+  allowed_bedrock_model_arns = module.bedrock.bedrock_model_arns
+  bedrock_model_id           = var.bedrock_model_id
+  dynamodb_table_arn         = module.dynamodb.dynamodb_table_arn
 
   graphql_api_lambda_tags = {
     Environment = lower(var.environment)

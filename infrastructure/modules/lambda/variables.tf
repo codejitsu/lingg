@@ -30,3 +30,8 @@ variable "bedrock_model_id" {
   type        = string
   default     = "amazon.nova-premier-v1:0"
 }
+
+variable "dynamodb_table_arn" {
+  description = "The ARN of the DynamoDB table."
+  type        = string
+}

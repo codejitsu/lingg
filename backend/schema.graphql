@@ -52,6 +52,7 @@ type Story {
 }
 
 input StartStoryArguments {
+    clientRequestId: ID!
     targetLanguage: LanguageName!
     explainLanguage: LanguageName!
     storyType: StoryType!

@@ -58,6 +58,18 @@ data "aws_iam_policy_document" "lambda_execute" {
       "bedrock:InvokeModelWithResponseStream",
     ]
   }
+
+  statement {
+    sid       = "AllowUsingDynamoDB"
+    effect    = "Allow"
+    resources = [var.dynamodb_table_arn]
+    actions   = [
+      "dynamodb:PutItem",
+      "dynamodb:GetItem",
+      "dynamodb:UpdateItem",
+      "dynamodb:DeleteItem",
+    ]
+  }
 }
 
 data "archive_file" "bootstrap_graphql_api_lambda" {

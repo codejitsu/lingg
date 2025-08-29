@@ -1,16 +1,16 @@
 use aws_config::BehaviorVersion;
 use aws_config::Region;
+use aws_sdk_bedrockruntime::error::SdkError;
 use aws_sdk_bedrockruntime::operation::converse::{ConverseError, ConverseOutput};
 use aws_sdk_bedrockruntime::types::{ContentBlock, ConversationRole, Message};
 use aws_sdk_bedrockruntime::Client;
+use aws_sdk_dynamodb::types::AttributeValue;
 use aws_sdk_dynamodb::types::TransactWriteItem;
 use aws_sdk_dynamodb::types::Update;
 use lambda_appsync::appsync_lambda_main;
 use lambda_appsync::ID;
 use lambda_appsync::{appsync_operation, AppsyncError, AppsyncEvent};
 use uuid::Uuid;
-use aws_sdk_bedrockruntime::error::{SdkError};
-use aws_sdk_dynamodb::types::AttributeValue;
 
 #[derive(Debug)]
 struct BedrockConverseError(String);
@@ -58,7 +58,7 @@ async fn start_story(
         Ok(Some(story)) => {
             println!("Story already exists, returning existing story");
             return Ok(story);
-        },
+        }
         Ok(None) => {
             println!("No existing story found, creating new story");
 
@@ -95,21 +95,22 @@ async fn start_story(
                 .map_err(|e| AppsyncError::new("ModelError", e.to_string()));
 
             match story {
-                Ok(story) => {
-                    save_story_to_db(story, args.user_id, args.client_request_id, 0)
-                        .await
-                        .map_err(|e| AppsyncError::new("StorageWriteError", e.to_string()))
-                },
+                Ok(story) => save_story_to_db(story, args.user_id, args.client_request_id, 0)
+                    .await
+                    .map_err(|e| AppsyncError::new("StorageWriteError", e.to_string())),
                 Err(e) => Err(e),
-            }                
-        },
+            }
+        }
         Err(e) => {
             return Err(AppsyncError::new("StorageReadError", e.to_string()));
         }
     }
 }
 
-fn process_model_output(output: ConverseOutput, args: &StartStoryArguments) -> Result<Story, SdkError<ConverseError>> {
+fn process_model_output(
+    output: ConverseOutput,
+    args: &StartStoryArguments,
+) -> Result<Story, SdkError<ConverseError>> {
     let text = get_converse_output_text(output).unwrap();
 
     let story_id = build_story_id(&args.user_id, &args.client_request_id);
@@ -156,14 +157,20 @@ fn get_converse_output_text(output: ConverseOutput) -> Result<String, BedrockCon
     Ok(text)
 }
 
-async fn get_story_with_chapters_by_id(story_id: Uuid) -> Result<Option<Story>, BedrockConverseError> {
+async fn get_story_with_chapters_by_id(
+    story_id: Uuid,
+) -> Result<Option<Story>, BedrockConverseError> {
     let client = dynamodb();
     let table_name = table_name();
 
-    let items = client.query()
+    let items = client
+        .query()
         .table_name(&table_name)
         .key_condition_expression("PK = :pk")
-        .expression_attribute_values(":pk", AttributeValue::S(format!("STORY#{}", story_id.to_string())))
+        .expression_attribute_values(
+            ":pk",
+            AttributeValue::S(format!("STORY#{}", story_id.to_string())),
+        )
         .send()
         .await;
 
@@ -184,17 +191,28 @@ async fn get_story_with_chapters_by_id(story_id: Uuid) -> Result<Option<Story>, 
                         // This is the story metadata
                         let user_id = item.get("user_id").and_then(|v| v.as_s().ok()).unwrap();
                         let title = item.get("title").and_then(|v| v.as_s().ok()).unwrap();
-                        let target_language = item.get("target_language").and_then(|v| v.as_s().ok()).unwrap();
-                        let explain_language = item.get("explain_language").and_then(|v| v.as_s().ok()).unwrap();
-                        let story_type = item.get("story_type").and_then(|v| v.as_s().ok()).unwrap();
-                        let started_at = item.get("started_at").and_then(|v| v.as_s().ok()).unwrap();
+                        let target_language = item
+                            .get("target_language")
+                            .and_then(|v| v.as_s().ok())
+                            .unwrap();
+                        let explain_language = item
+                            .get("explain_language")
+                            .and_then(|v| v.as_s().ok())
+                            .unwrap();
+                        let story_type =
+                            item.get("story_type").and_then(|v| v.as_s().ok()).unwrap();
+                        let started_at =
+                            item.get("started_at").and_then(|v| v.as_s().ok()).unwrap();
 
                         story_meta_opt = Some(Story {
                             user_id: ID::try_from(user_id.to_string()).unwrap(),
                             story_id: ID::try_from(story_id.to_string()).unwrap(),
-                            target_language: string_to_language_name(target_language).unwrap_or(LanguageName::English),
-                            explain_language: string_to_language_name(explain_language).unwrap_or(LanguageName::English),
-                            story_type: string_to_story_type(story_type).unwrap_or(StoryType::Superheroes),
+                            target_language: string_to_language_name(target_language)
+                                .unwrap_or(LanguageName::English),
+                            explain_language: string_to_language_name(explain_language)
+                                .unwrap_or(LanguageName::English),
+                            story_type: string_to_story_type(story_type)
+                                .unwrap_or(StoryType::Superheroes),
                             started_at: started_at.to_string().into(),
                             title: title.to_string().into(),
                             chapters: vec![],
@@ -203,7 +221,8 @@ async fn get_story_with_chapters_by_id(story_id: Uuid) -> Result<Option<Story>, 
                         // This is a chapter
                         let chapter_id = sk.trim_start_matches("CHAPTER#");
                         let content = item.get("content").and_then(|v| v.as_s().ok()).unwrap();
-                        let created_at = item.get("created_at").and_then(|v| v.as_s().ok()).unwrap();
+                        let created_at =
+                            item.get("created_at").and_then(|v| v.as_s().ok()).unwrap();
 
                         chapters.push(Chapter {
                             chapter_id: ID::try_from(chapter_id.to_string()).unwrap(),
@@ -227,7 +246,7 @@ async fn get_story_with_chapters_by_id(story_id: Uuid) -> Result<Option<Story>, 
             } else {
                 Ok(None)
             }
-        },
+        }
         Err(e) => Err(BedrockConverseError(e.to_string())),
     }
 }
@@ -271,7 +290,12 @@ fn string_to_story_type(story_type: &str) -> Option<StoryType> {
 //
 // PK = STORY#<story_id>
 // SK = CHAPTER#<chapter_id>
-async fn save_story_to_db(story: Story, user_id: ID, client_request_id: ID, chapter_index: usize) -> Result<Story, BedrockConverseError> {
+async fn save_story_to_db(
+    story: Story,
+    user_id: ID,
+    client_request_id: ID,
+    chapter_index: usize,
+) -> Result<Story, BedrockConverseError> {
     let client = dynamodb();
     let table_name = table_name();
 
@@ -299,15 +323,30 @@ async fn save_story_to_db(story: Story, user_id: ID, client_request_id: ID, chap
             target_language = :target_language, 
             explain_language = :explain_language, 
             story_type = :story_type, 
-            started_at = :started_at"
+            started_at = :started_at",
         )
         .expression_attribute_values(":title", AttributeValue::S(story.title.clone()))
         .expression_attribute_values(":user_id", AttributeValue::S(user_id.to_string()))
-        .expression_attribute_values(":client_request_id", AttributeValue::S(client_request_id.to_string()))
-        .expression_attribute_values(":target_language", AttributeValue::S(story.target_language.to_string()))
-        .expression_attribute_values(":explain_language", AttributeValue::S(story.explain_language.to_string()))
-        .expression_attribute_values(":story_type", AttributeValue::S(story.story_type.to_string()))
-        .expression_attribute_values(":started_at", AttributeValue::S(story.started_at.to_string()))
+        .expression_attribute_values(
+            ":client_request_id",
+            AttributeValue::S(client_request_id.to_string()),
+        )
+        .expression_attribute_values(
+            ":target_language",
+            AttributeValue::S(story.target_language.to_string()),
+        )
+        .expression_attribute_values(
+            ":explain_language",
+            AttributeValue::S(story.explain_language.to_string()),
+        )
+        .expression_attribute_values(
+            ":story_type",
+            AttributeValue::S(story.story_type.to_string()),
+        )
+        .expression_attribute_values(
+            ":started_at",
+            AttributeValue::S(story.started_at.to_string()),
+        )
         .condition_expression("attribute_not_exists(PK) OR client_request_id = :client_request_id")
         .build();
 
@@ -325,14 +364,26 @@ async fn save_story_to_db(story: Story, user_id: ID, client_request_id: ID, chap
             target_language = :target_language, 
             explain_language = :explain_language, 
             story_type = :story_type, 
-            started_at = :started_at"
+            started_at = :started_at",
         )
         .expression_attribute_values(":user_id", AttributeValue::S(user_id.to_string()))
         .expression_attribute_values(":title", AttributeValue::S(story.title.clone()))
-        .expression_attribute_values(":target_language", AttributeValue::S(story.target_language.to_string()))
-        .expression_attribute_values(":explain_language", AttributeValue::S(story.explain_language.to_string()))
-        .expression_attribute_values(":story_type", AttributeValue::S(story.story_type.to_string()))
-        .expression_attribute_values(":started_at", AttributeValue::S(story.started_at.to_string()))
+        .expression_attribute_values(
+            ":target_language",
+            AttributeValue::S(story.target_language.to_string()),
+        )
+        .expression_attribute_values(
+            ":explain_language",
+            AttributeValue::S(story.explain_language.to_string()),
+        )
+        .expression_attribute_values(
+            ":story_type",
+            AttributeValue::S(story.story_type.to_string()),
+        )
+        .expression_attribute_values(
+            ":started_at",
+            AttributeValue::S(story.started_at.to_string()),
+        )
         .condition_expression("attribute_not_exists(PK)")
         .build();
 
@@ -342,23 +393,42 @@ async fn save_story_to_db(story: Story, user_id: ID, client_request_id: ID, chap
     let story_chapter = Update::builder()
         .table_name(&table_name)
         .key("PK", AttributeValue::S(format!("STORY#{}", story.story_id)))
-        .key("SK", AttributeValue::S(format!("CHAPTER#{}", story.chapters[chapter_index].chapter_id)))
+        .key(
+            "SK",
+            AttributeValue::S(format!(
+                "CHAPTER#{}",
+                story.chapters[chapter_index].chapter_id
+            )),
+        )
         .update_expression(
             "SET 
             content = :content, 
-            created_at = :created_at"
+            created_at = :created_at",
         )
-        .expression_attribute_values(":content", AttributeValue::S(story.chapters[chapter_index].content.clone()))
-        .expression_attribute_values(":created_at", AttributeValue::S(story.chapters[chapter_index].created_at.to_string()))
+        .expression_attribute_values(
+            ":content",
+            AttributeValue::S(story.chapters[chapter_index].content.clone()),
+        )
+        .expression_attribute_values(
+            ":created_at",
+            AttributeValue::S(story.chapters[chapter_index].created_at.to_string()),
+        )
         .condition_expression("attribute_not_exists(PK)")
         .build();
 
-    let tx = client.transact_write_items()
-    .set_transact_items(Some(vec![TransactWriteItem::builder()
-        .update(user_story.unwrap())
-        .build(), TransactWriteItem::builder()
-        .update(story_metadata.unwrap()).build(), TransactWriteItem::builder()
-        .update(story_chapter.unwrap()).build()]))
+    let tx = client
+        .transact_write_items()
+        .set_transact_items(Some(vec![
+            TransactWriteItem::builder()
+                .update(user_story.unwrap())
+                .build(),
+            TransactWriteItem::builder()
+                .update(story_metadata.unwrap())
+                .build(),
+            TransactWriteItem::builder()
+                .update(story_chapter.unwrap())
+                .build(),
+        ]))
         .send()
         .await;
 

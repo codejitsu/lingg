@@ -68,6 +68,7 @@ data "aws_iam_policy_document" "lambda_execute" {
       "dynamodb:GetItem",
       "dynamodb:UpdateItem",
       "dynamodb:DeleteItem",
+      "dynamodb:Query",
     ]
   }
 }

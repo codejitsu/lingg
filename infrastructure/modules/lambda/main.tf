@@ -100,6 +100,7 @@ resource "aws_lambda_function" "graphql_api_lambda" {
       AWS_LAMBDA_LOG_LEVEL  = var.log_level
       BEDROCK_MODEL_ID      = var.bedrock_model_id
       REGION                = var.aws_region
+      BACKEND_TABLE_NAME    = var.dynamodb_table_name
     }
   }
 }

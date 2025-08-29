@@ -20,6 +20,7 @@ module "lambda" {
   allowed_bedrock_model_arns = module.bedrock.bedrock_model_arns
   bedrock_model_id           = var.bedrock_model_id
   dynamodb_table_arn         = module.dynamodb.dynamodb_table_arn
+  dynamodb_table_name        = module.dynamodb.dynamodb_table_name
 
   graphql_api_lambda_tags = {
     Environment = lower(var.environment)

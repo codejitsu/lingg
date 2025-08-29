@@ -44,14 +44,17 @@ type Chapter {
 
 type Story {
     storyId: ID!
+    userId: ID!
     targetLanguage: LanguageName!
     explainLanguage: LanguageName!
     storyType: StoryType!
     startedAt: AWSDateTime!
+    title: String!
     chapters: [Chapter!]!
 }
 
 input StartStoryArguments {
+    userId: ID!
     clientRequestId: ID!
     targetLanguage: LanguageName!
     explainLanguage: LanguageName!

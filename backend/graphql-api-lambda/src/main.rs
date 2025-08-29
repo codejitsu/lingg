@@ -3,10 +3,14 @@ use aws_config::Region;
 use aws_sdk_bedrockruntime::operation::converse::{ConverseError, ConverseOutput};
 use aws_sdk_bedrockruntime::types::{ContentBlock, ConversationRole, Message};
 use aws_sdk_bedrockruntime::Client;
+use aws_sdk_dynamodb::types::TransactWriteItem;
+use aws_sdk_dynamodb::types::Update;
 use lambda_appsync::appsync_lambda_main;
 use lambda_appsync::ID;
 use lambda_appsync::{appsync_operation, AppsyncError, AppsyncEvent};
 use uuid::Uuid;
+use aws_sdk_bedrockruntime::error::{SdkError};
+use aws_sdk_dynamodb::types::AttributeValue;
 
 #[derive(Debug)]
 struct BedrockConverseError(String);
@@ -64,7 +68,7 @@ async fn start_story(
         args.target_language, args.story_type
     );
 
-    let model_response = client
+    let story = client
         .converse()
         .model_id(bedrock_model_id)
         .messages(
@@ -75,35 +79,50 @@ async fn start_story(
                 .unwrap(),
         )
         .send()
-        .await;
+        .await
+        .and_then(|output| process_model_output(output, &args))
+        .map_err(|e| AppsyncError::new("ModelError", e.to_string()));
 
-    match model_response {
-        Ok(output) => {
-            let response = get_converse_output_text(output).unwrap();
+    match story {
+        Ok(story) => {
+            save_story_to_db(story, args.user_id, args.client_request_id)
+                .await
+                .map_err(|e| AppsyncError::new("StorageError", e.to_string()))
+        },
+        Err(e) => Err(e),
+    }    
+}
 
-            let story_id = Uuid::now_v7();
-            let chapter_id = Uuid::now_v7();
+fn process_model_output(output: ConverseOutput, args: &StartStoryArguments) -> Result<Story, SdkError<ConverseError>> {
+    let text = get_converse_output_text(output).unwrap();
 
-            let chapter = Chapter {
-                chapter_id: ID::try_from(chapter_id.to_string()).unwrap(),
-                story_id: ID::try_from(story_id.to_string()).unwrap(),
-                content: response,
-                created_at: "2023-10-01T00:00:00Z".to_string().into(),
-            };
+    let story_id = build_story_id(&args.user_id, &args.client_request_id);
+    let chapter_id = Uuid::now_v7();
 
-            let story = Story {
-                story_id: ID::try_from(story_id.to_string()).unwrap(),
-                target_language: args.target_language,
-                explain_language: args.explain_language,
-                story_type: args.story_type,
-                started_at: "2023-10-01T00:00:00Z".to_string().into(),
-                chapters: vec![chapter],
-            };
+    let chapter = Chapter {
+        chapter_id: ID::try_from(chapter_id.to_string()).unwrap(),
+        story_id: ID::try_from(story_id.to_string()).unwrap(),
+        content: text,
+        created_at: "2023-10-01T00:00:00Z".to_string().into(),
+    };
 
-            Ok(story)
-        }
-        Err(e) => Err(AppsyncError::new("ModelError", e.to_string())),
-    }
+    let story = Story {
+        user_id: ID::try_from(args.user_id.to_string()).unwrap(),
+        story_id: ID::try_from(story_id.to_string()).unwrap(),
+        target_language: args.target_language,
+        explain_language: args.explain_language,
+        story_type: args.story_type,
+        started_at: "2023-10-01T00:00:00Z".to_string().into(),
+        title: "My title".to_string().into(),
+        chapters: vec![chapter],
+    };
+
+    Ok(story)
+}
+
+fn build_story_id(user_id: &ID, client_request_id: &ID) -> Uuid {
+    let namespace = Uuid::new_v5(&Uuid::NAMESPACE_OID, user_id.as_bytes());
+    Uuid::new_v5(&namespace, client_request_id.as_bytes())
 }
 
 fn get_converse_output_text(output: ConverseOutput) -> Result<String, BedrockConverseError> {
@@ -119,4 +138,72 @@ fn get_converse_output_text(output: ConverseOutput) -> Result<String, BedrockCon
         .map_err(|_| "content is not text")?
         .to_string();
     Ok(text)
+}
+
+async fn save_story_to_db(story: Story, user_id: ID, client_request_id: ID) -> Result<Story, BedrockConverseError> {
+    let client = dynamodb();
+    let table_name = table_name();
+
+    // 1. update the user partition to create mapping between user and story
+    // PK = USER#<user_id>
+    // SK = STORY#<story_id>
+    // Attributes:
+    //  title
+    //  user_id
+    //  client_request_id
+    //  target_language
+    //  explain_language
+    //  story_type
+    //  started_at
+
+    let user_story = Update::builder()
+        .table_name(&table_name)
+        .key("PK", AttributeValue::S(format!("USER#{}", user_id)))
+        .key("SK", AttributeValue::S(format!("STORY#{}", story.story_id)))
+        .update_expression(
+            "SET 
+            title = :title, 
+            user_id = :user_id, 
+            client_request_id = :client_request_id, 
+            target_language = :target_language, 
+            explain_language = :explain_language, 
+            story_type = :story_type, 
+            started_at = :started_at"
+        )
+        .expression_attribute_values(":title", AttributeValue::S(story.title.clone()))
+        .expression_attribute_values(":user_id", AttributeValue::S(user_id.to_string()))
+        .expression_attribute_values(":client_request_id", AttributeValue::S(client_request_id.to_string()))
+        .expression_attribute_values(":target_language", AttributeValue::S(story.target_language.to_string()))
+        .expression_attribute_values(":explain_language", AttributeValue::S(story.explain_language.to_string()))
+        .expression_attribute_values(":story_type", AttributeValue::S(story.story_type.to_string()))
+        .expression_attribute_values(":started_at", AttributeValue::S(story.started_at.to_string()))
+        .condition_expression("attribute_not_exists(PK) OR client_request_id = :client_request_id")
+        .build();
+
+    // 2. update the story partition
+    // PK = STORY#<story_id>
+    // SK = METADATA
+
+    // 3. update the chapter
+    // PK = STORY#<story_id>
+    // SK = CHAPTER#<chapter_id>
+
+    let tx = client.transact_write_items()
+    .transact_items(TransactWriteItem::builder()
+        .update(user_story.unwrap())
+        .build())
+        .send()
+        .await;
+
+    match tx {
+        Ok(_) => Ok(story),
+        Err(e) => Err(BedrockConverseError(e.to_string())),
+    }
+}
+
+pub fn table_name() -> String {
+    let table_name = std::env::var("BACKEND_TABLE_NAME")
+        .expect("Mandatory environment variable `BACKEND_TABLE_NAME` is not set");
+    log::debug!("BACKEND_TABLE_NAME={table_name}");
+    table_name
 }

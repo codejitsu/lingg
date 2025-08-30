@@ -35,10 +35,17 @@ type User {
     stories: [Story!]
 }
 
+type Placeholder {
+    name: String!
+    text: String!
+}
+
 type Chapter {
     chapterId: ID!
     storyId: ID!
     content: String!
+    contentQuiz: String!
+    placeholders: [Placeholder!]!
     createdAt: AWSDateTime!
 }
 

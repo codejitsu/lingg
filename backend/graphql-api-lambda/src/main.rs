@@ -7,6 +7,7 @@ use aws_sdk_bedrockruntime::Client;
 use aws_sdk_dynamodb::types::AttributeValue;
 use aws_sdk_dynamodb::types::TransactWriteItem;
 use aws_sdk_dynamodb::types::Update;
+use graphql_api_lambda::replace_parts_of_words;
 use lambda_appsync::appsync_lambda_main;
 use lambda_appsync::ID;
 use lambda_appsync::{appsync_operation, AppsyncError, AppsyncEvent};
@@ -116,11 +117,23 @@ fn process_model_output(
     let story_id = build_story_id(&args.user_id, &args.client_request_id);
     let chapter_id = Uuid::now_v7();
 
+    let (text_quiz, placeholder_map) = replace_parts_of_words(&text, 0.3);
+
+    let placeholders: Vec<Placeholder> = placeholder_map
+        .iter()
+        .map(|(key, value)| Placeholder {
+            name: key.clone(),
+            text: value.clone(),
+        })
+        .collect();
+
     let chapter = Chapter {
         chapter_id: ID::try_from(chapter_id.to_string()).unwrap(),
         story_id: ID::try_from(story_id.to_string()).unwrap(),
         content: text,
+        content_quiz: text_quiz,
         created_at: "2023-10-01T00:00:00Z".to_string().into(),
+        placeholders,
     };
 
     let story = Story {
@@ -221,14 +234,40 @@ async fn get_story_with_chapters_by_id(
                         // This is a chapter
                         let chapter_id = sk.trim_start_matches("CHAPTER#");
                         let content = item.get("content").and_then(|v| v.as_s().ok()).unwrap();
+                        let content_quiz = item
+                            .get("content_quiz")
+                            .and_then(|v| v.as_s().ok())
+                            .unwrap();
                         let created_at =
                             item.get("created_at").and_then(|v| v.as_s().ok()).unwrap();
+
+                        let placeholders = if let Some(attr) = item.get("placeholders") {
+                            if let Ok(list) = attr.as_l() {
+                                list.iter()
+                                    .filter_map(|v| v.as_m().ok())
+                                    .filter_map(|m| {
+                                        let name = m.get("name").and_then(|v| v.as_s().ok())?;
+                                        let text = m.get("text").and_then(|v| v.as_s().ok())?;
+                                        Some(Placeholder {
+                                            name: name.to_string(),
+                                            text: text.to_string(),
+                                        })
+                                    })
+                                    .collect()
+                            } else {
+                                vec![]
+                            }
+                        } else {
+                            vec![]
+                        };
 
                         chapters.push(Chapter {
                             chapter_id: ID::try_from(chapter_id.to_string()).unwrap(),
                             story_id: ID::try_from(story_id.to_string()).unwrap(),
                             content: content.to_string(),
+                            content_quiz: content_quiz.to_string(),
                             created_at: created_at.to_string().into(),
+                            placeholders,
                         });
                     }
                 }
@@ -403,7 +442,9 @@ async fn save_story_to_db(
         .update_expression(
             "SET 
             content = :content, 
-            created_at = :created_at",
+            created_at = :created_at,
+            placeholders = :placeholders,
+            content_quiz = :content_quiz",
         )
         .expression_attribute_values(
             ":content",
@@ -412,6 +453,29 @@ async fn save_story_to_db(
         .expression_attribute_values(
             ":created_at",
             AttributeValue::S(story.chapters[chapter_index].created_at.to_string()),
+        )
+        .expression_attribute_values(
+            ":placeholders",
+            AttributeValue::L(
+                story.chapters[chapter_index]
+                    .placeholders
+                    .iter()
+                    .map(|p| {
+                        AttributeValue::M(
+                            vec![
+                                ("name".into(), AttributeValue::S(p.name.clone())),
+                                ("text".into(), AttributeValue::S(p.text.clone())),
+                            ]
+                            .into_iter()
+                            .collect(),
+                        )
+                    })
+                    .collect(),
+            ),
+        )
+        .expression_attribute_values(
+            ":content_quiz",
+            AttributeValue::S(story.chapters[chapter_index].content_quiz.clone()),
         )
         .condition_expression("attribute_not_exists(PK)")
         .build();

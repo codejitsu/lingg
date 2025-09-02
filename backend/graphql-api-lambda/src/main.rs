@@ -1,3 +1,5 @@
+mod placeholders;
+
 use aws_config::BehaviorVersion;
 use aws_config::Region;
 use aws_sdk_bedrockruntime::error::SdkError;
@@ -7,7 +9,7 @@ use aws_sdk_bedrockruntime::Client;
 use aws_sdk_dynamodb::types::AttributeValue;
 use aws_sdk_dynamodb::types::TransactWriteItem;
 use aws_sdk_dynamodb::types::Update;
-use graphql_api_lambda::replace_parts_of_words;
+use placeholders::replace_parts_of_words;
 use lambda_appsync::appsync_lambda_main;
 use lambda_appsync::ID;
 use lambda_appsync::{appsync_operation, AppsyncError, AppsyncEvent};

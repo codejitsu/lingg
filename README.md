@@ -30,3 +30,11 @@ cargo lambda build --workspace --release
 - cd infrastructure/environments/dev
 - terraform destroy
 - terraform apply -auto-approve
+
+# frontend
+- nvm install 22
+- pnpm create vite@latest web-app -- --template react-ts
+- opt for TypeScript (only)
+- cd web-app
+- pnpm install
+- pnpm run dev

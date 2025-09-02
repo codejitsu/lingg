@@ -28,3 +28,6 @@ target
 *.tfstate
 *.tfstate.*
 *.tfplan
+
+# Frontend
+**/node_modules/*

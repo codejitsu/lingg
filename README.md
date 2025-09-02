@@ -22,5 +22,11 @@ online AI based language learning project
 
 Building backend:
 ````
-cargo lambda build --workspace --release --compiler cargo
+cargo lambda build --workspace --release
 ````
+
+# infrastructure
+
+- cd infrastructure/environments/dev
+- terraform destroy
+- terraform apply -auto-approve

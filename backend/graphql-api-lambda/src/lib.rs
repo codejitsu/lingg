@@ -1,32 +1,29 @@
 use rand::Rng;
+use unicode_segmentation::UnicodeSegmentation;
 use std::collections::HashMap;
 
 pub fn replace_parts_of_words(text: &str, ratio: f64) -> (String, HashMap<String, String>) {
     let mut rng = rand::rng();
     let mut placeholder_map: HashMap<String, String> = HashMap::new();
     let mut placeholder_count = 0;
-    let mut result_tokens: Vec<String> = Vec::new();
 
-    for token in text.split_whitespace() {
-        let mut word_start = 0;
-        let mut word_end = 0;
+    let segments = UnicodeSegmentation::split_word_bounds(text).collect::<Vec<_>>();
 
-        if let Some(idx) = token.find(|c: char| c.is_alphanumeric()) {
-            word_start = idx;
+    let mut out = String::with_capacity(text.len());
+
+    for seg in segments {
+        let is_word = seg.chars().any(|c| c.is_alphanumeric());
+
+        if !is_word {
+            out.push_str(seg);
+            continue;
         }
 
-        if let Some(idx) = token.rfind(|c: char| c.is_alphanumeric()) {
-            word_end = idx + 1;
-        }
+        let g = UnicodeSegmentation::graphemes(seg, true).collect::<Vec<&str>>();
+        let g_len = g.len();
 
-        //println!("Token: '{}', word_start: {}, word_end: {}", token, word_start, word_end);
-
-        let prefix_punct = &token[..word_start];
-        let core_word = &token[word_start..word_end];
-        let suffix_punct = &token[word_end..];
-
-        if core_word.chars().count() < 2 {
-            result_tokens.push(token.to_string());
+        if g_len < 2 {
+            out.push_str(seg);
             continue;
         }
 
@@ -39,59 +36,52 @@ pub fn replace_parts_of_words(text: &str, ratio: f64) -> (String, HashMap<String
         };
 
         if !replace {
-            result_tokens.push(token.to_string());
-        } else {
-            placeholder_count += 1;
-            let placeholder_key = format!("ph-{}", placeholder_count);
+            out.push_str(seg);
+            continue;
+        }
+        
+        let max_strategy = if g_len >= 3 { 4 } else { 3 };
+        let strategy = rng.random_range(0..max_strategy);
 
-            let word_len = core_word.len();
-            let removed_part: String;
-            let new_word: String;
+        placeholder_count += 1;
+        let key = format!("ph-{}", placeholder_count);
+        let token = format!("{{{}}}", key);
 
-            // Choose a replacement strategy: 0=Full, 1=Prefix, 2=Suffix, 3=Middle
-            let strategy_choices = if word_len < 3 {
-                0..3 // If word length is 2, skip the middle strategy
-            } else {
-                0..4
-            };
-            let choice = rng.random_range(strategy_choices);
-
-            match choice {
+        let (prefix_slice, removed_slice, suffix_slice): (Vec<&str>, Vec<&str>, Vec<&str>) = 
+            match strategy {
                 0 => {
-                    removed_part = core_word.to_string();
-                    new_word = format!("{{{}}}", placeholder_key);
+                    (Vec::new(), g.clone(), Vec::new())
                 }
                 1 => {
-                    let cut_idx = rng.random_range(1..word_len);
-                    removed_part = core_word[..cut_idx].to_string();
-                    let remaining = &core_word[cut_idx..];
-                    new_word = format!("{{{}}}{}", placeholder_key, remaining);
+                    let cut = rng.random_range(1..g_len);
+                    (Vec::new(), g[0..cut].to_vec(), g[cut..].to_vec())
                 }
                 2 => {
-                    let cut_idx = rng.random_range(1..word_len);
-                    removed_part = core_word[cut_idx..].to_string();
-                    let remaining = &core_word[..cut_idx];
-                    new_word = format!("{}{{{}}}", remaining, placeholder_key);
+                    let cut = rng.random_range(1..g_len);
+                    (g[0..cut].to_vec(), g[cut..].to_vec(), Vec::new())
                 }
                 3 => {
-                    let start_idx = rng.random_range(1..word_len - 1);
-                    let end_idx = rng.random_range(start_idx..(word_len - 1));
-                    removed_part = core_word[start_idx..=end_idx].to_string();
-                    let beginning = &core_word[..start_idx];
-                    let ending = &core_word[(end_idx + 1)..];
-                    new_word = format!("{}{{{}}}{}", beginning, placeholder_key, ending);
+                    let start = rng.random_range(1..(g_len - 1));
+                    let end = rng.random_range(start..(g_len - 1));
+                    (g[0..start].to_vec(), g[start..=end].to_vec(), g[(end + 1)..].to_vec())
                 }
                 _ => unreachable!(),
-            }
+            };
+        
+        let removed = removed_slice.concat();
+        let new_word = {
+            let mut s = String::new();
+            s.push_str(&prefix_slice.concat());
+            s.push_str(&token);
+            s.push_str(&suffix_slice.concat());
+            s
+        };
 
-            placeholder_map.insert(placeholder_key, removed_part);
-            let modified_token = format!("{}{}{}", prefix_punct, new_word, suffix_punct);
-            result_tokens.push(modified_token);
-        }
+        placeholder_map.insert(key, removed);
+        out.push_str(&new_word);
     }
 
-    let result_text = result_tokens.join(" ");
-    (result_text, placeholder_map)
+    (out, placeholder_map)
 }
 
 #[cfg(test)]
@@ -236,6 +226,54 @@ mod tests {
         let (result, map) = replace_parts_of_words(text, 1.0);
         assert_eq!(result.split_whitespace().count(), 9);
         assert_eq!(map.len(), 9);
+        if !map.is_empty() {
+            let restored = restore_text(&result, &map);
+            assert_eq!(restored, text);
+        }
+    }
+
+    #[test]
+    fn test_replace_parts_of_words_ukrainian_sentence() {
+        let text = "Привіт, як справи?";
+        let (result, map) = replace_parts_of_words(text, 1.0);
+        assert_eq!(result.split_whitespace().count(), 3);
+        assert_eq!(map.len(), 3);
+        if !map.is_empty() {
+            let restored = restore_text(&result, &map);
+            assert_eq!(restored, text);
+        }
+    }
+
+    #[test]
+    fn test_replace_parts_of_words_ukrainian_short_words() {
+        let text = "Я є ти ми ви";
+        let (result, map) = replace_parts_of_words(text, 1.0);
+        assert_eq!(result.split_whitespace().count(), 5);
+        assert_eq!(map.len(), 3);
+        if !map.is_empty() {
+            let restored = restore_text(&result, &map);
+            assert_eq!(restored, text);
+        }
+    }
+
+    #[test]
+    fn test_replace_parts_of_words_ukrainian_with_punctuation() {
+        let text = "Доброго дня! Як ти?";
+        let (result, map) = replace_parts_of_words(text, 1.0);
+        assert_eq!(result.split_whitespace().count(), 4);
+        assert_eq!(map.len(), 4);
+        if !map.is_empty() {
+            let restored = restore_text(&result, &map);
+            assert_eq!(restored, text);
+        }
+    }
+
+    #[test]
+    fn test_replace_parts_of_words_ukrainian_mixed_ratio() {
+        let text = "Це тестова фраза для перевірки";
+        let (result, map) = replace_parts_of_words(text, 0.5);
+        assert_eq!(result.split_whitespace().count(), 5);
+        assert!(map.len() <= 5);
         if !map.is_empty() {
             let restored = restore_text(&result, &map);
             assert_eq!(restored, text);

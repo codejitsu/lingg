@@ -117,7 +117,7 @@ fn process_model_output(
     let story_id = build_story_id(&args.user_id, &args.client_request_id);
     let chapter_id = Uuid::now_v7();
 
-    let (text_quiz, placeholder_map) = replace_parts_of_words(&text, 0.3);
+    let (template, placeholder_map) = replace_parts_of_words(&text, 0.3);
 
     let placeholders: Vec<Placeholder> = placeholder_map
         .iter()
@@ -131,7 +131,7 @@ fn process_model_output(
         chapter_id: ID::try_from(chapter_id.to_string()).unwrap(),
         story_id: ID::try_from(story_id.to_string()).unwrap(),
         content: text,
-        content_quiz: text_quiz,
+        template: template,
         created_at: "2023-10-01T00:00:00Z".to_string().into(),
         placeholders,
     };
@@ -234,8 +234,8 @@ async fn get_story_with_chapters_by_id(
                         // This is a chapter
                         let chapter_id = sk.trim_start_matches("CHAPTER#");
                         let content = item.get("content").and_then(|v| v.as_s().ok()).unwrap();
-                        let content_quiz = item
-                            .get("content_quiz")
+                        let template = item
+                            .get("template")
                             .and_then(|v| v.as_s().ok())
                             .unwrap();
                         let created_at =
@@ -265,7 +265,7 @@ async fn get_story_with_chapters_by_id(
                             chapter_id: ID::try_from(chapter_id.to_string()).unwrap(),
                             story_id: ID::try_from(story_id.to_string()).unwrap(),
                             content: content.to_string(),
-                            content_quiz: content_quiz.to_string(),
+                            template: template.to_string(),
                             created_at: created_at.to_string().into(),
                             placeholders,
                         });
@@ -444,7 +444,7 @@ async fn save_story_to_db(
             content = :content, 
             created_at = :created_at,
             placeholders = :placeholders,
-            content_quiz = :content_quiz",
+            template = :template",
         )
         .expression_attribute_values(
             ":content",
@@ -474,8 +474,8 @@ async fn save_story_to_db(
             ),
         )
         .expression_attribute_values(
-            ":content_quiz",
-            AttributeValue::S(story.chapters[chapter_index].content_quiz.clone()),
+            ":template",
+            AttributeValue::S(story.chapters[chapter_index].template.clone()),
         )
         .condition_expression("attribute_not_exists(PK)")
         .build();

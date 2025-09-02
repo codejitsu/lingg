@@ -44,7 +44,7 @@ type Chapter {
     chapterId: ID!
     storyId: ID!
     content: String!
-    contentQuiz: String!
+    template: String!
     placeholders: [Placeholder!]!
     createdAt: AWSDateTime!
 }
@@ -68,6 +68,15 @@ input StartStoryArguments {
     storyType: StoryType!
 }
 
+#input SolveTemplateArguments {
+#    userId: ID!
+#    clientRequestId: ID!
+#    storyId: ID!
+#    chapterId: ID!
+#    placeholders: [Placeholder!]!
+#}
+
 type Mutation {
     startStory(args: StartStoryArguments!): Story!
+    #solveTemplate(args: SolveQuizArguments!): QuizResult!
 }

@@ -1,6 +1,6 @@
 use rand::Rng;
-use unicode_segmentation::UnicodeSegmentation;
 use std::collections::HashMap;
+use unicode_segmentation::UnicodeSegmentation;
 
 pub fn replace_parts_of_words(text: &str, ratio: f64) -> (String, HashMap<String, String>) {
     let mut rng = rand::rng();
@@ -39,7 +39,7 @@ pub fn replace_parts_of_words(text: &str, ratio: f64) -> (String, HashMap<String
             out.push_str(seg);
             continue;
         }
-        
+
         let max_strategy = if g_len >= 3 { 4 } else { 3 };
         let strategy = rng.random_range(0..max_strategy);
 
@@ -47,11 +47,9 @@ pub fn replace_parts_of_words(text: &str, ratio: f64) -> (String, HashMap<String
         let key = format!("ph-{}", placeholder_count);
         let token = format!("{{{}}}", key);
 
-        let (prefix_slice, removed_slice, suffix_slice): (Vec<&str>, Vec<&str>, Vec<&str>) = 
+        let (prefix_slice, removed_slice, suffix_slice): (Vec<&str>, Vec<&str>, Vec<&str>) =
             match strategy {
-                0 => {
-                    (Vec::new(), g.clone(), Vec::new())
-                }
+                0 => (Vec::new(), g.clone(), Vec::new()),
                 1 => {
                     let cut = rng.random_range(1..g_len);
                     (Vec::new(), g[0..cut].to_vec(), g[cut..].to_vec())
@@ -63,11 +61,15 @@ pub fn replace_parts_of_words(text: &str, ratio: f64) -> (String, HashMap<String
                 3 => {
                     let start = rng.random_range(1..(g_len - 1));
                     let end = rng.random_range(start..(g_len - 1));
-                    (g[0..start].to_vec(), g[start..=end].to_vec(), g[(end + 1)..].to_vec())
+                    (
+                        g[0..start].to_vec(),
+                        g[start..=end].to_vec(),
+                        g[(end + 1)..].to_vec(),
+                    )
                 }
                 _ => unreachable!(),
             };
-        
+
         let removed = removed_slice.concat();
         let new_word = {
             let mut s = String::new();

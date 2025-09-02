@@ -234,10 +234,7 @@ async fn get_story_with_chapters_by_id(
                         // This is a chapter
                         let chapter_id = sk.trim_start_matches("CHAPTER#");
                         let content = item.get("content").and_then(|v| v.as_s().ok()).unwrap();
-                        let template = item
-                            .get("template")
-                            .and_then(|v| v.as_s().ok())
-                            .unwrap();
+                        let template = item.get("template").and_then(|v| v.as_s().ok()).unwrap();
                         let created_at =
                             item.get("created_at").and_then(|v| v.as_s().ok()).unwrap();
 

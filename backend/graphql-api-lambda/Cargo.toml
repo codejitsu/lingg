@@ -4,13 +4,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-uuid = { version = "1.4.2", features = ["v5", "v7"] }
+uuid = { version = "1.18.1", features = ["v5", "v7"] }
 serde = "1.0.219"
-aws-sdk-dynamodb = "1.91.0"
+aws-sdk-dynamodb = "1.92.0"
 lambda-appsync = "0.6.0"
 env = "1.0.1"
 aws-sdk-bedrockruntime = "1.103.0"
-aws-config = "1.8.5"
+aws-config = "1.8.6"
 log = "0.4.27"
 rand = "0.9.2"
 unicode-segmentation = "1.12.0"

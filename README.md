@@ -43,3 +43,5 @@ cargo lambda build --workspace --release
 - https://ui.shadcn.com/docs/installation/vite
 - pnpm add tailwindcss @tailwindcss/vite
 - https://www.prompt-kit.com/docs/installation
+- pnpm add -D prettier eslint eslint-config-prettier eslint-plugin-react eslint-plugin-react-hooks
+- 

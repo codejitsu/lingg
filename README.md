@@ -42,3 +42,4 @@ cargo lambda build --workspace --release
 ## libs
 - https://ui.shadcn.com/docs/installation/vite
 - pnpm add tailwindcss @tailwindcss/vite
+- https://www.prompt-kit.com/docs/installation

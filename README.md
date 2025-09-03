@@ -38,3 +38,7 @@ cargo lambda build --workspace --release
 - cd web-app
 - pnpm install
 - pnpm run dev
+
+## libs
+- https://ui.shadcn.com/docs/installation/vite
+- pnpm add tailwindcss @tailwindcss/vite

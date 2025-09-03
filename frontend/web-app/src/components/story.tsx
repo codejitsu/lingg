@@ -167,7 +167,7 @@ function ChatSidebar() {
                 <div className="flex flex-row items-center gap-2 px-2">
                     <div className="bg-primary/10 size-8 rounded-md"></div>
                     <div className="text-md font-base text-primary tracking-tight">
-                        zola.chat
+                        lingg.ai
                     </div>
                 </div>
                 <Button variant="ghost" className="size-8">
@@ -178,7 +178,7 @@ function ChatSidebar() {
                 <div className="px-4">
                     <Button
                         variant="outline"
-                        className="mb-4 flex w-full items-center gap-2"
+                        className="mb-4 flex w-full items-center gap-2 text-muted-foreground"
                     >
                         <PlusIcon className="size-4" />
                         <span>New Chat</span>
@@ -189,7 +189,7 @@ function ChatSidebar() {
                         <SidebarGroupLabel>{group.period}</SidebarGroupLabel>
                         <SidebarMenu>
                             {group.conversations.map((conversation) => (
-                                <SidebarMenuButton key={conversation.id}>
+                                <SidebarMenuButton key={conversation.id} className="text-muted-foreground">
                                     <span>{conversation.title}</span>
                                 </SidebarMenuButton>
                             ))}
@@ -268,7 +268,7 @@ function ChatContent() {
                                     {isAssistant ? (
                                         <div className="group flex w-full flex-col gap-0">
                                             <MessageContent
-                                                className="text-foreground prose flex-1 rounded-lg bg-transparent p-0"
+                                                className="text-foreground prose flex-1 rounded-lg bg-transparent p-0 text-left"
                                                 markdown
                                             >
                                                 {message.content}
@@ -320,7 +320,7 @@ function ChatContent() {
                                         </div>
                                     ) : (
                                         <div className="group flex flex-col items-end gap-1">
-                                            <MessageContent className="bg-muted text-primary max-w-[85%] rounded-3xl px-5 py-2.5 sm:max-w-[75%]">
+                                            <MessageContent className="bg-muted text-primary max-w-[85%] rounded-3xl px-5 py-2.5 sm:max-w-[75%] text-left">
                                                 {message.content}
                                             </MessageContent>
                                             <MessageActions

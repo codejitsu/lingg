@@ -181,7 +181,7 @@ function ChatSidebar() {
                         className="mb-4 flex w-full items-center gap-2 text-muted-foreground"
                     >
                         <PlusIcon className="size-4" />
-                        <span>New Chat</span>
+                        <span>New Story</span>
                     </Button>
                 </div>
                 {conversationHistory.map((group) => (
@@ -236,7 +236,7 @@ function ChatContent() {
     }
 
     return (
-        <main className="flex h-screen flex-col overflow-hidden">
+        <main className="flex flex-col overflow-hidden">
             <header className="bg-background z-10 flex h-16 w-full shrink-0 items-center gap-2 border-b px-4">
                 <SidebarTrigger className="-ml-1" />
                 <div className="text-foreground">

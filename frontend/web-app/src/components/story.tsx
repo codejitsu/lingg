@@ -47,92 +47,45 @@ import {
 } from 'lucide-react'
 import { useRef, useState } from 'react'
 
-// Initial conversation history
-const conversationHistory = [
-    {
-        period: 'Today',
-        conversations: [
-            {
-                id: 't1',
-                title: 'Project roadmap discussion',
-                lastMessage:
-                    "Let's prioritize the authentication features for the next sprint.",
-                timestamp: new Date().setHours(new Date().getHours() - 2),
-            },
-            {
-                id: 't2',
-                title: 'API Documentation Review',
-                lastMessage:
-                    'The endpoint descriptions need more detail about rate limiting.',
-                timestamp: new Date().setHours(new Date().getHours() - 5),
-            },
-            {
-                id: 't3',
-                title: 'Frontend Bug Analysis',
-                lastMessage:
-                    'I found the issue - we need to handle the null state in the user profile component.',
-                timestamp: new Date().setHours(new Date().getHours() - 8),
-            },
-        ],
-    },
-    {
-        period: 'Yesterday',
-        conversations: [
-            {
-                id: 'y1',
-                title: 'Database Schema Design',
-                lastMessage:
-                    "Let's add indexes to improve query performance on these tables.",
-                timestamp: new Date().setDate(new Date().getDate() - 1),
-            },
-            {
-                id: 'y2',
-                title: 'Performance Optimization',
-                lastMessage:
-                    'The lazy loading implementation reduced initial load time by 40%.',
-                timestamp: new Date().setDate(new Date().getDate() - 1),
-            },
-        ],
-    },
-    {
-        period: 'Last 7 days',
-        conversations: [
-            {
-                id: 'w1',
-                title: 'Authentication Flow',
-                lastMessage:
-                    'We should implement the OAuth2 flow with refresh tokens.',
-                timestamp: new Date().setDate(new Date().getDate() - 3),
-            },
-            {
-                id: 'w2',
-                title: 'Component Library',
-                lastMessage:
-                    'These new UI components follow the design system guidelines perfectly.',
-                timestamp: new Date().setDate(new Date().getDate() - 5),
-            },
-            {
-                id: 'w3',
-                title: 'UI/UX Feedback',
-                lastMessage:
-                    'The navigation redesign received positive feedback from the test group.',
-                timestamp: new Date().setDate(new Date().getDate() - 6),
-            },
-        ],
-    },
-    {
-        period: 'Last month',
-        conversations: [
-            {
-                id: 'm1',
-                title: 'Initial Project Setup',
-                lastMessage:
-                    'All the development environments are now configured consistently.',
-                timestamp: new Date().setDate(new Date().getDate() - 15),
-            },
-        ],
-    },
-]
+import { gql } from '@apollo/client'
+import { useQuery } from '@apollo/client/react'
+
+// TODO - replace with real user ID from auth context
+const userId = 'f257727e-94ab-44ac-aa0e-c4d51a0d67ac'
+
+// GraphQL query to list all stories for a user
+const LIST_ALL_STORIES = gql`
+    query ListAllStories {
+        listStories(userId: "${userId}") {
+            explainLanguage
+            startedAt
+            storyId
+            storyType
+            targetLanguage
+            title
+            userId
+        }
+    }
+`
+
+type Story = {
+    startedAt: string;
+    storyId: string;
+    title: string;
+};
+
+type Period = {
+    period: string;
+    stories: Story[];
+};
+
+type Buckets = {
+    today: Period;
+    yesterday: Period;
+    last7days: Period;
+    lastMonth: Period;
+    everythingElse: Period;
+};
 
 // Initial chat messages
 const initialMessages = [
@@ -161,6 +114,42 @@ const initialMessages = [
 ]
 
 function ChatSidebar() {
+    const { loading, error, data } = useQuery<{ listStories: Story[] }>(LIST_ALL_STORIES)
+
+    if (error) return <p>Error loading stories: {error.message}</p>
+    if (loading) return <p>Loading stories...</p>
+
+    const buckets: Buckets = {
+        today: { period: 'Today', stories: [] },
+        yesterday: { period: 'Yesterday', stories: [] },
+        last7days: { period: 'Last 7 days', stories: [] },
+        lastMonth: { period: 'Last month', stories: [] },
+        everythingElse: { period: 'Older than a month', stories: [] },
+    };
+
+    const now = new Date();
+
+    for (const story of data?.listStories || []) {
+        const startedAt = new Date(story.startedAt);
+        const diffTime = Math.abs(now.getTime() - startedAt.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 0) {
+            buckets.today.stories.push(story);
+        } else if (diffDays === 1) {
+            buckets.yesterday.stories.push(story);
+        } else if (diffDays <= 7) {
+            buckets.last7days.stories.push(story);
+        } else if (diffDays <= 30) {
+            buckets.lastMonth.stories.push(story);
+        } else {
+            buckets.everythingElse.stories.push(story);
+        }
+    }
+
+    const conversationHistory = [buckets.today, buckets.yesterday, buckets.last7days, 
+        buckets.lastMonth, buckets.everythingElse].filter(bucket => bucket.stories.length > 0);
+
     return (
         <Sidebar>
             <SidebarHeader className="flex flex-row items-center justify-between gap-2 px-2 py-4">
@@ -188,9 +177,9 @@ function ChatSidebar() {
                     <SidebarGroup key={group.period}>
                         <SidebarGroupLabel>{group.period}</SidebarGroupLabel>
                         <SidebarMenu>
-                            {group.conversations.map((conversation) => (
-                                <SidebarMenuButton key={conversation.id} className="text-muted-foreground">
-                                    <span>{conversation.title}</span>
+                            {group.stories.map((story) => (
+                                <SidebarMenuButton key={story.storyId} className="text-muted-foreground">
+                                    <span>{story.title}</span>
                                 </SidebarMenuButton>
                             ))}
                         </SidebarMenu>

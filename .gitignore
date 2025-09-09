@@ -30,4 +30,5 @@ target
 *.tfplan
 
 # Frontend
+**/api.endpoint.json
 **/node_modules/*

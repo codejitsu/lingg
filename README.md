@@ -1,10 +1,10 @@
-# lingg
+# lingg.ai
 
 online AI based language learning project
 
-# development
+# Explore API
 
-- checkout https://github.com/graphql/graphiql
+- check out https://github.com/graphql/graphiql
 - change this line https://github.com/graphql/graphiql/blob/main/examples/graphiql-cdn/index.html#L70
 
 ````
@@ -18,20 +18,20 @@ online AI based language learning project
 
 - Open index.html in the browser
 
-# backend
+# Backend
 
 Building backend:
 ````
 cargo lambda build --workspace --release
 ````
 
-# infrastructure
+# Infrastructure
 
 - cd infrastructure/environments/dev
 - terraform destroy
 - terraform apply -auto-approve
 
-# frontend
+# Frontend
 - nvm install 22
 - pnpm create vite@latest web-app -- --template react-ts
 - opt for TypeScript (only)
@@ -44,4 +44,7 @@ cargo lambda build --workspace --release
 - pnpm add tailwindcss @tailwindcss/vite
 - https://www.prompt-kit.com/docs/installation
 - pnpm add -D prettier eslint eslint-config-prettier eslint-plugin-react eslint-plugin-react-hooks
-- 
+
+## local development
+- add api.endpoint.json to .gitignore
+- store endpoint url and the auth key: ```terraform output -json > ../../../frontend/web-app/src/lib/api.endpoint.json```

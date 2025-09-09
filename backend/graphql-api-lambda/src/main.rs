@@ -12,10 +12,10 @@ use aws_sdk_bedrockruntime::Client;
 use aws_sdk_dynamodb::types::AttributeValue;
 use aws_sdk_dynamodb::types::TransactWriteItem;
 use aws_sdk_dynamodb::types::Update;
-use placeholders::replace_parts_of_words;
 use lambda_appsync::appsync_lambda_main;
 use lambda_appsync::ID;
 use lambda_appsync::{appsync_operation, AppsyncError, AppsyncEvent};
+use placeholders::replace_parts_of_words;
 use uuid::Uuid;
 
 #[derive(Debug)]
@@ -54,7 +54,8 @@ async fn list_stories(
     user_id: ID,
     _event: &AppsyncEvent<Operation>,
 ) -> Result<Vec<Story>, AppsyncError> {
-    let stories = get_stories_by_user_id(&user_id).await
+    let stories = get_stories_by_user_id(&user_id)
+        .await
         .map_err(|e| AppsyncError::new("StorageReadError", e.to_string()))?;
     Ok(stories)
 }
@@ -226,10 +227,11 @@ async fn get_stories_by_user_id(user_id: &ID) -> Result<Vec<Story>, BedrockConve
                                 chapters: vec![],
                             },
                         );
-                    } else if sk.contains("#CHAP#") { // chapter
+                    } else if sk.contains("#CHAP#") {
+                        // chapter
                         let story_id = sk.split("#").nth(1).unwrap();
                         let chapter_id = sk.split("#").nth(3).unwrap();
-                        
+
                         let content = item.get("content").and_then(|v| v.as_s().ok()).unwrap();
 
                         let template = item.get("template").and_then(|v| v.as_s().ok()).unwrap();
@@ -372,7 +374,9 @@ async fn get_story_with_chapters_by_id(
                         });
                     } else {
                         // This is a chapter
-                        let chapter_id = sk.trim_start_matches(format!("STORY#{}#CHAP#", story_id.to_string()).as_str());
+                        let chapter_id = sk.trim_start_matches(
+                            format!("STORY#{}#CHAP#", story_id.to_string()).as_str(),
+                        );
                         let content = item.get("content").and_then(|v| v.as_s().ok()).unwrap();
                         let template = item.get("template").and_then(|v| v.as_s().ok()).unwrap();
                         let created_at =
@@ -490,7 +494,10 @@ async fn save_story_to_db(
     let user_story = Update::builder()
         .table_name(&table_name)
         .key("PK", AttributeValue::S(format!("USER#{}", user_id)))
-        .key("SK", AttributeValue::S(format!("STORY#{}#META", story.story_id)))
+        .key(
+            "SK",
+            AttributeValue::S(format!("STORY#{}#META", story.story_id)),
+        )
         .update_expression(
             "SET 
             title = :title, 

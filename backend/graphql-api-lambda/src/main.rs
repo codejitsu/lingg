@@ -92,7 +92,9 @@ async fn start_story(
                 "Create a story in {}. The story should be about {}. The length of the story should be around 100 words.
                 Don't use any swear words or adult content.
                 The story should be not finalized, so we can iterate further. Don't include anyting like 'The End' or 'To be continued'.
-                Dont include any new lines or line breaks.",
+                Dont include any new lines or line breaks. Return the story in the following format: <story-title>|<story-content>
+                
+                Example: My Adventure|Once upon a time...",
                 args.target_language, args.story_type
             );
 
@@ -128,7 +130,20 @@ fn process_model_output(
     output: ConverseOutput,
     args: &StartStoryArguments,
 ) -> Result<Story, SdkError<ConverseError>> {
-    let text = get_converse_output_text(output).unwrap();
+    let text_with_title = get_converse_output_text(output).unwrap();
+
+    let parts: Vec<&str> = text_with_title.splitn(2, '|').collect();
+    let text = if parts.len() == 2 {
+        parts[1].trim().to_string()
+    } else {
+        text_with_title.trim().to_string()
+    };
+
+    let title = if parts.len() == 2 {
+        parts[0].trim().to_string()
+    } else {
+        "My Story".to_string()
+    };
 
     let story_id = build_story_id(&args.user_id, &args.client_request_id);
     let chapter_id = Uuid::now_v7();
@@ -148,7 +163,7 @@ fn process_model_output(
         story_id: ID::try_from(story_id.to_string()).unwrap(),
         content: text,
         template: template,
-        created_at: "2023-10-01T00:00:00Z".to_string().into(),
+        created_at: chrono::Utc::now().to_rfc3339().into(),
         placeholders,
     };
 
@@ -158,8 +173,8 @@ fn process_model_output(
         target_language: args.target_language,
         explain_language: args.explain_language,
         story_type: args.story_type,
-        started_at: "2023-10-01T00:00:00Z".to_string().into(),
-        title: "My title".to_string().into(),
+        started_at: chrono::Utc::now().to_rfc3339().into(),
+        title: title.into(),
         chapters: vec![chapter],
     };
 

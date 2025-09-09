@@ -3,10 +3,6 @@ schema {
     mutation: Mutation
 }
 
-type Query {
-    _noop: String
-}
-
 enum LanguageName {
     English
     Spanish
@@ -79,4 +75,8 @@ input StartStoryArguments {
 type Mutation {
     startStory(args: StartStoryArguments!): Story!
     #solveTemplate(args: SolveQuizArguments!): QuizResult!
+}
+
+type Query {
+    listStories(userId: ID!): [Story!]!
 }

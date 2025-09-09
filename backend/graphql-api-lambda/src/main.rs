@@ -1,5 +1,8 @@
 mod placeholders;
 
+use std::collections::HashMap;
+use std::vec;
+
 use aws_config::BehaviorVersion;
 use aws_config::Region;
 use aws_sdk_bedrockruntime::error::SdkError;
@@ -46,6 +49,16 @@ appsync_lambda_main!(
     batch = false
 );
 
+#[appsync_operation(query(listStories), with_appsync_event)]
+async fn list_stories(
+    user_id: ID,
+    _event: &AppsyncEvent<Operation>,
+) -> Result<Vec<Story>, AppsyncError> {
+    let stories = get_stories_by_user_id(&user_id).await
+        .map_err(|e| AppsyncError::new("StorageReadError", e.to_string()))?;
+    Ok(stories)
+}
+
 #[appsync_operation(mutation(startStory), with_appsync_event)]
 async fn start_story(
     args: StartStoryArguments,
@@ -55,7 +68,7 @@ async fn start_story(
     let bedrock_model_id = env::var("BEDROCK_MODEL_ID").unwrap();
 
     let story_id = build_story_id(&args.user_id, &args.client_request_id);
-    let existing_story = get_story_with_chapters_by_id(story_id).await;
+    let existing_story = get_story_with_chapters_by_id(&args.user_id, story_id).await;
 
     match existing_story {
         Ok(Some(story)) => {
@@ -157,6 +170,124 @@ fn build_story_id(user_id: &ID, client_request_id: &ID) -> Uuid {
     Uuid::new_v5(&namespace, client_request_id.as_bytes())
 }
 
+async fn get_stories_by_user_id(user_id: &ID) -> Result<Vec<Story>, BedrockConverseError> {
+    let client = dynamodb();
+    let table_name = table_name();
+
+    let items = client
+        .query()
+        .table_name(&table_name)
+        .key_condition_expression("PK = :pk")
+        .expression_attribute_values(
+            ":pk",
+            AttributeValue::S(format!("USER#{}", user_id.to_string())),
+        )
+        .send()
+        .await;
+
+    match items {
+        Ok(output) => {
+            if let Some(items) = output.items {
+                let mut stories: HashMap<String, Story> = HashMap::new();
+                let mut chapters: HashMap<String, Vec<Chapter>> = HashMap::new();
+
+                for item in items {
+                    let sk = item.get("SK").and_then(|v| v.as_s().ok()).unwrap();
+
+                    if sk.starts_with("STORY#") && sk.ends_with("#META") {
+                        let story_id = sk.trim_start_matches("STORY#").trim_end_matches("#META");
+                        let title = item.get("title").and_then(|v| v.as_s().ok()).unwrap();
+                        let target_language = item
+                            .get("target_language")
+                            .and_then(|v| v.as_s().ok())
+                            .unwrap();
+                        let explain_language = item
+                            .get("explain_language")
+                            .and_then(|v| v.as_s().ok())
+                            .unwrap();
+                        let story_type =
+                            item.get("story_type").and_then(|v| v.as_s().ok()).unwrap();
+                        let started_at =
+                            item.get("started_at").and_then(|v| v.as_s().ok()).unwrap();
+
+                        stories.insert(
+                            story_id.to_string(),
+                            Story {
+                                user_id: user_id.clone(),
+                                story_id: ID::try_from(story_id.to_string()).unwrap(),
+                                target_language: string_to_language_name(target_language)
+                                    .unwrap_or(LanguageName::English),
+                                explain_language: string_to_language_name(explain_language)
+                                    .unwrap_or(LanguageName::English),
+                                story_type: string_to_story_type(story_type)
+                                    .unwrap_or(StoryType::Superheroes),
+                                started_at: started_at.to_string().into(),
+                                title: title.to_string().into(),
+                                chapters: vec![],
+                            },
+                        );
+                    } else if sk.contains("#CHAP#") { // chapter
+                        let story_id = sk.split("#").nth(1).unwrap();
+                        let chapter_id = sk.split("#").nth(3).unwrap();
+                        
+                        let content = item.get("content").and_then(|v| v.as_s().ok()).unwrap();
+
+                        let template = item.get("template").and_then(|v| v.as_s().ok()).unwrap();
+                        let created_at =
+                            item.get("created_at").and_then(|v| v.as_s().ok()).unwrap();
+
+                        let placeholders = if let Some(attr) = item.get("placeholders") {
+                            if let Ok(list) = attr.as_l() {
+                                list.iter()
+                                    .filter_map(|v| v.as_m().ok())
+                                    .filter_map(|m| {
+                                        let name = m.get("name").and_then(|v| v.as_s().ok())?;
+                                        let text = m.get("text").and_then(|v| v.as_s().ok())?;
+                                        Some(Placeholder {
+                                            name: name.to_string(),
+                                            text: text.to_string(),
+                                        })
+                                    })
+                                    .collect()
+                            } else {
+                                vec![]
+                            }
+                        } else {
+                            vec![]
+                        };
+
+                        let chapter = Chapter {
+                            chapter_id: ID::try_from(chapter_id.to_string()).unwrap(),
+                            story_id: ID::try_from(story_id.to_string()).unwrap(),
+                            content: content.to_string().into(),
+                            template: template.to_string().into(),
+                            created_at: created_at.to_string().into(),
+                            placeholders,
+                        };
+
+                        if let Some(chapters_for_story) = chapters.get_mut(&story_id.to_string()) {
+                            chapters_for_story.push(chapter);
+                        } else {
+                            chapters.insert(story_id.to_string(), vec![chapter]);
+                        }
+                    }
+                }
+
+                stories.iter_mut().for_each(|(story_id, story)| {
+                    if let Some(chaps) = chapters.get(story_id) {
+                        story.chapters = chaps.clone();
+                    }
+                });
+
+                Ok(stories.into_values().collect())
+            } else {
+                Ok(Vec::new())
+            }
+        }
+        Err(e) => Err(BedrockConverseError(e.to_string())),
+    }
+}
+
 fn get_converse_output_text(output: ConverseOutput) -> Result<String, BedrockConverseError> {
     let text = output
         .output()
@@ -173,6 +304,7 @@ fn get_converse_output_text(output: ConverseOutput) -> Result<String, BedrockCon
 }
 
 async fn get_story_with_chapters_by_id(
+    user_id: &ID,
     story_id: Uuid,
 ) -> Result<Option<Story>, BedrockConverseError> {
     let client = dynamodb();
@@ -181,10 +313,14 @@ async fn get_story_with_chapters_by_id(
     let items = client
         .query()
         .table_name(&table_name)
-        .key_condition_expression("PK = :pk")
+        .key_condition_expression("PK = :pk AND begins_with(SK, :sk_prefix)")
         .expression_attribute_values(
             ":pk",
-            AttributeValue::S(format!("STORY#{}", story_id.to_string())),
+            AttributeValue::S(format!("USER#{}", user_id.to_string())),
+        )
+        .expression_attribute_values(
+            ":sk_prefix",
+            AttributeValue::S(format!("STORY#{}#", story_id.to_string())),
         )
         .send()
         .await;
@@ -199,10 +335,12 @@ async fn get_story_with_chapters_by_id(
                 let mut story_meta_opt: Option<Story> = None;
                 let mut chapters: Vec<Chapter> = vec![];
 
+                let meta_sk = format!("STORY#{}#META", story_id.to_string());
+
                 for item in items {
                     let sk = item.get("SK").and_then(|v| v.as_s().ok()).unwrap();
 
-                    if sk == "METADATA" {
+                    if *sk == meta_sk {
                         // This is the story metadata
                         let user_id = item.get("user_id").and_then(|v| v.as_s().ok()).unwrap();
                         let title = item.get("title").and_then(|v| v.as_s().ok()).unwrap();
@@ -234,7 +372,7 @@ async fn get_story_with_chapters_by_id(
                         });
                     } else {
                         // This is a chapter
-                        let chapter_id = sk.trim_start_matches("CHAPTER#");
+                        let chapter_id = sk.trim_start_matches(format!("STORY#{}#CHAP#", story_id.to_string()).as_str());
                         let content = item.get("content").and_then(|v| v.as_s().ok()).unwrap();
                         let template = item.get("template").and_then(|v| v.as_s().ok()).unwrap();
                         let created_at =
@@ -320,14 +458,14 @@ fn string_to_story_type(story_type: &str) -> Option<StoryType> {
 //
 // Querying all stories for a user:
 // PK = USER#<user_id>
-// SK = STORY#<story_id>
+// SK = begins_with(STORY#<story_id>#)
 //
 // Querying all chapters for a story:
-// PK = STORY#<story_id>
-// SK = METADATA
+// PK = USER#<user_id>
+// SK = begins_with(STORY#<story_id>#CHAP#)
 //
-// PK = STORY#<story_id>
-// SK = CHAPTER#<chapter_id>
+// PK = USER#<user_id>
+// SK = STORY#<story_id>#CHAP#<chapter_id>
 async fn save_story_to_db(
     story: Story,
     user_id: ID,
@@ -337,9 +475,9 @@ async fn save_story_to_db(
     let client = dynamodb();
     let table_name = table_name();
 
-    // 1. update the user partition to create mapping between user and story
+    // 1. Add story to the user partition
     // PK = USER#<user_id>
-    // SK = STORY#<story_id>
+    // SK = STORY#<story_id>#META
     // Attributes:
     //  title
     //  user_id
@@ -352,7 +490,7 @@ async fn save_story_to_db(
     let user_story = Update::builder()
         .table_name(&table_name)
         .key("PK", AttributeValue::S(format!("USER#{}", user_id)))
-        .key("SK", AttributeValue::S(format!("STORY#{}", story.story_id)))
+        .key("SK", AttributeValue::S(format!("STORY#{}#META", story.story_id)))
         .update_expression(
             "SET 
             title = :title, 
@@ -388,54 +526,17 @@ async fn save_story_to_db(
         .condition_expression("attribute_not_exists(PK) OR client_request_id = :client_request_id")
         .build();
 
-    // 2. update the story partition
-    // PK = STORY#<story_id>
-    // SK = METADATA
-    let story_metadata = Update::builder()
-        .table_name(&table_name)
-        .key("PK", AttributeValue::S(format!("STORY#{}", story.story_id)))
-        .key("SK", AttributeValue::S("METADATA".to_string()))
-        .update_expression(
-            "SET 
-            user_id = :user_id, 
-            title = :title, 
-            target_language = :target_language, 
-            explain_language = :explain_language, 
-            story_type = :story_type, 
-            started_at = :started_at",
-        )
-        .expression_attribute_values(":user_id", AttributeValue::S(user_id.to_string()))
-        .expression_attribute_values(":title", AttributeValue::S(story.title.clone()))
-        .expression_attribute_values(
-            ":target_language",
-            AttributeValue::S(story.target_language.to_string()),
-        )
-        .expression_attribute_values(
-            ":explain_language",
-            AttributeValue::S(story.explain_language.to_string()),
-        )
-        .expression_attribute_values(
-            ":story_type",
-            AttributeValue::S(story.story_type.to_string()),
-        )
-        .expression_attribute_values(
-            ":started_at",
-            AttributeValue::S(story.started_at.to_string()),
-        )
-        .condition_expression("attribute_not_exists(PK)")
-        .build();
-
-    // 3. update the chapter
-    // PK = STORY#<story_id>
-    // SK = CHAPTER#<chapter_id>
+    // 2. add chapters
+    // PK = USER#<user_id>
+    // SK = STORY#<story_id>#CHAP#<chapter_id>
     let story_chapter = Update::builder()
         .table_name(&table_name)
-        .key("PK", AttributeValue::S(format!("STORY#{}", story.story_id)))
+        .key("PK", AttributeValue::S(format!("USER#{}", user_id)))
         .key(
             "SK",
             AttributeValue::S(format!(
-                "CHAPTER#{}",
-                story.chapters[chapter_index].chapter_id
+                "STORY#{}#CHAP#{}",
+                story.story_id, story.chapters[chapter_index].chapter_id
             )),
         )
         .update_expression(
@@ -484,9 +585,6 @@ async fn save_story_to_db(
         .set_transact_items(Some(vec![
             TransactWriteItem::builder()
                 .update(user_story.unwrap())
-                .build(),
-            TransactWriteItem::builder()
-                .update(story_metadata.unwrap())
                 .build(),
             TransactWriteItem::builder()
                 .update(story_chapter.unwrap())

@@ -14,7 +14,6 @@ import {
     PromptInput,
     PromptInputAction,
     PromptInputActions,
-    PromptInputTextarea,
 } from '@/components/prompt-kit/prompt-input'
 import { ScrollButton } from '@/components/prompt-kit/scroll-button'
 import { Button } from '@/components/ui/button'
@@ -33,18 +32,31 @@ import {
 import { cn } from '@/lib/utils'
 import {
     ArrowUp,
+    BookMarked,
     Copy,
-    Globe,
-    Mic,
+    Languages,
+    MessageCircleQuestionMark,
     MoreHorizontal,
     Pencil,
-    Plus,
-    PlusIcon,
     Search,
     ThumbsDown,
     ThumbsUp,
     Trash,
 } from 'lucide-react'
+import { CheckIcon, ChevronsUpDownIcon } from "lucide-react"
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from "@/components/ui/command"
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover"
 import { useRef, useState } from 'react'
 
 import { gql } from '@apollo/client'
@@ -88,7 +100,7 @@ type Buckets = {
 };
 
 // Initial chat messages
-const initialMessages = [
+/*const initialMessages = [
     {
         id: 1,
         role: 'user',
@@ -112,6 +124,8 @@ const initialMessages = [
             "Creating a responsive layout with CSS Grid is straightforward. Here's a basic example:\n\n```css\n.container {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));\n  gap: 1rem;\n}\n```\n\nThis creates a grid where:\n- Columns automatically fit as many as possible\n- Each column is at least 250px wide\n- Columns expand to fill available space\n- There's a 1rem gap between items\n\nWould you like me to explain more about how this works?",
     },
 ]
+*/
+const initialMessages: { id: number; role: 'user' | 'assistant'; content: string }[] = []
 
 function ChatSidebar() {
     const { loading, error, data } = useQuery<{ listStories: Story[] }>(LIST_ALL_STORIES)
@@ -164,15 +178,6 @@ function ChatSidebar() {
                 </Button>
             </SidebarHeader>
             <SidebarContent className="pt-4">
-                <div className="px-4">
-                    <Button
-                        variant="outline"
-                        className="mb-4 flex w-full items-center gap-2 text-muted-foreground"
-                    >
-                        <PlusIcon className="size-4" />
-                        <span>New Story</span>
-                    </Button>
-                </div>
                 {conversationHistory.map((group) => (
                     <SidebarGroup key={group.period}>
                         <SidebarGroupLabel>{group.period}</SidebarGroupLabel>
@@ -195,6 +200,104 @@ function ChatContent() {
     const [isLoading, setIsLoading] = useState(false)
     const [chatMessages, setChatMessages] = useState(initialMessages)
     const chatContainerRef = useRef<HTMLDivElement>(null)
+
+    const [openTargetLanguage, setOpenTargetLanguage] = useState(false)
+    const [valueTargetLanguage, setValueTargetLanguage] = useState("")
+
+    const [openExplainLanguage, setOpenExplainLanguage] = useState(false)
+    const [valueExplainLanguage, setValueExplainLanguage] = useState("")
+
+    const [openStoryType, setOpenStoryType] = useState(false)
+    const [valueStoryType, setValueStoryType] = useState("")
+
+    const targetLanguages = [
+        {
+            value: "Ukrainian",
+            label: "Ukrainian",
+        },
+        {
+            value: "Russian",
+            label: "Russian",
+        },
+        {
+            value: "English",
+            label: "English",
+        },
+        {
+            value: "Spanish",
+            label: "Spanish",
+        },
+        {
+            value: "French",
+            label: "French",
+        },
+        {
+            value: "German",
+            label: "German",
+        },
+    ]
+
+    const explainLanguages = [
+        {
+            value: "Ukrainian",
+            label: "Ukrainian",
+        },
+        {
+            value: "Russian",
+            label: "Russian",
+        },
+        {
+            value: "English",
+            label: "English",
+        },
+        {
+            value: "Spanish",
+            label: "Spanish",
+        },
+        {
+            value: "French",
+            label: "French",
+        },
+        {
+            value: "German",
+            label: "German",
+        },
+    ]
+
+    const storyTypes = [
+        {
+            value: "BedtimeStory",
+            label: "Bed Time",
+        },
+        {
+            value: "Adventure",
+            label: "Adventure",
+        },
+        {
+            value: "SciFi",
+            label: "Sci-Fi",
+        },
+        {
+            value: "Fantasy",
+            label: "Fantasy",
+        },
+        {
+            value: "Pirates",
+            label: "Pirates",
+        },
+        {
+            value: "Superheroes",
+            label: "Superheroes",
+        },
+        {
+            value: "Animals",
+            label: "Animals",
+        },
+        {
+            value: "FairyTales",
+            label: "Fairy Tales",
+        },
+    ]
 
     const handleSubmit = () => {
         if (!prompt.trim()) return
@@ -229,7 +332,7 @@ function ChatContent() {
             <header className="bg-background z-10 flex h-16 w-full shrink-0 items-center gap-2 border-b px-4">
                 <SidebarTrigger className="-ml-1" />
                 <div className="text-foreground">
-                    Project roadmap discussion
+                    Start a new story
                 </div>
             </header>
 
@@ -376,57 +479,151 @@ function ChatContent() {
                         className="border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-xs"
                     >
                         <div className="flex flex-col">
-                            <PromptInputTextarea
-                                placeholder="Ask anything"
-                                className="min-h-[44px] pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
-                            />
-
-                            <PromptInputActions className="mt-5 flex w-full items-center justify-between gap-2 px-3 pb-3">
+                            <PromptInputActions className="mt-3 flex w-full items-center justify-between gap-2 px-3 pb-3">
+                                <div className="flex flex-col items-center gap-2">
                                 <div className="flex items-center gap-2">
-                                    <PromptInputAction tooltip="Add a new action">
-                                        <Button
+                                    <Languages size={18} />    
+                                    <Popover open={openTargetLanguage} onOpenChange={setOpenTargetLanguage}>
+                                        <PopoverTrigger asChild>
+                                            <Button
                                             variant="outline"
-                                            size="icon"
-                                            className="size-9 rounded-full"
-                                        >
-                                            <Plus size={18} />
-                                        </Button>
-                                    </PromptInputAction>
-
-                                    <PromptInputAction tooltip="Search">
-                                        <Button
-                                            variant="outline"
-                                            className="rounded-full"
-                                        >
-                                            <Globe size={18} />
-                                            Search
-                                        </Button>
-                                    </PromptInputAction>
-
-                                    <PromptInputAction tooltip="More actions">
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            className="size-9 rounded-full"
-                                        >
-                                            <MoreHorizontal size={18} />
-                                        </Button>
-                                    </PromptInputAction>
+                                            role="combobox"
+                                            aria-expanded={openTargetLanguage}
+                                            className="w-[250px] justify-between"
+                                            >
+                                            {valueTargetLanguage
+                                                ? targetLanguages.find((language) => language.value === valueTargetLanguage)?.label
+                                                : "Select target language..."}
+                                            <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-[200px] p-0">
+                                            <Command>
+                                            <CommandInput placeholder="Language..." />
+                                            <CommandList>
+                                                <CommandEmpty>No language found.</CommandEmpty>
+                                                <CommandGroup>
+                                                {targetLanguages.map((language) => (
+                                                    <CommandItem
+                                                    key={language.value}
+                                                    value={language.value}
+                                                    onSelect={(currentValue) => {
+                                                        setValueTargetLanguage(currentValue === valueTargetLanguage ? "" : currentValue)
+                                                        setOpenTargetLanguage(false)
+                                                    }}
+                                                    >
+                                                    <CheckIcon
+                                                        className={cn(
+                                                        "mr-2 h-4 w-4",
+                                                        valueTargetLanguage === language.value ? "opacity-100" : "opacity-0"
+                                                        )}
+                                                    />
+                                                    {language.label}
+                                                    </CommandItem>
+                                                ))}
+                                                </CommandGroup>
+                                            </CommandList>
+                                            </Command>
+                                        </PopoverContent>
+                                        </Popover>                                    
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <MessageCircleQuestionMark size={18} />
+                                        <Popover open={openExplainLanguage} onOpenChange={setOpenExplainLanguage}>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                variant="outline"
+                                                role="combobox"
+                                                aria-expanded={openExplainLanguage}
+                                                className="w-[250px] justify-between"
+                                                >
+                                                {valueExplainLanguage
+                                                    ? explainLanguages.find((language) => language.value === valueExplainLanguage)?.label
+                                                    : "Select explain language..."}
+                                                <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-[200px] p-0">
+                                                <Command>
+                                                <CommandInput placeholder="Language..." />
+                                                <CommandList>
+                                                    <CommandEmpty>No language found.</CommandEmpty>
+                                                    <CommandGroup>
+                                                    {explainLanguages.map((language) => (
+                                                        <CommandItem
+                                                        key={language.value}
+                                                        value={language.value}
+                                                        onSelect={(currentValue) => {
+                                                            setValueExplainLanguage(currentValue === valueExplainLanguage ? "" : currentValue)
+                                                            setOpenExplainLanguage(false)
+                                                        }}
+                                                        >
+                                                        <CheckIcon
+                                                            className={cn(
+                                                            "mr-2 h-4 w-4",
+                                                            valueExplainLanguage === language.value ? "opacity-100" : "opacity-0"
+                                                            )}
+                                                        />
+                                                        {language.label}
+                                                        </CommandItem>
+                                                    ))}
+                                                    </CommandGroup>
+                                                </CommandList>
+                                                </Command>
+                                            </PopoverContent>
+                                        </Popover>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <BookMarked size={18} />
+                                        <Popover open={openStoryType} onOpenChange={setOpenStoryType}>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                variant="outline"
+                                                role="combobox"
+                                                aria-expanded={openStoryType}
+                                                className="w-[250px] justify-between"
+                                                >
+                                                {valueStoryType
+                                                    ? storyTypes.find((story) => story.value === valueStoryType)?.label
+                                                    : "Select story type..."}
+                                                <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-[200px] p-0">
+                                                <Command>
+                                                <CommandInput placeholder="Story..." />
+                                                <CommandList>
+                                                    <CommandEmpty>No story found.</CommandEmpty>
+                                                    <CommandGroup>
+                                                    {storyTypes.map((story) => (
+                                                        <CommandItem
+                                                        key={story.value}
+                                                        value={story.value}
+                                                        onSelect={(currentValue) => {
+                                                            setValueStoryType(currentValue === valueStoryType ? "" : currentValue)
+                                                            setOpenStoryType(false)
+                                                        }}
+                                                        >
+                                                        <CheckIcon
+                                                            className={cn(
+                                                            "mr-2 h-4 w-4",
+                                                            valueStoryType === story.value ? "opacity-100" : "opacity-0"
+                                                            )}
+                                                        />
+                                                        {story.label}
+                                                        </CommandItem>
+                                                    ))}
+                                                    </CommandGroup>
+                                                </CommandList>
+                                                </Command>
+                                            </PopoverContent>
+                                        </Popover>
+                                    </div>                                    
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <PromptInputAction tooltip="Voice input">
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            className="size-9 rounded-full"
-                                        >
-                                            <Mic size={18} />
-                                        </Button>
-                                    </PromptInputAction>
-
                                     <Button
                                         size="icon"
-                                        disabled={!prompt.trim() || isLoading}
+                                        disabled={!valueExplainLanguage.trim() || !valueTargetLanguage || !valueStoryType.trim() || isLoading}
                                         onClick={handleSubmit}
                                         className="size-9 rounded-full"
                                     >

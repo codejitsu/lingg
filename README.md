@@ -44,6 +44,7 @@ cargo lambda build --workspace --release
 - pnpm dlx shadcn@latest add command popover
 - pnpm add tailwindcss @tailwindcss/vite
 - https://www.prompt-kit.com/docs/installation
+- pnpm dlx shadcn add "https://prompt-kit.com/c/scroll-button.json"
 - pnpm add -D prettier eslint eslint-config-prettier eslint-plugin-react eslint-plugin-react-hooks
 
 ## local development

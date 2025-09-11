@@ -8,11 +8,11 @@ import {
     Message,
     MessageAction,
     MessageActions,
+    MessageAvatar,
     MessageContent,
 } from '@/components/prompt-kit/message'
 import {
     PromptInput,
-    PromptInputAction,
     PromptInputActions,
 } from '@/components/prompt-kit/prompt-input'
 import { ScrollButton } from '@/components/prompt-kit/scroll-button'
@@ -36,7 +36,6 @@ import {
     Copy,
     Languages,
     MessageCircleQuestionMark,
-    MoreHorizontal,
     Pencil,
     Search,
     ThumbsDown,
@@ -57,10 +56,12 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover"
+import { Loader } from "@/components/prompt-kit/loader"
 import { useRef, useState } from 'react'
 
 import { gql } from '@apollo/client'
-import { useQuery } from '@apollo/client/react'
+import { useQuery, useMutation } from '@apollo/client/react'
+import { v4 as uuidv4 } from 'uuid'
 
 // TODO - replace with real user ID from auth context
 const userId = 'f257727e-94ab-44ac-aa0e-c4d51a0d67ac'
@@ -76,6 +77,37 @@ const LIST_ALL_STORIES = gql`
             targetLanguage
             title
             userId
+        }
+    }
+`
+
+// GraphQL mutation to start a new story
+const START_STORY = gql`
+    mutation StartStory($userId: ID!, $clientRequestId: ID!, $targetLanguage: LanguageName!, $explainLanguage: LanguageName!, $storyType: StoryType!) {
+        startStory(
+                args: {
+                    userId: $userId, clientRequestId: $clientRequestId, 
+                    targetLanguage: $targetLanguage, explainLanguage: $explainLanguage, storyType: $storyType
+                }
+        ) {
+            explainLanguage
+            startedAt
+            storyId
+            storyType
+            targetLanguage
+            title
+            userId
+            chapters {
+                chapterId
+                content
+                createdAt
+                storyId
+                template
+                placeholders {
+                    name
+                    text
+                }
+            }
         }
     }
 `
@@ -196,6 +228,13 @@ function ChatSidebar() {
 }
 
 function ChatContent() {
+    type StartStoryResult = {
+        startStory: {
+            chapters: { content: string }[]
+        }
+    }
+    const [startStory] = useMutation<StartStoryResult>(START_STORY)
+
     const [prompt, setPrompt] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [chatMessages, setChatMessages] = useState(initialMessages)
@@ -209,6 +248,8 @@ function ChatContent() {
 
     const [openStoryType, setOpenStoryType] = useState(false)
     const [valueStoryType, setValueStoryType] = useState("")
+
+    const [isTyping, setIsTyping] = useState(false)
 
     const targetLanguages = [
         {
@@ -299,32 +340,55 @@ function ChatContent() {
         },
     ]
 
-    const handleSubmit = () => {
-        if (!prompt.trim()) return
+    const handleSubmit = async () => {
+        if (
+            !valueTargetLanguage.trim() ||
+            !valueExplainLanguage.trim() ||
+            !valueStoryType.trim()
+        ) return
 
-        setPrompt('')
         setIsLoading(true)
+        setIsTyping(true)
 
-        // Add user message immediately
-        const newUserMessage = {
-            id: chatMessages.length + 1,
-            role: 'user',
-            content: prompt.trim(),
-        }
+        try {
+            const { data } = await startStory({
+                variables: {
+                    userId,
+                    clientRequestId: uuidv4(),
+                    targetLanguage: valueTargetLanguage,
+                    explainLanguage: valueExplainLanguage,
+                    storyType: valueStoryType,
+                },
+            })
 
-        setChatMessages([...chatMessages, newUserMessage])
-
-        // Simulate API response
-        setTimeout(() => {
-            const assistantResponse = {
-                id: chatMessages.length + 2,
-                role: 'assistant',
-                content: `This is a response to: "${prompt.trim()}"`,
+            // Optionally, you can display the story or its first chapter as a message
+            if (data?.startStory?.chapters?.[0]?.content) {
+                setChatMessages((prev) => [
+                    ...prev,
+                    {
+                        id: prev.length + 1,
+                        role: 'assistant',
+                        content: data.startStory.chapters[0].content,
+                    },
+                ])
             }
-
-            setChatMessages((prev) => [...prev, assistantResponse])
+        } catch (error: unknown) {
+            let errorMessage = "Unknown error";
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            }
+            setChatMessages((prev) => [
+                ...prev,
+                {
+                    id: prev.length + 1,
+                    role: 'assistant',
+                    content: `Failed to start story: ${errorMessage}`,
+                },
+            ])
+        } finally {
+            setIsTyping(false)
             setIsLoading(false)
-        }, 1500)
+        }
     }
 
     return (
@@ -358,9 +422,9 @@ function ChatContent() {
                                     )}
                                 >
                                     {isAssistant ? (
-                                        <div className="group flex w-full flex-col gap-0">
+                                        <div className="group flex w-full flex-col gap-0">                                
                                             <MessageContent
-                                                className="text-foreground prose flex-1 rounded-lg bg-transparent p-0 text-left"
+                                                className="text-secondary-foreground prose flex-1 rounded-lg bg-secondary text-left p-3"
                                                 markdown
                                             >
                                                 {message.content}
@@ -471,6 +535,11 @@ function ChatContent() {
 
             <div className="bg-background z-10 shrink-0 px-3 pb-3 md:px-5 md:pb-5">
                 <div className="mx-auto max-w-3xl">
+                    <div
+                        className="flex flex-col items-end gap-2 p-4"
+                    >
+                        <Loader variant="dots" className={isTyping ? '' : 'hidden'} />
+                    </div>                    
                     <PromptInput
                         isLoading={isLoading}
                         value={prompt}

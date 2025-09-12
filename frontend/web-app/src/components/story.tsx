@@ -8,7 +8,6 @@ import {
     Message,
     MessageAction,
     MessageActions,
-    MessageAvatar,
     MessageContent,
 } from '@/components/prompt-kit/message'
 import {
@@ -38,7 +37,6 @@ import {
     Languages,
     MessageCircleQuestionMark,
     Pencil,
-    Search,
     ThumbsDown,
     ThumbsUp,
     Trash,

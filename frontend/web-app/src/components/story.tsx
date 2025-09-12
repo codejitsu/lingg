@@ -58,7 +58,7 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover"
 import { Loader } from "@/components/prompt-kit/loader"
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 
 import { gql } from '@apollo/client'
 import { useQuery, useMutation } from '@apollo/client/react'
@@ -160,12 +160,7 @@ type Buckets = {
 */
 const initialMessages: { id: number; role: 'user' | 'assistant'; content: string }[] = []
 
-function ChatSidebar() {
-    const { loading, error, data } = useQuery<{ listStories: Story[] }>(LIST_ALL_STORIES)
-
-    if (error) return <p>Error loading stories: {error.message}</p>
-    if (loading) return <p>Loading stories...</p>
-
+function ChatSidebar({ stories }: { stories: Story[] }) {
     const buckets: Buckets = {
         today: { period: 'Today', stories: [] },
         yesterday: { period: 'Yesterday', stories: [] },
@@ -176,7 +171,7 @@ function ChatSidebar() {
 
     const now = new Date();
 
-    for (const story of data?.listStories || []) {
+    for (const story of stories) {
         const startedAt = new Date(story.startedAt);
         const diffTime = Math.abs(now.getTime() - startedAt.getTime());
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -210,14 +205,11 @@ function ChatSidebar() {
                         </span>
                     </div>
                 </div>
-                <Button variant="ghost" className="size-8">
-                    <Search className="size-4" />
-                </Button>
             </SidebarHeader>
             <SidebarContent className="pt-4">
                 {conversationHistory.map((group) => (
                     <SidebarGroup key={group.period}>
-                        <SidebarGroupLabel>{group.period}</SidebarGroupLabel>
+                        <SidebarGroupLabel className="text-md">{group.period}</SidebarGroupLabel>
                         <SidebarMenu>
                             {group.stories.map((story) => (
                                 <SidebarMenuButton key={story.storyId} className="text-muted-foreground">
@@ -232,10 +224,12 @@ function ChatSidebar() {
     )
 }
 
-function ChatContent() {
+function ChatContent({ onNewStory }: { onNewStory: (story: Story) => void }) {
     type StartStoryResult = {
         startStory: {
+            storyId: string,
             title: string,
+            startedAt: string,
             chapters: { content: string }[]
         }
     }
@@ -385,6 +379,15 @@ function ChatContent() {
             if (data?.startStory?.title) {
                 setTitle(data.startStory.title)
             }
+
+            // Add the new story to the top of the list
+            if (data?.startStory) {
+                onNewStory({
+                    storyId: data.startStory.storyId,
+                    title: data.startStory.title,
+                    startedAt: data.startStory.startedAt,
+                })
+            }            
         } catch (error: unknown) {
             let errorMessage = "Unknown error";
             if (error instanceof Error) {
@@ -726,11 +729,26 @@ function ChatContent() {
 }
 
 function FullChatApp() {
+    const [stories, setStories] = useState<Story[]>([])
+    const { data } = useQuery<{ listStories: Story[] }>(LIST_ALL_STORIES)
+
+    // On initial load, set stories from server
+    useEffect(() => {
+        if (data?.listStories) {
+            setStories(data.listStories)
+        }
+    }, [data])
+
+    // Handler to add new story to the top
+    const handleNewStory = (story: Story) => {
+        setStories(prev => [story, ...prev])
+    }
+
     return (
         <SidebarProvider>
-            <ChatSidebar />
+            <ChatSidebar stories={stories}/>
             <SidebarInset>
-                <ChatContent />
+                <ChatContent onNewStory={handleNewStory} />
             </SidebarInset>
         </SidebarProvider>
     )

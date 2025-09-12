@@ -161,6 +161,12 @@ type Buckets = {
 const initialMessages: { id: number; role: 'user' | 'assistant'; content: string }[] = []
 
 function ChatSidebar({ stories, newStoryId }: { stories: Story[]; newStoryId?: string }) {
+    const [hidden, setHidden] = useState(false);
+
+    useEffect(() => {
+        if (newStoryId) setHidden(false);
+    }, [newStoryId]);
+
     const buckets: Buckets = {
         today: { period: 'Today', stories: [] },
         yesterday: { period: 'Yesterday', stories: [] },
@@ -192,6 +198,10 @@ function ChatSidebar({ stories, newStoryId }: { stories: Story[]; newStoryId?: s
     const conversationHistory = [buckets.today, buckets.yesterday, buckets.last7days, 
         buckets.lastMonth, buckets.everythingElse].filter(bucket => bucket.stories.length > 0);
 
+    useEffect(() => {
+        if (newStoryId) setTimeout(() => setHidden(true), 5000);
+    }, [newStoryId]);
+
     return (
         <Sidebar>
             <SidebarHeader className="flex flex-row items-center justify-between gap-2 px-2 py-4">
@@ -217,7 +227,7 @@ function ChatSidebar({ stories, newStoryId }: { stories: Story[]; newStoryId?: s
                                     className="text-muted-foreground flex items-center justify-between"
                                 >
                                     <span>{story.title}</span>
-                                    {story.storyId === newStoryId && (
+                                    {story.storyId === newStoryId && !hidden && (
                                         <span className="ml-2 text-xs font-semibold text-green-700 bg-green-200 rounded px-2 py-0.5 animate-pulse">
                                             New
                                         </span>
@@ -744,7 +754,11 @@ function FullChatApp() {
     // On initial load, set stories from server
     useEffect(() => {
         if (data?.listStories) {
-            setStories(data.listStories)
+            // Sort stories by startedAt descending (newest first)
+            const sortedStories = [...data.listStories].sort(
+                (a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime()
+            );
+            setStories(sortedStories)
         }
     }, [data])
 

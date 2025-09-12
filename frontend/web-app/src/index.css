@@ -5,15 +5,17 @@
 
 @theme inline {
     --animate-bounce-dots: bounce-dots 1.4s ease-in-out infinite;
-    
+
     @keyframes bounce-dots {
-        0%, 80%, 100% {
+        0%,
+        80%,
+        100% {
             transform: scale(0.8);
             opacity: 0.5;
         }
         40% {
-            transform: scale(1.0);
-            opacity: 1.0;
+            transform: scale(1);
+            opacity: 1;
         }
     }
 

@@ -41,7 +41,7 @@ import {
     ThumbsUp,
     Trash,
 } from 'lucide-react'
-import { CheckIcon, ChevronsUpDownIcon } from "lucide-react"
+import { CheckIcon, ChevronsUpDownIcon } from 'lucide-react'
 import {
     Command,
     CommandEmpty,
@@ -49,13 +49,13 @@ import {
     CommandInput,
     CommandItem,
     CommandList,
-} from "@/components/ui/command"
+} from '@/components/ui/command'
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
-} from "@/components/ui/popover"
-import { Loader } from "@/components/prompt-kit/loader"
+} from '@/components/ui/popover'
+import { Loader } from '@/components/prompt-kit/loader'
 import { useRef, useState, useEffect } from 'react'
 
 import { gql } from '@apollo/client'
@@ -82,12 +82,21 @@ const LIST_ALL_STORIES = gql`
 
 // GraphQL mutation to start a new story
 const START_STORY = gql`
-    mutation StartStory($userId: ID!, $clientRequestId: ID!, $targetLanguage: LanguageName!, $explainLanguage: LanguageName!, $storyType: StoryType!) {
+    mutation StartStory(
+        $userId: ID!
+        $clientRequestId: ID!
+        $targetLanguage: LanguageName!
+        $explainLanguage: LanguageName!
+        $storyType: StoryType!
+    ) {
         startStory(
-                args: {
-                    userId: $userId, clientRequestId: $clientRequestId, 
-                    targetLanguage: $targetLanguage, explainLanguage: $explainLanguage, storyType: $storyType
-                }
+            args: {
+                userId: $userId
+                clientRequestId: $clientRequestId
+                targetLanguage: $targetLanguage
+                explainLanguage: $explainLanguage
+                storyType: $storyType
+            }
         ) {
             explainLanguage
             startedAt
@@ -112,23 +121,23 @@ const START_STORY = gql`
 `
 
 type Story = {
-    startedAt: string;
-    storyId: string;
-    title: string;
-};
+    startedAt: string
+    storyId: string
+    title: string
+}
 
 type Period = {
-    period: string;
-    stories: Story[];
-};
+    period: string
+    stories: Story[]
+}
 
 type Buckets = {
-    today: Period;
-    yesterday: Period;
-    last7days: Period;
-    lastMonth: Period;
-    everythingElse: Period;
-};
+    today: Period
+    yesterday: Period
+    last7days: Period
+    lastMonth: Period
+    everythingElse: Period
+}
 
 // Initial chat messages
 /*const initialMessages = [
@@ -156,14 +165,24 @@ type Buckets = {
     },
 ]
 */
-const initialMessages: { id: number; role: 'user' | 'assistant'; content: string }[] = []
+const initialMessages: {
+    id: number
+    role: 'user' | 'assistant'
+    content: string
+}[] = []
 
-function ChatSidebar({ stories, newStoryId }: { stories: Story[]; newStoryId?: string }) {
-    const [hidden, setHidden] = useState(false);
+function ChatSidebar({
+    stories,
+    newStoryId,
+}: {
+    stories: Story[]
+    newStoryId?: string
+}) {
+    const [hidden, setHidden] = useState(false)
 
     useEffect(() => {
-        if (newStoryId) setHidden(false);
-    }, [newStoryId]);
+        if (newStoryId) setHidden(false)
+    }, [newStoryId])
 
     const buckets: Buckets = {
         today: { period: 'Today', stories: [] },
@@ -171,34 +190,39 @@ function ChatSidebar({ stories, newStoryId }: { stories: Story[]; newStoryId?: s
         last7days: { period: 'Last 7 days', stories: [] },
         lastMonth: { period: 'Last month', stories: [] },
         everythingElse: { period: 'Older than a month', stories: [] },
-    };
+    }
 
-    const now = new Date();
+    const now = new Date()
 
     for (const story of stories) {
-        const startedAt = new Date(story.startedAt);
-        const diffTime = Math.abs(now.getTime() - startedAt.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const startedAt = new Date(story.startedAt)
+        const diffTime = Math.abs(now.getTime() - startedAt.getTime())
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 
         if (diffDays === 0) {
-            buckets.today.stories.push(story);
+            buckets.today.stories.push(story)
         } else if (diffDays === 1) {
-            buckets.yesterday.stories.push(story);
+            buckets.yesterday.stories.push(story)
         } else if (diffDays <= 7) {
-            buckets.last7days.stories.push(story);
+            buckets.last7days.stories.push(story)
         } else if (diffDays <= 30) {
-            buckets.lastMonth.stories.push(story);
+            buckets.lastMonth.stories.push(story)
         } else {
-            buckets.everythingElse.stories.push(story);
+            buckets.everythingElse.stories.push(story)
         }
     }
 
-    const conversationHistory = [buckets.today, buckets.yesterday, buckets.last7days, 
-        buckets.lastMonth, buckets.everythingElse].filter(bucket => bucket.stories.length > 0);
+    const conversationHistory = [
+        buckets.today,
+        buckets.yesterday,
+        buckets.last7days,
+        buckets.lastMonth,
+        buckets.everythingElse,
+    ].filter((bucket) => bucket.stories.length > 0)
 
     useEffect(() => {
-        if (newStoryId) setTimeout(() => setHidden(true), 5000);
-    }, [newStoryId]);
+        if (newStoryId) setTimeout(() => setHidden(true), 5000)
+    }, [newStoryId])
 
     return (
         <Sidebar>
@@ -217,19 +241,22 @@ function ChatSidebar({ stories, newStoryId }: { stories: Story[]; newStoryId?: s
             <SidebarContent className="pt-4">
                 {conversationHistory.map((group) => (
                     <SidebarGroup key={group.period}>
-                        <SidebarGroupLabel className="text-md">{group.period}</SidebarGroupLabel>
+                        <SidebarGroupLabel className="text-md">
+                            {group.period}
+                        </SidebarGroupLabel>
                         <SidebarMenu>
                             {group.stories.map((story) => (
-                                <SidebarMenuButton 
+                                <SidebarMenuButton
                                     key={story.storyId}
                                     className="text-muted-foreground flex items-center justify-between"
                                 >
                                     <span>{story.title}</span>
-                                    {story.storyId === newStoryId && !hidden && (
-                                        <span className="ml-2 text-xs font-semibold text-green-700 bg-green-200 rounded px-2 py-0.5 animate-pulse">
-                                            New
-                                        </span>
-                                    )}                                    
+                                    {story.storyId === newStoryId &&
+                                        !hidden && (
+                                            <span className="ml-2 text-xs font-semibold text-green-700 bg-green-200 rounded px-2 py-0.5 animate-pulse">
+                                                New
+                                            </span>
+                                        )}
                                 </SidebarMenuButton>
                             ))}
                         </SidebarMenu>
@@ -243,9 +270,9 @@ function ChatSidebar({ stories, newStoryId }: { stories: Story[]; newStoryId?: s
 function ChatContent({ onNewStory }: { onNewStory: (story: Story) => void }) {
     type StartStoryResult = {
         startStory: {
-            storyId: string,
-            title: string,
-            startedAt: string,
+            storyId: string
+            title: string
+            startedAt: string
             chapters: { content: string }[]
         }
     }
@@ -257,104 +284,104 @@ function ChatContent({ onNewStory }: { onNewStory: (story: Story) => void }) {
     const chatContainerRef = useRef<HTMLDivElement>(null)
 
     const [openTargetLanguage, setOpenTargetLanguage] = useState(false)
-    const [valueTargetLanguage, setValueTargetLanguage] = useState("")
+    const [valueTargetLanguage, setValueTargetLanguage] = useState('')
 
     const [openExplainLanguage, setOpenExplainLanguage] = useState(false)
-    const [valueExplainLanguage, setValueExplainLanguage] = useState("")
+    const [valueExplainLanguage, setValueExplainLanguage] = useState('')
 
     const [openStoryType, setOpenStoryType] = useState(false)
-    const [valueStoryType, setValueStoryType] = useState("")
+    const [valueStoryType, setValueStoryType] = useState('')
 
     const [isTyping, setIsTyping] = useState(false)
 
-    const [title, setTitle] = useState("Start a new story")
+    const [title, setTitle] = useState('Start a new story')
 
     const targetLanguages = [
         {
-            value: "Ukrainian",
-            label: "Ukrainian",
+            value: 'Ukrainian',
+            label: 'Ukrainian',
         },
         {
-            value: "Russian",
-            label: "Russian",
+            value: 'Russian',
+            label: 'Russian',
         },
         {
-            value: "English",
-            label: "English",
+            value: 'English',
+            label: 'English',
         },
         {
-            value: "Spanish",
-            label: "Spanish",
+            value: 'Spanish',
+            label: 'Spanish',
         },
         {
-            value: "French",
-            label: "French",
+            value: 'French',
+            label: 'French',
         },
         {
-            value: "German",
-            label: "German",
+            value: 'German',
+            label: 'German',
         },
     ]
 
     const explainLanguages = [
         {
-            value: "Ukrainian",
-            label: "Ukrainian",
+            value: 'Ukrainian',
+            label: 'Ukrainian',
         },
         {
-            value: "Russian",
-            label: "Russian",
+            value: 'Russian',
+            label: 'Russian',
         },
         {
-            value: "English",
-            label: "English",
+            value: 'English',
+            label: 'English',
         },
         {
-            value: "Spanish",
-            label: "Spanish",
+            value: 'Spanish',
+            label: 'Spanish',
         },
         {
-            value: "French",
-            label: "French",
+            value: 'French',
+            label: 'French',
         },
         {
-            value: "German",
-            label: "German",
+            value: 'German',
+            label: 'German',
         },
     ]
 
     const storyTypes = [
         {
-            value: "BedtimeStory",
-            label: "Bed Time",
+            value: 'BedtimeStory',
+            label: 'Bed Time',
         },
         {
-            value: "Adventure",
-            label: "Adventure",
+            value: 'Adventure',
+            label: 'Adventure',
         },
         {
-            value: "SciFi",
-            label: "Sci-Fi",
+            value: 'SciFi',
+            label: 'Sci-Fi',
         },
         {
-            value: "Fantasy",
-            label: "Fantasy",
+            value: 'Fantasy',
+            label: 'Fantasy',
         },
         {
-            value: "Pirates",
-            label: "Pirates",
+            value: 'Pirates',
+            label: 'Pirates',
         },
         {
-            value: "Superheroes",
-            label: "Superheroes",
+            value: 'Superheroes',
+            label: 'Superheroes',
         },
         {
-            value: "Animals",
-            label: "Animals",
+            value: 'Animals',
+            label: 'Animals',
         },
         {
-            value: "FairyTales",
-            label: "Fairy Tales",
+            value: 'FairyTales',
+            label: 'Fairy Tales',
         },
     ]
 
@@ -363,7 +390,8 @@ function ChatContent({ onNewStory }: { onNewStory: (story: Story) => void }) {
             !valueTargetLanguage.trim() ||
             !valueExplainLanguage.trim() ||
             !valueStoryType.trim()
-        ) return
+        )
+            return
 
         setIsLoading(true)
         setIsTyping(true)
@@ -403,11 +431,11 @@ function ChatContent({ onNewStory }: { onNewStory: (story: Story) => void }) {
                     title: data.startStory.title,
                     startedAt: data.startStory.startedAt,
                 })
-            }            
+            }
         } catch (error: unknown) {
-            let errorMessage = "Unknown error";
+            let errorMessage = 'Unknown error'
             if (error instanceof Error) {
-                errorMessage = error.message;
+                errorMessage = error.message
             }
             setChatMessages((prev) => [
                 ...prev,
@@ -427,9 +455,7 @@ function ChatContent({ onNewStory }: { onNewStory: (story: Story) => void }) {
         <main className="flex h-[95%] w-full flex-col overflow-hidden">
             <header className="bg-background z-10 flex h-16 w-full shrink-0 items-center gap-2 border-b px-4">
                 <SidebarTrigger className="-ml-1" />
-                <div className="text-foreground">
-                    { title }
-                </div>
+                <div className="text-foreground">{title}</div>
             </header>
 
             <div
@@ -454,7 +480,7 @@ function ChatContent({ onNewStory }: { onNewStory: (story: Story) => void }) {
                                     )}
                                 >
                                     {isAssistant ? (
-                                        <div className="group flex w-full flex-col gap-0">                                
+                                        <div className="group flex w-full flex-col gap-0">
                                             <MessageContent
                                                 className="text-secondary-foreground prose flex-1 rounded-lg bg-secondary text-left p-3"
                                                 markdown
@@ -567,11 +593,12 @@ function ChatContent({ onNewStory }: { onNewStory: (story: Story) => void }) {
 
             <div className="bg-background z-10 shrink-0 px-3 pb-3 md:px-5 md:pb-5">
                 <div className="mx-auto max-w-3xl">
-                    <div
-                        className="flex flex-col items-end gap-2 p-4"
-                    >
-                        <Loader variant="dots" className={isTyping ? '' : 'hidden'} />
-                    </div>                    
+                    <div className="flex flex-col items-end gap-2 p-4">
+                        <Loader
+                            variant="dots"
+                            className={isTyping ? '' : 'hidden'}
+                        />
+                    </div>
                     <PromptInput
                         isLoading={isLoading}
                         value={prompt}
@@ -582,149 +609,249 @@ function ChatContent({ onNewStory }: { onNewStory: (story: Story) => void }) {
                         <div className="flex flex-col">
                             <PromptInputActions className="mt-3 flex w-full items-center justify-between gap-2 px-3 pb-3">
                                 <div className="flex flex-col items-center gap-2">
-                                <div className="flex items-center gap-2">
-                                    <Languages size={18} />    
-                                    <Popover open={openTargetLanguage} onOpenChange={setOpenTargetLanguage}>
-                                        <PopoverTrigger asChild>
-                                            <Button
-                                            variant="outline"
-                                            role="combobox"
-                                            aria-expanded={openTargetLanguage}
-                                            className="w-[250px] justify-between"
-                                            >
-                                            {valueTargetLanguage
-                                                ? targetLanguages.find((language) => language.value === valueTargetLanguage)?.label
-                                                : "Select target language..."}
-                                            <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-[200px] p-0">
-                                            <Command>
-                                            <CommandInput placeholder="Language..." />
-                                            <CommandList>
-                                                <CommandEmpty>No language found.</CommandEmpty>
-                                                <CommandGroup>
-                                                {targetLanguages.map((language) => (
-                                                    <CommandItem
-                                                    key={language.value}
-                                                    value={language.value}
-                                                    onSelect={(currentValue) => {
-                                                        setValueTargetLanguage(currentValue === valueTargetLanguage ? "" : currentValue)
-                                                        setOpenTargetLanguage(false)
-                                                    }}
-                                                    >
-                                                    <CheckIcon
-                                                        className={cn(
-                                                        "mr-2 h-4 w-4",
-                                                        valueTargetLanguage === language.value ? "opacity-100" : "opacity-0"
-                                                        )}
-                                                    />
-                                                    {language.label}
-                                                    </CommandItem>
-                                                ))}
-                                                </CommandGroup>
-                                            </CommandList>
-                                            </Command>
-                                        </PopoverContent>
-                                        </Popover>                                    
-                                    </div>
                                     <div className="flex items-center gap-2">
-                                        <MessageCircleQuestionMark size={18} />
-                                        <Popover open={openExplainLanguage} onOpenChange={setOpenExplainLanguage}>
+                                        <Languages size={18} />
+                                        <Popover
+                                            open={openTargetLanguage}
+                                            onOpenChange={setOpenTargetLanguage}
+                                        >
                                             <PopoverTrigger asChild>
                                                 <Button
-                                                variant="outline"
-                                                role="combobox"
-                                                aria-expanded={openExplainLanguage}
-                                                className="w-[250px] justify-between"
+                                                    variant="outline"
+                                                    role="combobox"
+                                                    aria-expanded={
+                                                        openTargetLanguage
+                                                    }
+                                                    className="w-[250px] justify-between"
                                                 >
-                                                {valueExplainLanguage
-                                                    ? explainLanguages.find((language) => language.value === valueExplainLanguage)?.label
-                                                    : "Select explain language..."}
-                                                <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                    {valueTargetLanguage
+                                                        ? targetLanguages.find(
+                                                              (language) =>
+                                                                  language.value ===
+                                                                  valueTargetLanguage,
+                                                          )?.label
+                                                        : 'Select target language...'}
+                                                    <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                                 </Button>
                                             </PopoverTrigger>
                                             <PopoverContent className="w-[200px] p-0">
                                                 <Command>
-                                                <CommandInput placeholder="Language..." />
-                                                <CommandList>
-                                                    <CommandEmpty>No language found.</CommandEmpty>
-                                                    <CommandGroup>
-                                                    {explainLanguages.map((language) => (
-                                                        <CommandItem
-                                                        key={language.value}
-                                                        value={language.value}
-                                                        onSelect={(currentValue) => {
-                                                            setValueExplainLanguage(currentValue === valueExplainLanguage ? "" : currentValue)
-                                                            setOpenExplainLanguage(false)
-                                                        }}
-                                                        >
-                                                        <CheckIcon
-                                                            className={cn(
-                                                            "mr-2 h-4 w-4",
-                                                            valueExplainLanguage === language.value ? "opacity-100" : "opacity-0"
+                                                    <CommandInput placeholder="Language..." />
+                                                    <CommandList>
+                                                        <CommandEmpty>
+                                                            No language found.
+                                                        </CommandEmpty>
+                                                        <CommandGroup>
+                                                            {targetLanguages.map(
+                                                                (language) => (
+                                                                    <CommandItem
+                                                                        key={
+                                                                            language.value
+                                                                        }
+                                                                        value={
+                                                                            language.value
+                                                                        }
+                                                                        onSelect={(
+                                                                            currentValue,
+                                                                        ) => {
+                                                                            setValueTargetLanguage(
+                                                                                currentValue ===
+                                                                                    valueTargetLanguage
+                                                                                    ? ''
+                                                                                    : currentValue,
+                                                                            )
+                                                                            setOpenTargetLanguage(
+                                                                                false,
+                                                                            )
+                                                                        }}
+                                                                    >
+                                                                        <CheckIcon
+                                                                            className={cn(
+                                                                                'mr-2 h-4 w-4',
+                                                                                valueTargetLanguage ===
+                                                                                    language.value
+                                                                                    ? 'opacity-100'
+                                                                                    : 'opacity-0',
+                                                                            )}
+                                                                        />
+                                                                        {
+                                                                            language.label
+                                                                        }
+                                                                    </CommandItem>
+                                                                ),
                                                             )}
-                                                        />
-                                                        {language.label}
-                                                        </CommandItem>
-                                                    ))}
-                                                    </CommandGroup>
-                                                </CommandList>
+                                                        </CommandGroup>
+                                                    </CommandList>
+                                                </Command>
+                                            </PopoverContent>
+                                        </Popover>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <MessageCircleQuestionMark size={18} />
+                                        <Popover
+                                            open={openExplainLanguage}
+                                            onOpenChange={
+                                                setOpenExplainLanguage
+                                            }
+                                        >
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    role="combobox"
+                                                    aria-expanded={
+                                                        openExplainLanguage
+                                                    }
+                                                    className="w-[250px] justify-between"
+                                                >
+                                                    {valueExplainLanguage
+                                                        ? explainLanguages.find(
+                                                              (language) =>
+                                                                  language.value ===
+                                                                  valueExplainLanguage,
+                                                          )?.label
+                                                        : 'Select explain language...'}
+                                                    <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-[200px] p-0">
+                                                <Command>
+                                                    <CommandInput placeholder="Language..." />
+                                                    <CommandList>
+                                                        <CommandEmpty>
+                                                            No language found.
+                                                        </CommandEmpty>
+                                                        <CommandGroup>
+                                                            {explainLanguages.map(
+                                                                (language) => (
+                                                                    <CommandItem
+                                                                        key={
+                                                                            language.value
+                                                                        }
+                                                                        value={
+                                                                            language.value
+                                                                        }
+                                                                        onSelect={(
+                                                                            currentValue,
+                                                                        ) => {
+                                                                            setValueExplainLanguage(
+                                                                                currentValue ===
+                                                                                    valueExplainLanguage
+                                                                                    ? ''
+                                                                                    : currentValue,
+                                                                            )
+                                                                            setOpenExplainLanguage(
+                                                                                false,
+                                                                            )
+                                                                        }}
+                                                                    >
+                                                                        <CheckIcon
+                                                                            className={cn(
+                                                                                'mr-2 h-4 w-4',
+                                                                                valueExplainLanguage ===
+                                                                                    language.value
+                                                                                    ? 'opacity-100'
+                                                                                    : 'opacity-0',
+                                                                            )}
+                                                                        />
+                                                                        {
+                                                                            language.label
+                                                                        }
+                                                                    </CommandItem>
+                                                                ),
+                                                            )}
+                                                        </CommandGroup>
+                                                    </CommandList>
                                                 </Command>
                                             </PopoverContent>
                                         </Popover>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <BookMarked size={18} />
-                                        <Popover open={openStoryType} onOpenChange={setOpenStoryType}>
+                                        <Popover
+                                            open={openStoryType}
+                                            onOpenChange={setOpenStoryType}
+                                        >
                                             <PopoverTrigger asChild>
                                                 <Button
-                                                variant="outline"
-                                                role="combobox"
-                                                aria-expanded={openStoryType}
-                                                className="w-[250px] justify-between"
+                                                    variant="outline"
+                                                    role="combobox"
+                                                    aria-expanded={
+                                                        openStoryType
+                                                    }
+                                                    className="w-[250px] justify-between"
                                                 >
-                                                {valueStoryType
-                                                    ? storyTypes.find((story) => story.value === valueStoryType)?.label
-                                                    : "Select story type..."}
-                                                <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                    {valueStoryType
+                                                        ? storyTypes.find(
+                                                              (story) =>
+                                                                  story.value ===
+                                                                  valueStoryType,
+                                                          )?.label
+                                                        : 'Select story type...'}
+                                                    <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                                 </Button>
                                             </PopoverTrigger>
                                             <PopoverContent className="w-[200px] p-0">
                                                 <Command>
-                                                <CommandInput placeholder="Story..." />
-                                                <CommandList>
-                                                    <CommandEmpty>No story found.</CommandEmpty>
-                                                    <CommandGroup>
-                                                    {storyTypes.map((story) => (
-                                                        <CommandItem
-                                                        key={story.value}
-                                                        value={story.value}
-                                                        onSelect={(currentValue) => {
-                                                            setValueStoryType(currentValue === valueStoryType ? "" : currentValue)
-                                                            setOpenStoryType(false)
-                                                        }}
-                                                        >
-                                                        <CheckIcon
-                                                            className={cn(
-                                                            "mr-2 h-4 w-4",
-                                                            valueStoryType === story.value ? "opacity-100" : "opacity-0"
+                                                    <CommandInput placeholder="Story..." />
+                                                    <CommandList>
+                                                        <CommandEmpty>
+                                                            No story found.
+                                                        </CommandEmpty>
+                                                        <CommandGroup>
+                                                            {storyTypes.map(
+                                                                (story) => (
+                                                                    <CommandItem
+                                                                        key={
+                                                                            story.value
+                                                                        }
+                                                                        value={
+                                                                            story.value
+                                                                        }
+                                                                        onSelect={(
+                                                                            currentValue,
+                                                                        ) => {
+                                                                            setValueStoryType(
+                                                                                currentValue ===
+                                                                                    valueStoryType
+                                                                                    ? ''
+                                                                                    : currentValue,
+                                                                            )
+                                                                            setOpenStoryType(
+                                                                                false,
+                                                                            )
+                                                                        }}
+                                                                    >
+                                                                        <CheckIcon
+                                                                            className={cn(
+                                                                                'mr-2 h-4 w-4',
+                                                                                valueStoryType ===
+                                                                                    story.value
+                                                                                    ? 'opacity-100'
+                                                                                    : 'opacity-0',
+                                                                            )}
+                                                                        />
+                                                                        {
+                                                                            story.label
+                                                                        }
+                                                                    </CommandItem>
+                                                                ),
                                                             )}
-                                                        />
-                                                        {story.label}
-                                                        </CommandItem>
-                                                    ))}
-                                                    </CommandGroup>
-                                                </CommandList>
+                                                        </CommandGroup>
+                                                    </CommandList>
                                                 </Command>
                                             </PopoverContent>
                                         </Popover>
-                                    </div>                                    
+                                    </div>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Button
                                         size="icon"
-                                        disabled={!valueExplainLanguage.trim() || !valueTargetLanguage || !valueStoryType.trim() || isLoading}
+                                        disabled={
+                                            !valueExplainLanguage.trim() ||
+                                            !valueTargetLanguage ||
+                                            !valueStoryType.trim() ||
+                                            isLoading
+                                        }
                                         onClick={handleSubmit}
                                         className="size-9 rounded-full"
                                     >
@@ -754,21 +881,23 @@ function FullChatApp() {
         if (data?.listStories) {
             // Sort stories by startedAt descending (newest first)
             const sortedStories = [...data.listStories].sort(
-                (a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime()
-            );
+                (a, b) =>
+                    new Date(b.startedAt).getTime() -
+                    new Date(a.startedAt).getTime(),
+            )
             setStories(sortedStories)
         }
     }, [data])
 
     // Handler to add new story to the top
     const handleNewStory = (story: Story) => {
-        setStories(prev => [story, ...prev])
-        setNewStoryId(story.storyId)        
+        setStories((prev) => [story, ...prev])
+        setNewStoryId(story.storyId)
     }
 
     return (
         <SidebarProvider>
-            <ChatSidebar stories={stories} newStoryId={newStoryId}/>
+            <ChatSidebar stories={stories} newStoryId={newStoryId} />
             <SidebarInset>
                 <ChatContent onNewStory={handleNewStory} />
             </SidebarInset>

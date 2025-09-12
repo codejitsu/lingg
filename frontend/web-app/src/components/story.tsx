@@ -160,7 +160,7 @@ type Buckets = {
 */
 const initialMessages: { id: number; role: 'user' | 'assistant'; content: string }[] = []
 
-function ChatSidebar({ stories }: { stories: Story[] }) {
+function ChatSidebar({ stories, newStoryId }: { stories: Story[]; newStoryId?: string }) {
     const buckets: Buckets = {
         today: { period: 'Today', stories: [] },
         yesterday: { period: 'Yesterday', stories: [] },
@@ -212,8 +212,16 @@ function ChatSidebar({ stories }: { stories: Story[] }) {
                         <SidebarGroupLabel className="text-md">{group.period}</SidebarGroupLabel>
                         <SidebarMenu>
                             {group.stories.map((story) => (
-                                <SidebarMenuButton key={story.storyId} className="text-muted-foreground">
+                                <SidebarMenuButton 
+                                    key={story.storyId}
+                                    className="text-muted-foreground flex items-center justify-between"
+                                >
                                     <span>{story.title}</span>
+                                    {story.storyId === newStoryId && (
+                                        <span className="ml-2 text-xs font-semibold text-green-700 bg-green-200 rounded px-2 py-0.5 animate-pulse">
+                                            New
+                                        </span>
+                                    )}                                    
                                 </SidebarMenuButton>
                             ))}
                         </SidebarMenu>
@@ -730,6 +738,7 @@ function ChatContent({ onNewStory }: { onNewStory: (story: Story) => void }) {
 
 function FullChatApp() {
     const [stories, setStories] = useState<Story[]>([])
+    const [newStoryId, setNewStoryId] = useState<string | undefined>(undefined)
     const { data } = useQuery<{ listStories: Story[] }>(LIST_ALL_STORIES)
 
     // On initial load, set stories from server
@@ -742,11 +751,12 @@ function FullChatApp() {
     // Handler to add new story to the top
     const handleNewStory = (story: Story) => {
         setStories(prev => [story, ...prev])
+        setNewStoryId(story.storyId)        
     }
 
     return (
         <SidebarProvider>
-            <ChatSidebar stories={stories}/>
+            <ChatSidebar stories={stories} newStoryId={newStoryId}/>
             <SidebarInset>
                 <ChatContent onNewStory={handleNewStory} />
             </SidebarInset>

@@ -204,8 +204,10 @@ function ChatSidebar() {
                     <div className="bg-primary/10 size-10 rounded-md flex items-center justify-center">
                         <Bot className="size-6 text-primary" />
                     </div>
-                    <div className="text-md font-base text-primary tracking-tight">
-                        lingg.ai
+                    <div className="text-lg font-semibold tracking-tight text-gray-900 dark:text-gray-100 select-none">
+                        <span className="bg-gradient-to-r from-gray-700 via-gray-500 to-gray-400 bg-clip-text text-transparent">
+                            lingg.ai
+                        </span>
                     </div>
                 </div>
                 <Button variant="ghost" className="size-8">

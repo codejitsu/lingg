@@ -33,6 +33,7 @@ import { cn } from '@/lib/utils'
 import {
     ArrowUp,
     BookMarked,
+    Bot,
     Copy,
     Languages,
     MessageCircleQuestionMark,
@@ -200,7 +201,9 @@ function ChatSidebar() {
         <Sidebar>
             <SidebarHeader className="flex flex-row items-center justify-between gap-2 px-2 py-4">
                 <div className="flex flex-row items-center gap-2 px-2">
-                    <div className="bg-primary/10 size-8 rounded-md"></div>
+                    <div className="bg-primary/10 size-10 rounded-md flex items-center justify-center">
+                        <Bot className="size-6 text-primary" />
+                    </div>
                     <div className="text-md font-base text-primary tracking-tight">
                         lingg.ai
                     </div>
@@ -230,6 +233,7 @@ function ChatSidebar() {
 function ChatContent() {
     type StartStoryResult = {
         startStory: {
+            title: string,
             chapters: { content: string }[]
         }
     }
@@ -250,6 +254,8 @@ function ChatContent() {
     const [valueStoryType, setValueStoryType] = useState("")
 
     const [isTyping, setIsTyping] = useState(false)
+
+    const [title, setTitle] = useState("Start a new story")
 
     const targetLanguages = [
         {
@@ -372,6 +378,11 @@ function ChatContent() {
                     },
                 ])
             }
+
+            // Update the title with the returned story title
+            if (data?.startStory?.title) {
+                setTitle(data.startStory.title)
+            }
         } catch (error: unknown) {
             let errorMessage = "Unknown error";
             if (error instanceof Error) {
@@ -396,7 +407,7 @@ function ChatContent() {
             <header className="bg-background z-10 flex h-16 w-full shrink-0 items-center gap-2 border-b px-4">
                 <SidebarTrigger className="-ml-1" />
                 <div className="text-foreground">
-                    Start a new story
+                    { title }
                 </div>
             </header>
 

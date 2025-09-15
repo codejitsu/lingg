@@ -146,6 +146,7 @@ const messages = [
         role: 'user',
         content: 'Hello! Can you help me with a coding question?',
         template: 'Hello! Can you help me with a cod{ph-1} question?',
+        placeholders: [{ name: 'ph-1', text: 'ing' }],
     },
     {
         id: 2,
@@ -154,12 +155,14 @@ const messages = [
             "Of course! I'd be happy to help with your coding question. What would you like to know?",
         template:
             "Of course! I'd be happy to help with your cod{ph-1} que{ph-2}ion. What would you like to know?",            
+        placeholders: [{ name: 'ph-1', text: 'ing' }, { name: 'ph-2', text: 'st' }],
     },
     {
         id: 3,
         role: 'user',
         content: 'How do I create a responsive layout with CSS Grid?',
         template: 'How do I create a responsive layout with CSS Grid?',
+        placeholders: [],
     },
     {
         id: 4,
@@ -168,6 +171,7 @@ const messages = [
             "Creating a responsive layout with CSS Grid is straightforward. Here's a basic example:\n\n```css\n.container {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));\n  gap: 1rem;\n}\n```\n\nThis creates a grid where:\n- Columns automatically fit as many as possible\n- Each column is at least 250px wide\n- Columns expand to fill available space\n- There's a 1rem gap between items\n\nWould you like me to explain more about how this works?",
         template:
             "Creating a responsive layout with CSS Grid is straightforward. Here's a basic example:\n\n```css\n.container {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));\n  gap: 1rem;\n}\n```\n\nThis creates a grid where:\n- Columns automatically fit as many as possible\n- Each column is at least 250px wide\n- Columns expand to fill available space\n- There's a 1rem gap between items\n\nWould you like me to explain more about how this works?",
+        placeholders: [],
     },
 ]
 
@@ -176,7 +180,8 @@ const initialMessages: {
     role: 'user' | 'assistant'
     content: string
     template: string
-}[] = [messages[0], messages[1]]
+    placeholders: { name: string; text: string }[]
+}[] = []
 
 function ChatSidebar({
     stories,
@@ -275,12 +280,23 @@ function ChatSidebar({
 }
 
 function ChatContent({ onNewStory }: { onNewStory: (story: Story) => void }) {
+    type Placeholder = {
+        name: string
+        text: string
+    }
+
+    type Chapter = {
+        content: string
+        template: string
+        placeholders: Placeholder[]
+    }
+
     type StartStoryResult = {
         startStory: {
             storyId: string
             title: string
             startedAt: string
-            chapters: { content: string, template: string }[]
+            chapters: Chapter[]
         }
     }
     const [startStory] = useMutation<StartStoryResult>(START_STORY)
@@ -423,6 +439,7 @@ function ChatContent({ onNewStory }: { onNewStory: (story: Story) => void }) {
                         role: 'assistant',
                         content: data.startStory.chapters[0].content,
                         template: data.startStory.chapters[0].template,
+                        placeholders: data.startStory.chapters[0].placeholders,
                     },
                 ])
             }
@@ -451,6 +468,8 @@ function ChatContent({ onNewStory }: { onNewStory: (story: Story) => void }) {
                     id: prev.length + 1,
                     role: 'assistant',
                     content: `Failed to start story: ${errorMessage}`,
+                    template: `Failed to start story: ${errorMessage}`,
+                    placeholders: [],
                 },
             ])
         } finally {
@@ -492,7 +511,7 @@ function ChatContent({ onNewStory }: { onNewStory: (story: Story) => void }) {
                                             <MessageContent
                                                 className="text-secondary-foreground prose flex-1 rounded-lg bg-secondary text-left p-3"
                                             >
-                                            { <MessageTemplate template={message.template} /> }
+                                            { <MessageTemplate template={message.template} placeholdersMap={message.placeholders} /> }
                                             </MessageContent>
                                             <MessageActions
                                                 className={cn(

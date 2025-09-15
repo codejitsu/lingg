@@ -37,12 +37,20 @@ export const MessageTemplate: React.FC<MessageTemplateProps> = ({ template, onCh
         }
         parts.push(
             <input
-                key={phName + '-' + idx}
-                type="text"
-                value={values[phName] || ''}
-                onChange={handleInputChange(phName)}
-                style={{ margin: '0 4px' }}
-                placeholder={phName}
+            key={phName + '-' + idx}
+            type="text"
+            value={values[phName] || ''}
+            onChange={handleInputChange(phName)}
+            className="inline-block w-24 border-b-3 border-dotted border-gray-500 focus:outline-none focus:border-pink-500"
+/*            style={{
+                margin: '0 4px',
+                border: 'none',
+                borderBottom: '4px solid pink',
+                outline: 'none',
+                background: 'transparent',
+            }}
+*/                
+            placeholder=""
             />
         );
         lastIndex = match.index + placeholder.length;

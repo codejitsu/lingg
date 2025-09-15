@@ -140,38 +140,43 @@ type Buckets = {
     everythingElse: Period
 }
 
-// Initial chat messages
-/*const initialMessages = [
+const messages = [
     {
         id: 1,
         role: 'user',
         content: 'Hello! Can you help me with a coding question?',
+        template: 'Hello! Can you help me with a cod{ph-1} question?',
     },
     {
         id: 2,
         role: 'assistant',
         content:
             "Of course! I'd be happy to help with your coding question. What would you like to know?",
+        template:
+            "Of course! I'd be happy to help with your cod{ph-1} que{ph-2}ion. What would you like to know?",            
     },
     {
         id: 3,
         role: 'user',
         content: 'How do I create a responsive layout with CSS Grid?',
+        template: 'How do I create a responsive layout with CSS Grid?',
     },
     {
         id: 4,
         role: 'assistant',
         content:
             "Creating a responsive layout with CSS Grid is straightforward. Here's a basic example:\n\n```css\n.container {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));\n  gap: 1rem;\n}\n```\n\nThis creates a grid where:\n- Columns automatically fit as many as possible\n- Each column is at least 250px wide\n- Columns expand to fill available space\n- There's a 1rem gap between items\n\nWould you like me to explain more about how this works?",
+        template:
+            "Creating a responsive layout with CSS Grid is straightforward. Here's a basic example:\n\n```css\n.container {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));\n  gap: 1rem;\n}\n```\n\nThis creates a grid where:\n- Columns automatically fit as many as possible\n- Each column is at least 250px wide\n- Columns expand to fill available space\n- There's a 1rem gap between items\n\nWould you like me to explain more about how this works?",
     },
 ]
-*/
+
 const initialMessages: {
     id: number
     role: 'user' | 'assistant'
     content: string
     template: string
-}[] = []
+}[] = [messages[0], messages[1]]
 
 function ChatSidebar({
     stories,

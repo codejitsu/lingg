@@ -61,6 +61,7 @@ import { useRef, useState, useEffect } from 'react'
 import { gql } from '@apollo/client'
 import { useQuery, useMutation } from '@apollo/client/react'
 import { v4 as uuidv4 } from 'uuid'
+import { MessageTemplate } from '@/components/message-template';
 
 // TODO - replace with real user ID from auth context
 const userId = 'f257727e-94ab-44ac-aa0e-c4d51a0d67ac'
@@ -169,6 +170,7 @@ const initialMessages: {
     id: number
     role: 'user' | 'assistant'
     content: string
+    template: string
 }[] = []
 
 function ChatSidebar({
@@ -273,7 +275,7 @@ function ChatContent({ onNewStory }: { onNewStory: (story: Story) => void }) {
             storyId: string
             title: string
             startedAt: string
-            chapters: { content: string }[]
+            chapters: { content: string, template: string }[]
         }
     }
     const [startStory] = useMutation<StartStoryResult>(START_STORY)
@@ -408,13 +410,14 @@ function ChatContent({ onNewStory }: { onNewStory: (story: Story) => void }) {
             })
 
             // Optionally, you can display the story or its first chapter as a message
-            if (data?.startStory?.chapters?.[0]?.content) {
+            if (data?.startStory?.chapters?.[0]?.template) {
                 setChatMessages((prev) => [
                     ...prev,
                     {
                         id: prev.length + 1,
                         role: 'assistant',
                         content: data.startStory.chapters[0].content,
+                        template: data.startStory.chapters[0].template,
                     },
                 ])
             }
@@ -483,9 +486,8 @@ function ChatContent({ onNewStory }: { onNewStory: (story: Story) => void }) {
                                         <div className="group flex w-full flex-col gap-0">
                                             <MessageContent
                                                 className="text-secondary-foreground prose flex-1 rounded-lg bg-secondary text-left p-3"
-                                                markdown
                                             >
-                                                {message.content}
+                                            { <MessageTemplate template={message.template} /> }
                                             </MessageContent>
                                             <MessageActions
                                                 className={cn(

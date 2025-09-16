@@ -63,7 +63,8 @@ async fn fetch_story_by_id(
     story_id: ID,
     _event: &AppsyncEvent<Operation>,
 ) -> Result<Option<Story>, AppsyncError> {
-    let story_uuid = Uuid::parse_str(&story_id.to_string()).map_err(|e| AppsyncError::new("InvalidStoryID", e.to_string()))?;
+    let story_uuid = Uuid::parse_str(&story_id.to_string())
+        .map_err(|e| AppsyncError::new("InvalidStoryID", e.to_string()))?;
     let story = storage::get_story_with_chapters_by_id(&user_id, story_uuid)
         .await
         .map_err(|e| AppsyncError::new("StorageReadError", e.to_string()))?;
@@ -124,9 +125,11 @@ async fn start_story(
                 .map_err(|e| AppsyncError::new("ModelError", e.to_string()));
 
             match story {
-                Ok(story) => storage::save_story_to_db(story, args.user_id, args.client_request_id, 0)
-                    .await
-                    .map_err(|e| AppsyncError::new("StorageWriteError", e.to_string())),
+                Ok(story) => {
+                    storage::save_story_to_db(story, args.user_id, args.client_request_id, 0)
+                        .await
+                        .map_err(|e| AppsyncError::new("StorageWriteError", e.to_string()))
+                }
                 Err(e) => Err(e),
             }
         }

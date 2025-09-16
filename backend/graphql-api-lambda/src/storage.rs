@@ -1,14 +1,7 @@
-use crate::{
-    Story,
-    Chapter,
-    LanguageName,
-    StoryType,
-    Placeholder,
-    dynamodb
-};
+use crate::{dynamodb, Chapter, LanguageName, Placeholder, Story, StoryType};
 
-use lambda_appsync::ID;
 use aws_sdk_dynamodb::types::{AttributeValue, TransactWriteItem, Update};
+use lambda_appsync::ID;
 
 use std::collections::HashMap;
 

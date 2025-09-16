@@ -1,28 +1,17 @@
-use crate::storage::{
-    get_stories_by_user_id, 
-    get_story_with_chapters_by_id,
-    save_story_to_db
-};
+use crate::storage::{get_stories_by_user_id, get_story_with_chapters_by_id, save_story_to_db};
 
-use crate::ai::{
-    build_story_id,
-    process_model_output
-};
+use crate::ai::{build_story_id, process_model_output};
 
-use lambda_appsync::{AppsyncError, AppsyncEvent, ID, appsync_operation};
+use lambda_appsync::{appsync_operation, AppsyncError, AppsyncEvent, ID};
 
-use crate::{
-    Story,
-    Operation,
-    StartStoryArguments
-};
+use crate::{Operation, StartStoryArguments, Story};
 
 use uuid::Uuid;
 
 use aws_config::BehaviorVersion;
 use aws_config::Region;
-use aws_sdk_bedrockruntime::Client;
 use aws_sdk_bedrockruntime::types::{ContentBlock, ConversationRole, Message};
+use aws_sdk_bedrockruntime::Client;
 
 #[appsync_operation(query(listStories), with_appsync_event)]
 pub async fn list_stories(
@@ -103,11 +92,9 @@ pub async fn start_story(
                 .map_err(|e| AppsyncError::new("ModelError", e.to_string()));
 
             match story {
-                Ok(story) => {
-                    save_story_to_db(story, args.user_id, args.client_request_id, 0)
-                        .await
-                        .map_err(|e| AppsyncError::new("StorageWriteError", e.to_string()))
-                }
+                Ok(story) => save_story_to_db(story, args.user_id, args.client_request_id, 0)
+                    .await
+                    .map_err(|e| AppsyncError::new("StorageWriteError", e.to_string())),
                 Err(e) => Err(e),
             }
         }

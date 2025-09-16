@@ -1,15 +1,10 @@
-use aws_sdk_bedrockruntime::operation::converse::{ConverseError, ConverseOutput};
 use aws_sdk_bedrockruntime::error::SdkError;
+use aws_sdk_bedrockruntime::operation::converse::{ConverseError, ConverseOutput};
 
-use crate::{
-    Chapter,
-    Placeholder,
-    Story,
-    StartStoryArguments
-};
+use crate::{Chapter, Placeholder, StartStoryArguments, Story};
 
-use uuid::Uuid;
 use lambda_appsync::ID;
+use uuid::Uuid;
 
 use crate::placeholders::replace_parts_of_words;
 

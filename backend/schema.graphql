@@ -79,4 +79,5 @@ type Mutation {
 
 type Query {
     listStories(userId: ID!): [Story!]!
+    fetchStoryById(userId: ID!, storyId: ID!): Story
 }

@@ -60,6 +60,19 @@ async fn list_stories(
     Ok(stories)
 }
 
+#[appsync_operation(query(fetchStoryById), with_appsync_event)]
+async fn fetch_story_by_id(
+    user_id: ID,
+    story_id: ID,
+    _event: &AppsyncEvent<Operation>,
+) -> Result<Option<Story>, AppsyncError> {
+    let story_uuid = Uuid::parse_str(&story_id.to_string()).map_err(|e| AppsyncError::new("InvalidStoryID", e.to_string()))?;
+    let story = get_story_with_chapters_by_id(&user_id, story_uuid)
+        .await
+        .map_err(|e| AppsyncError::new("StorageReadError", e.to_string()))?;
+    Ok(story)
+}
+
 #[appsync_operation(mutation(startStory), with_appsync_event)]
 async fn start_story(
     args: StartStoryArguments,

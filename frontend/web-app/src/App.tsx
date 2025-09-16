@@ -1,11 +1,8 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { useParams } from 'react-router-dom'
 import { FullChatApp } from '@/components/story'
 import './App.css'
 
 function App() {
-    const { storyId } = useParams<{ storyId: string }>()
-    
     return (
         <BrowserRouter>
             <Routes>
@@ -28,7 +25,7 @@ function App() {
                             padding: '4px',
                         }}
                     >
-                        <FullChatApp currentStoryId={storyId} />
+                        <FullChatApp />
                     </div>
                 } />
             </Routes>        

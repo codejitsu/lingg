@@ -62,6 +62,7 @@ import { gql } from '@apollo/client'
 import { useQuery, useMutation } from '@apollo/client/react'
 import { v4 as uuidv4 } from 'uuid'
 import { MessageTemplate } from '@/components/message-template';
+import { useParams } from 'react-router-dom'
 
 // TODO - replace with real user ID from auth context
 const userId = 'f257727e-94ab-44ac-aa0e-c4d51a0d67ac'
@@ -92,6 +93,17 @@ const FETCH_STORY_BY_ID = gql`
             targetLanguage
             title
             userId
+            chapters {
+                chapterId
+                content
+                createdAt
+                storyId
+                template
+                placeholders {
+                    name
+                    text
+                }
+            }            
         }
     }
 `
@@ -201,9 +213,11 @@ const initialMessages: {
 function ChatSidebar({
     stories,
     newStoryId,
+    currentStoryId
 }: {
     stories: Story[]
     newStoryId?: string
+    currentStoryId?: string
 }) {
     const [hidden, setHidden] = useState(false)
 
@@ -251,10 +265,6 @@ function ChatSidebar({
         if (newStoryId) setTimeout(() => setHidden(true), 5000)
     }, [newStoryId])
 
-    const onClickStory = async () => {
-
-    }
-
     return (
         <Sidebar>
             <SidebarHeader className="flex flex-row items-center justify-between gap-2 px-2 py-4">
@@ -279,8 +289,7 @@ function ChatSidebar({
                             {group.stories.map((story) => (
                                 <SidebarMenuButton
                                     key={story.storyId}
-                                    className="text-muted-foreground flex items-center justify-between"
-                                    onClick={onClickStory}
+                                    className={`text-muted-foreground flex items-center justify-between ${story.storyId === currentStoryId ? 'border-l-4 rounded-none' : ''}`}
                                 >
                                     <a href={`/story/${story.storyId}`}>{story.title}</a>
                                     {story.storyId === newStoryId && !hidden && (
@@ -298,7 +307,7 @@ function ChatSidebar({
     )
 }
 
-function ChatContent({ onNewStory }: { onNewStory: (story: Story) => void }) {
+function ChatContent({ onNewStory, currentStoryId }: { onNewStory: (story: Story) => void, currentStoryId?: string }) {
     type Placeholder = {
         name: string
         text: string
@@ -426,6 +435,68 @@ function ChatContent({ onNewStory }: { onNewStory: (story: Story) => void }) {
             label: 'Fairy Tales',
         },
     ]
+
+    type FetchStoryResult = {
+        storyId: string
+        title: string
+        chapters: Chapter[]
+    }
+
+    const { data: storyData, error: storyError, loading: storyLoading } = useQuery<{ fetchStoryById: FetchStoryResult }>(
+        FETCH_STORY_BY_ID,
+        {
+            variables: {
+                userId,
+                storyId: currentStoryId,
+            },
+            skip: !currentStoryId,
+        }
+    );
+
+    useEffect(() => {
+        if (currentStoryId) {
+            setIsLoading(true);
+            setIsTyping(true);
+        }
+
+        if (storyData?.fetchStoryById?.title) {
+            setTitle(storyData.fetchStoryById.title);
+        }
+
+        if (storyData?.fetchStoryById?.chapters) {
+            setChatMessages(
+                storyData.fetchStoryById.chapters.map((chapter) => ({
+                    id: 0,
+                    role: 'assistant',
+                    content: chapter.content,
+                    template: chapter.template,
+                    placeholders: chapter.placeholders,
+                })),
+            );
+        }
+
+        if (storyError) {
+            let errorMessage = 'Unknown error';
+            if (storyError instanceof Error) {
+                errorMessage = storyError.message;
+            }
+            setChatMessages((prev) => [
+                ...prev,
+                {
+                    id: prev.length + 1,
+                    role: 'assistant',
+                    content: `Failed to start story: ${errorMessage}`,
+                    template: `Failed to start story: ${errorMessage}`,
+                    placeholders: [],
+                },
+            ]);
+        }
+
+        if (!storyLoading) {
+            setIsTyping(false);
+            setIsLoading(false);
+        }
+    }, [storyData, storyError, storyLoading, currentStoryId]);
 
     const handleSubmit = async () => {
         if (
@@ -916,7 +987,9 @@ function ChatContent({ onNewStory }: { onNewStory: (story: Story) => void }) {
     )
 }
 
-function FullChatApp({ currentStoryId }: { currentStoryId?: string }) {
+function FullChatApp() {
+    const { storyId } = useParams<{ storyId: string }>()
+
     const [stories, setStories] = useState<Story[]>([])
     const [newStoryId, setNewStoryId] = useState<string | undefined>(undefined)
     const { data } = useQuery<{ listStories: Story[] }>(LIST_ALL_STORIES)
@@ -942,9 +1015,9 @@ function FullChatApp({ currentStoryId }: { currentStoryId?: string }) {
 
     return (
         <SidebarProvider>
-            <ChatSidebar stories={stories} newStoryId={newStoryId} />
+            <ChatSidebar stories={stories} newStoryId={newStoryId} currentStoryId={storyId} />
             <SidebarInset>
-                <ChatContent onNewStory={handleNewStory} />
+                <ChatContent onNewStory={handleNewStory} currentStoryId={storyId} />
             </SidebarInset>
         </SidebarProvider>
     )

@@ -1,4 +1,5 @@
 mod placeholders;
+mod storage;
 
 use std::collections::HashMap;
 use std::vec;
@@ -38,6 +39,20 @@ impl From<&ConverseError> for BedrockConverseError {
             ConverseError::ModelNotReadyException(_) => "Model is not ready",
             _ => "Unknown",
         })
+    }
+}
+
+#[derive(Debug)]
+struct StorageError(String);
+impl std::fmt::Display for StorageError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Storage error: {}", self.0)
+    }
+}
+impl std::error::Error for StorageError {}
+impl From<&str> for StorageError {
+    fn from(value: &str) -> Self {
+        StorageError(value.to_string())
     }
 }
 
@@ -199,7 +214,7 @@ fn build_story_id(user_id: &ID, client_request_id: &ID) -> Uuid {
     Uuid::new_v5(&namespace, client_request_id.as_bytes())
 }
 
-async fn get_stories_by_user_id(user_id: &ID) -> Result<Vec<Story>, BedrockConverseError> {
+async fn get_stories_by_user_id(user_id: &ID) -> Result<Vec<Story>, StorageError> {
     let client = dynamodb();
     let table_name = table_name();
 
@@ -314,7 +329,7 @@ async fn get_stories_by_user_id(user_id: &ID) -> Result<Vec<Story>, BedrockConve
                 Ok(Vec::new())
             }
         }
-        Err(e) => Err(BedrockConverseError(e.to_string())),
+        Err(e) => Err(StorageError(e.to_string())),
     }
 }
 
@@ -336,7 +351,7 @@ fn get_converse_output_text(output: ConverseOutput) -> Result<String, BedrockCon
 async fn get_story_with_chapters_by_id(
     user_id: &ID,
     story_id: Uuid,
-) -> Result<Option<Story>, BedrockConverseError> {
+) -> Result<Option<Story>, StorageError> {
     let client = dynamodb();
     let table_name = table_name();
 
@@ -455,7 +470,7 @@ async fn get_story_with_chapters_by_id(
                 Ok(None)
             }
         }
-        Err(e) => Err(BedrockConverseError(e.to_string())),
+        Err(e) => Err(StorageError(e.to_string())),
     }
 }
 
@@ -503,7 +518,7 @@ async fn save_story_to_db(
     user_id: ID,
     client_request_id: ID,
     chapter_index: usize,
-) -> Result<Story, BedrockConverseError> {
+) -> Result<Story, StorageError> {
     let client = dynamodb();
     let table_name = table_name();
 
@@ -630,7 +645,7 @@ async fn save_story_to_db(
 
     match tx {
         Ok(_) => Ok(story),
-        Err(e) => Err(BedrockConverseError(e.to_string())),
+        Err(e) => Err(StorageError(e.to_string())),
     }
 }
 

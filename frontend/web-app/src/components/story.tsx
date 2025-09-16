@@ -916,7 +916,7 @@ function ChatContent({ onNewStory }: { onNewStory: (story: Story) => void }) {
     )
 }
 
-function FullChatApp() {
+function FullChatApp({ currentStoryId }: { currentStoryId?: string }) {
     const [stories, setStories] = useState<Story[]>([])
     const [newStoryId, setNewStoryId] = useState<string | undefined>(undefined)
     const { data } = useQuery<{ listStories: Story[] }>(LIST_ALL_STORIES)

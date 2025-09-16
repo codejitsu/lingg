@@ -81,6 +81,21 @@ const LIST_ALL_STORIES = gql`
     }
 `
 
+// GraphQL query to fetch a story by ID
+const FETCH_STORY_BY_ID = gql`
+    query FetchStoryById($userId: ID!, $storyId: ID!) {
+        fetchStoryById(userId: $userId, storyId: $storyId) {
+            explainLanguage
+            startedAt
+            storyId
+            storyType
+            targetLanguage
+            title
+            userId
+        }
+    }
+`
+
 // GraphQL mutation to start a new story
 const START_STORY = gql`
     mutation StartStory(
@@ -236,6 +251,10 @@ function ChatSidebar({
         if (newStoryId) setTimeout(() => setHidden(true), 5000)
     }, [newStoryId])
 
+    const onClickStory = async () => {
+
+    }
+
     return (
         <Sidebar>
             <SidebarHeader className="flex flex-row items-center justify-between gap-2 px-2 py-4">
@@ -261,14 +280,14 @@ function ChatSidebar({
                                 <SidebarMenuButton
                                     key={story.storyId}
                                     className="text-muted-foreground flex items-center justify-between"
+                                    onClick={onClickStory}
                                 >
-                                    <span>{story.title}</span>
-                                    {story.storyId === newStoryId &&
-                                        !hidden && (
-                                            <span className="ml-2 text-xs font-semibold text-green-700 bg-green-200 rounded px-2 py-0.5 animate-pulse">
-                                                New
-                                            </span>
-                                        )}
+                                    <a href={`/story/${story.storyId}`}>{story.title}</a>
+                                    {story.storyId === newStoryId && !hidden && (
+                                        <span className="ml-2 text-xs font-semibold text-green-700 bg-green-200 rounded px-2 py-0.5 animate-pulse">
+                                            New
+                                        </span>
+                                    )}
                                 </SidebarMenuButton>
                             ))}
                         </SidebarMenu>

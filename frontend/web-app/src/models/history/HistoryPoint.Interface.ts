@@ -5,6 +5,6 @@ export const HistoryPoint = {
     LAST_7_DAYS: 'Last 7 days',
     LAST_MONTH: 'Last month',
     EVERYTHING_ELSE: 'Older than a month',
-} as const;
+} as const
 
-export type HistoryPoint = typeof HistoryPoint[keyof typeof HistoryPoint];
+export type HistoryPoint = (typeof HistoryPoint)[keyof typeof HistoryPoint]

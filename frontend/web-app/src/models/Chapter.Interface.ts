@@ -1,4 +1,4 @@
-import type { PlaceholderInterface } from "./Placeholder.Interface"
+import type { PlaceholderInterface } from './Placeholder.Interface'
 
 export interface ChapterInterface {
     content: string

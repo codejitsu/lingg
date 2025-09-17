@@ -61,14 +61,18 @@ import { useRef, useState, useEffect } from 'react'
 
 import { useQuery, useMutation } from '@apollo/client/react'
 import { v4 as uuidv4 } from 'uuid'
-import { MessageTemplate } from '@/components/message-template';
+import { MessageTemplate } from '@/components/message-template'
 import { useParams } from 'react-router-dom'
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import type { StoryInterface } from '@/models/Story.Interface'
 import type { ChapterInterface } from '@/models/Chapter.Interface'
 import type { BucketsInterface } from '@/models/history/Buckets.Interface'
 import { HistoryPoint } from '@/models/history/HistoryPoint.Interface'
-import { LIST_ALL_STORIES, FETCH_STORY_BY_ID, START_STORY } from '@/models/graphql/graphql'
+import {
+    LIST_ALL_STORIES,
+    FETCH_STORY_BY_ID,
+    START_STORY,
+} from '@/models/graphql/graphql'
 
 // TODO - replace with real user ID from auth context
 const userId = 'f257727e-94ab-44ac-aa0e-c4d51a0d67ac'
@@ -87,7 +91,7 @@ const userId = 'f257727e-94ab-44ac-aa0e-c4d51a0d67ac'
 //         content:
 //             "Of course! I'd be happy to help with your coding question. What would you like to know?",
 //         template:
-//             "Of course! I'd be happy to help with your cod{ph-1} que{ph-2}ion. What would you like to know?",            
+//             "Of course! I'd be happy to help with your cod{ph-1} que{ph-2}ion. What would you like to know?",
 //         placeholders: [{ name: 'ph-1', text: 'ing' }, { name: 'ph-2', text: 'st' }],
 //     },
 //     {
@@ -119,7 +123,7 @@ const initialMessages: {
 function ChatSidebar({
     stories,
     newStoryId,
-    currentStoryId
+    currentStoryId,
 }: {
     stories: StoryInterface[]
     newStoryId?: string
@@ -197,12 +201,15 @@ function ChatSidebar({
                                     key={story.storyId}
                                     className={`text-muted-foreground flex items-center justify-between ${story.storyId === currentStoryId ? 'border-l-4 rounded-none' : ''}`}
                                 >
-                                    <a href={`/#/story/${story.storyId}`}>{story.title}</a>
-                                    {story.storyId === newStoryId && !hidden && (
-                                        <span className="ml-2 text-xs font-semibold text-green-700 bg-green-200 rounded px-2 py-0.5 animate-pulse">
-                                            New
-                                        </span>
-                                    )}
+                                    <a href={`/#/story/${story.storyId}`}>
+                                        {story.title}
+                                    </a>
+                                    {story.storyId === newStoryId &&
+                                        !hidden && (
+                                            <span className="ml-2 text-xs font-semibold text-green-700 bg-green-200 rounded px-2 py-0.5 animate-pulse">
+                                                New
+                                            </span>
+                                        )}
                                 </SidebarMenuButton>
                             ))}
                         </SidebarMenu>
@@ -213,7 +220,13 @@ function ChatSidebar({
     )
 }
 
-function ChatContent({ onNewStory, currentStoryId }: { onNewStory: (story: StoryInterface) => void, currentStoryId?: string }) {
+function ChatContent({
+    onNewStory,
+    currentStoryId,
+}: {
+    onNewStory: (story: StoryInterface) => void
+    currentStoryId?: string
+}) {
     type StartStoryResult = {
         startStory: {
             storyId: string
@@ -337,32 +350,33 @@ function ChatContent({ onNewStory, currentStoryId }: { onNewStory: (story: Story
         chapters: ChapterInterface[]
     }
 
-    const { data: storyData, error: storyError, loading: storyLoading } = useQuery<{ fetchStoryById: FetchStoryResult }>(
-        FETCH_STORY_BY_ID,
-        {
-            variables: {
-                userId,
-                storyId: currentStoryId,
-            },
-            skip: !currentStoryId,
-        }
-    );
+    const {
+        data: storyData,
+        error: storyError,
+        loading: storyLoading,
+    } = useQuery<{ fetchStoryById: FetchStoryResult }>(FETCH_STORY_BY_ID, {
+        variables: {
+            userId,
+            storyId: currentStoryId,
+        },
+        skip: !currentStoryId,
+    })
 
     useEffect(() => {
         if (currentStoryId) {
-            setChatMessages([]);
-            setIsLoading(true);
-            setIsTyping(true);
+            setChatMessages([])
+            setIsLoading(true)
+            setIsTyping(true)
         } else {
-            setChatMessages([]);
-            setTitle('Start a new story');
-            setIsLoading(false);
-            setIsTyping(false);
+            setChatMessages([])
+            setTitle('Start a new story')
+            setIsLoading(false)
+            setIsTyping(false)
             return
         }
 
         if (storyData?.fetchStoryById?.title) {
-            setTitle(storyData.fetchStoryById.title);
+            setTitle(storyData.fetchStoryById.title)
         }
 
         if (storyData?.fetchStoryById?.chapters) {
@@ -374,13 +388,13 @@ function ChatContent({ onNewStory, currentStoryId }: { onNewStory: (story: Story
                     template: chapter.template,
                     placeholders: chapter.placeholders,
                 })),
-            );
+            )
         }
 
         if (storyError) {
-            let errorMessage = 'Unknown error';
+            let errorMessage = 'Unknown error'
             if (storyError instanceof Error) {
-                errorMessage = storyError.message;
+                errorMessage = storyError.message
             }
             setChatMessages((prev) => [
                 ...prev,
@@ -391,14 +405,14 @@ function ChatContent({ onNewStory, currentStoryId }: { onNewStory: (story: Story
                     template: `Failed to start story: ${errorMessage}`,
                     placeholders: [],
                 },
-            ]);
+            ])
         }
 
         if (!storyLoading) {
-            setIsTyping(false);
-            setIsLoading(false);
+            setIsTyping(false)
+            setIsLoading(false)
         }
-    }, [storyData, storyError, storyLoading, currentStoryId]);
+    }, [storyData, storyError, storyLoading, currentStoryId])
 
     const handleSubmit = async () => {
         if (
@@ -483,12 +497,20 @@ function ChatContent({ onNewStory, currentStoryId }: { onNewStory: (story: Story
             >
                 <ChatContainerRoot className="h-full">
                     <ChatContainerContent className="space-y-0 px-5 py-12">
-                        <div className={`flex flex-col justify-center items-center h-[300px] text-left ${chatMessages.length > 0 ? 'hidden' : ''}`}>
-                            <Alert variant="default" className="bg-secondary w-full max-w-md">
+                        <div
+                            className={`flex flex-col justify-center items-center h-[300px] text-left ${chatMessages.length > 0 ? 'hidden' : ''}`}
+                        >
+                            <Alert
+                                variant="default"
+                                className="bg-secondary w-full max-w-md"
+                            >
                                 <PopcornIcon className="mx-auto mb-2" />
-                                <AlertTitle className="text-left">Hello!</AlertTitle>
+                                <AlertTitle className="text-left">
+                                    Hello!
+                                </AlertTitle>
                                 <AlertDescription className="text-left">
-                                    You can select stories from the list or start a new one right away. Try it!
+                                    You can select stories from the list or
+                                    start a new one right away. Try it!
                                 </AlertDescription>
                             </Alert>
                         </div>
@@ -510,10 +532,17 @@ function ChatContent({ onNewStory, currentStoryId }: { onNewStory: (story: Story
                                 >
                                     {isAssistant ? (
                                         <div className="group flex w-full flex-col gap-0">
-                                            <div
-                                                className="text-secondary-foreground prose flex-1 rounded-lg bg-secondary text-left p-3"
-                                            >
-                                            { <MessageTemplate template={message.template} placeholdersMap={message.placeholders} /> }
+                                            <div className="text-secondary-foreground prose flex-1 rounded-lg bg-secondary text-left p-3">
+                                                {
+                                                    <MessageTemplate
+                                                        template={
+                                                            message.template
+                                                        }
+                                                        placeholdersMap={
+                                                            message.placeholders
+                                                        }
+                                                    />
+                                                }
                                             </div>
                                             <MessageActions
                                                 className={cn(
@@ -905,12 +934,13 @@ function FullChatApp() {
 
     const [stories, setStories] = useState<StoryInterface[]>([])
     const [newStoryId, setNewStoryId] = useState<string | undefined>(undefined)
-    const { data } = useQuery<{ listStories: StoryInterface[] }>(LIST_ALL_STORIES,
+    const { data } = useQuery<{ listStories: StoryInterface[] }>(
+        LIST_ALL_STORIES,
         {
             variables: {
-                userId
-            }
-        }
+                userId,
+            },
+        },
     )
 
     // On initial load, set stories from server
@@ -934,9 +964,16 @@ function FullChatApp() {
 
     return (
         <SidebarProvider>
-            <ChatSidebar stories={stories} newStoryId={newStoryId} currentStoryId={storyId} />
+            <ChatSidebar
+                stories={stories}
+                newStoryId={newStoryId}
+                currentStoryId={storyId}
+            />
             <SidebarInset>
-                <ChatContent onNewStory={handleNewStory} currentStoryId={storyId} />
+                <ChatContent
+                    onNewStory={handleNewStory}
+                    currentStoryId={storyId}
+                />
             </SidebarInset>
         </SidebarProvider>
     )

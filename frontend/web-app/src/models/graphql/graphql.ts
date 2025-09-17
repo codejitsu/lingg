@@ -36,7 +36,7 @@ export const FETCH_STORY_BY_ID = gql`
                     name
                     text
                 }
-            }            
+            }
         }
     }
 `

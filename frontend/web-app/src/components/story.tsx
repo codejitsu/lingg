@@ -65,6 +65,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { MessageTemplate } from '@/components/message-template';
 import { useParams } from 'react-router-dom'
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import type { StoryInterface } from '@/models/Story.Interface'
 
 // TODO - replace with real user ID from auth context
 const userId = 'f257727e-94ab-44ac-aa0e-c4d51a0d67ac'
@@ -150,15 +151,9 @@ const START_STORY = gql`
     }
 `
 
-type Story = {
-    startedAt: string
-    storyId: string
-    title: string
-}
-
 type Period = {
     period: string
-    stories: Story[]
+    stories: StoryInterface[]
 }
 
 type Buckets = {
@@ -169,40 +164,40 @@ type Buckets = {
     everythingElse: Period
 }
 
-const messages = [
-    {
-        id: 1,
-        role: 'user',
-        content: 'Hello! Can you help me with a coding question?',
-        template: 'Hello! Can you help me with a cod{ph-1} question?',
-        placeholders: [{ name: 'ph-1', text: 'ing' }],
-    },
-    {
-        id: 2,
-        role: 'assistant',
-        content:
-            "Of course! I'd be happy to help with your coding question. What would you like to know?",
-        template:
-            "Of course! I'd be happy to help with your cod{ph-1} que{ph-2}ion. What would you like to know?",            
-        placeholders: [{ name: 'ph-1', text: 'ing' }, { name: 'ph-2', text: 'st' }],
-    },
-    {
-        id: 3,
-        role: 'user',
-        content: 'How do I create a responsive layout with CSS Grid?',
-        template: 'How do I create a responsive layout with CSS Grid?',
-        placeholders: [],
-    },
-    {
-        id: 4,
-        role: 'assistant',
-        content:
-            "Creating a responsive layout with CSS Grid is straightforward. Here's a basic example:\n\n```css\n.container {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));\n  gap: 1rem;\n}\n```\n\nThis creates a grid where:\n- Columns automatically fit as many as possible\n- Each column is at least 250px wide\n- Columns expand to fill available space\n- There's a 1rem gap between items\n\nWould you like me to explain more about how this works?",
-        template:
-            "Creating a responsive layout with CSS Grid is straightforward. Here's a basic example:\n\n```css\n.container {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));\n  gap: 1rem;\n}\n```\n\nThis creates a grid where:\n- Columns automatically fit as many as possible\n- Each column is at least 250px wide\n- Columns expand to fill available space\n- There's a 1rem gap between items\n\nWould you like me to explain more about how this works?",
-        placeholders: [],
-    },
-]
+// const messages = [
+//     {
+//         id: 1,
+//         role: 'user',
+//         content: 'Hello! Can you help me with a coding question?',
+//         template: 'Hello! Can you help me with a cod{ph-1} question?',
+//         placeholders: [{ name: 'ph-1', text: 'ing' }],
+//     },
+//     {
+//         id: 2,
+//         role: 'assistant',
+//         content:
+//             "Of course! I'd be happy to help with your coding question. What would you like to know?",
+//         template:
+//             "Of course! I'd be happy to help with your cod{ph-1} que{ph-2}ion. What would you like to know?",            
+//         placeholders: [{ name: 'ph-1', text: 'ing' }, { name: 'ph-2', text: 'st' }],
+//     },
+//     {
+//         id: 3,
+//         role: 'user',
+//         content: 'How do I create a responsive layout with CSS Grid?',
+//         template: 'How do I create a responsive layout with CSS Grid?',
+//         placeholders: [],
+//     },
+//     {
+//         id: 4,
+//         role: 'assistant',
+//         content:
+//             "Creating a responsive layout with CSS Grid is straightforward. Here's a basic example:\n\n```css\n.container {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));\n  gap: 1rem;\n}\n```\n\nThis creates a grid where:\n- Columns automatically fit as many as possible\n- Each column is at least 250px wide\n- Columns expand to fill available space\n- There's a 1rem gap between items\n\nWould you like me to explain more about how this works?",
+//         template:
+//             "Creating a responsive layout with CSS Grid is straightforward. Here's a basic example:\n\n```css\n.container {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));\n  gap: 1rem;\n}\n```\n\nThis creates a grid where:\n- Columns automatically fit as many as possible\n- Each column is at least 250px wide\n- Columns expand to fill available space\n- There's a 1rem gap between items\n\nWould you like me to explain more about how this works?",
+//         placeholders: [],
+//     },
+// ]
 
 const initialMessages: {
     id: number
@@ -217,7 +212,7 @@ function ChatSidebar({
     newStoryId,
     currentStoryId
 }: {
-    stories: Story[]
+    stories: StoryInterface[]
     newStoryId?: string
     currentStoryId?: string
 }) {
@@ -309,7 +304,7 @@ function ChatSidebar({
     )
 }
 
-function ChatContent({ onNewStory, currentStoryId }: { onNewStory: (story: Story) => void, currentStoryId?: string }) {
+function ChatContent({ onNewStory, currentStoryId }: { onNewStory: (story: StoryInterface) => void, currentStoryId?: string }) {
     type Placeholder = {
         name: string
         text: string
@@ -617,11 +612,11 @@ function ChatContent({ onNewStory, currentStoryId }: { onNewStory: (story: Story
                                 >
                                     {isAssistant ? (
                                         <div className="group flex w-full flex-col gap-0">
-                                            <MessageContent
+                                            <div
                                                 className="text-secondary-foreground prose flex-1 rounded-lg bg-secondary text-left p-3"
                                             >
                                             { <MessageTemplate template={message.template} placeholdersMap={message.placeholders} /> }
-                                            </MessageContent>
+                                            </div>
                                             <MessageActions
                                                 className={cn(
                                                     '-ml-2.5 flex gap-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100',
@@ -1010,9 +1005,9 @@ function ChatContent({ onNewStory, currentStoryId }: { onNewStory: (story: Story
 function FullChatApp() {
     const { storyId } = useParams<{ storyId: string }>()
 
-    const [stories, setStories] = useState<Story[]>([])
+    const [stories, setStories] = useState<StoryInterface[]>([])
     const [newStoryId, setNewStoryId] = useState<string | undefined>(undefined)
-    const { data } = useQuery<{ listStories: Story[] }>(LIST_ALL_STORIES)
+    const { data } = useQuery<{ listStories: StoryInterface[] }>(LIST_ALL_STORIES)
 
     // On initial load, set stories from server
     useEffect(() => {
@@ -1028,7 +1023,7 @@ function FullChatApp() {
     }, [data])
 
     // Handler to add new story to the top
-    const handleNewStory = (story: Story) => {
+    const handleNewStory = (story: StoryInterface) => {
         setStories((prev) => [story, ...prev])
         setNewStoryId(story.storyId)
     }

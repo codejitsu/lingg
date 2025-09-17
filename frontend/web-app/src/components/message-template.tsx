@@ -51,7 +51,7 @@ export const MessageTemplate: React.FC<MessageTemplateProps> = ({ template, plac
             className="inline-block border-b-3 border-double border-gray-500 focus:outline-none focus:border-pink-500"
             placeholder=""
             maxLength={replacementLength}
-            spellcheck="false"
+            spellCheck="false"
             style={{ width: `${replacementLength}ch` }}
             />
         );

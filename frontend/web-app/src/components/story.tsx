@@ -980,7 +980,7 @@ function ChatContent({ onNewStory, currentStoryId }: { onNewStory: (story: Story
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Button
-                                        size="icon"
+                                        size="lg"
                                         disabled={
                                             !valueExplainLanguage.trim() ||
                                             !valueTargetLanguage ||
@@ -988,8 +988,9 @@ function ChatContent({ onNewStory, currentStoryId }: { onNewStory: (story: Story
                                             isLoading
                                         }
                                         onClick={handleSubmit}
-                                        className="size-9 rounded-full"
+                                        className="rounded-full"
                                     >
+                                        Start new story
                                         {!isLoading ? (
                                             <ArrowUp size={18} />
                                         ) : (

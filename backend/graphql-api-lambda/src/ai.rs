@@ -6,10 +6,15 @@ use crate::{Chapter, Placeholder, StartStoryArguments, Story};
 use lambda_appsync::ID;
 use uuid::Uuid;
 
+use aws_sdk_bedrockruntime::Client;
+use aws_sdk_bedrockruntime::types::{ContentBlock, ConversationRole, Message};
+use aws_config::BehaviorVersion;
+use aws_config::Region;
+
 use crate::placeholders::replace_parts_of_words;
 
 #[derive(Debug)]
-struct BedrockConverseError(String);
+pub struct BedrockConverseError(String);
 impl std::fmt::Display for BedrockConverseError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Can't invoke model. Reason: {}", self.0)
@@ -51,7 +56,7 @@ fn get_converse_output_text(output: ConverseOutput) -> Result<String, BedrockCon
     Ok(text)
 }
 
-pub fn process_model_output(
+fn process_model_output(
     output: ConverseOutput,
     args: &StartStoryArguments,
 ) -> Result<Story, SdkError<ConverseError>> {
@@ -102,6 +107,56 @@ pub fn process_model_output(
         title: title.into(),
         chapters: vec![chapter],
     };
+
+    Ok(story)
+}
+
+async fn get_client() -> Client {
+    let aws_region = env::var("REGION").unwrap();
+    let sdk_config = aws_config::defaults(BehaviorVersion::latest())
+        .region(Region::new(aws_region))
+        .load()
+        .await;
+
+    Client::new(&sdk_config)
+}
+
+fn get_model_id() -> String {
+    let model_id = env::var("BEDROCK_MODEL_ID").unwrap();
+
+    println!("Using Bedrock model ID: {}", model_id);
+
+    model_id
+}
+
+pub async fn generate_new_story(args: &StartStoryArguments) -> Result<Story, BedrockConverseError> {
+    let message = format!(
+        "Create a story in {}. The story should be about {}. The length of the story should be around 100 words.
+        Don't use any swear words or adult content.
+        The story should be not finalized, so we can iterate further. Don't include anyting like 'The End' or 'To be continued'.
+        Dont include any new lines or line breaks. Return the story in the following format: <story-title>|<story-content>
+        
+        Example: My Adventure|Once upon a time...",
+        args.target_language, args.story_type
+    );
+
+    let client = get_client().await;
+    let bedrock_model_id = get_model_id();
+
+    let story = client
+        .converse()
+        .model_id(bedrock_model_id)
+        .messages(
+            Message::builder()
+                .role(ConversationRole::User)
+                .content(ContentBlock::Text(message.to_string()))
+                .build()
+                .unwrap(),
+        )
+        .send()
+        .await
+        .and_then(|output| process_model_output(output, &args))
+        .map_err(|e| BedrockConverseError(e.to_string()))?;
 
     Ok(story)
 }

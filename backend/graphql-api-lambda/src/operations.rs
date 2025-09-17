@@ -43,11 +43,17 @@ pub async fn start_story(
 
     match existing_story {
         Ok(Some(story)) => {
-            println!("Story already exists, returning existing story: {:?} for user: {:?}", story.story_id, args.user_id);
+            println!(
+                "Story already exists, returning existing story: {:?} for user: {:?}",
+                story.story_id, args.user_id
+            );
             return Ok(story);
         }
         Ok(None) => {
-            println!("No existing story found, creating new story for user: {:?}", args.user_id);
+            println!(
+                "No existing story found, creating new story for user: {:?}",
+                args.user_id
+            );
 
             let story = generate_new_story(&args).await;
 

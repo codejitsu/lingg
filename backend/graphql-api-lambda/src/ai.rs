@@ -6,10 +6,10 @@ use crate::{Chapter, Placeholder, StartStoryArguments, Story};
 use lambda_appsync::ID;
 use uuid::Uuid;
 
-use aws_sdk_bedrockruntime::Client;
-use aws_sdk_bedrockruntime::types::{ContentBlock, ConversationRole, Message};
 use aws_config::BehaviorVersion;
 use aws_config::Region;
+use aws_sdk_bedrockruntime::types::{ContentBlock, ConversationRole, Message};
+use aws_sdk_bedrockruntime::Client;
 
 use crate::placeholders::replace_parts_of_words;
 

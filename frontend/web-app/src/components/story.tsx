@@ -589,7 +589,7 @@ function ChatContent({ onNewStory, currentStoryId }: { onNewStory: (story: Story
                                 <PopcornIcon className="mx-auto mb-2" />
                                 <AlertTitle className="text-left">Heads up!</AlertTitle>
                                 <AlertDescription className="text-left">
-                                    You can select stories from the list or create a new one.
+                                    You can select stories from the list or start a new one right away. Try it!
                                 </AlertDescription>
                             </Alert>
                         </div>

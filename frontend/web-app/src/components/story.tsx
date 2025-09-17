@@ -593,7 +593,7 @@ function ChatContent({ onNewStory, currentStoryId }: { onNewStory: (story: Story
                         <div className={`flex flex-col justify-center items-center h-[300px] text-left ${chatMessages.length > 0 ? 'hidden' : ''}`}>
                             <Alert variant="default" className="bg-secondary w-full max-w-md">
                                 <PopcornIcon className="mx-auto mb-2" />
-                                <AlertTitle className="text-left">Heads up!</AlertTitle>
+                                <AlertTitle className="text-left">Hello!</AlertTitle>
                                 <AlertDescription className="text-left">
                                     You can select stories from the list or start a new one right away. Try it!
                                 </AlertDescription>

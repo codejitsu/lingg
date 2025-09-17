@@ -1,0 +1,82 @@
+import { gql } from '@apollo/client'
+
+// GraphQL query to list all stories for a user
+export const LIST_ALL_STORIES = gql`
+    query ListAllStories($userId: ID!) {
+        listStories(userId: $userId) {
+            explainLanguage
+            startedAt
+            storyId
+            storyType
+            targetLanguage
+            title
+            userId
+        }
+    }
+`
+
+// GraphQL query to fetch a story by ID
+export const FETCH_STORY_BY_ID = gql`
+    query FetchStoryById($userId: ID!, $storyId: ID!) {
+        fetchStoryById(userId: $userId, storyId: $storyId) {
+            explainLanguage
+            startedAt
+            storyId
+            storyType
+            targetLanguage
+            title
+            userId
+            chapters {
+                chapterId
+                content
+                createdAt
+                storyId
+                template
+                placeholders {
+                    name
+                    text
+                }
+            }            
+        }
+    }
+`
+
+// GraphQL mutation to start a new story
+export const START_STORY = gql`
+    mutation StartStory(
+        $userId: ID!
+        $clientRequestId: ID!
+        $targetLanguage: LanguageName!
+        $explainLanguage: LanguageName!
+        $storyType: StoryType!
+    ) {
+        startStory(
+            args: {
+                userId: $userId
+                clientRequestId: $clientRequestId
+                targetLanguage: $targetLanguage
+                explainLanguage: $explainLanguage
+                storyType: $storyType
+            }
+        ) {
+            explainLanguage
+            startedAt
+            storyId
+            storyType
+            targetLanguage
+            title
+            userId
+            chapters {
+                chapterId
+                content
+                createdAt
+                storyId
+                template
+                placeholders {
+                    name
+                    text
+                }
+            }
+        }
+    }
+`

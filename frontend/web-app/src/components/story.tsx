@@ -59,7 +59,6 @@ import {
 import { Loader } from '@/components/prompt-kit/loader'
 import { useRef, useState, useEffect } from 'react'
 
-import { gql } from '@apollo/client'
 import { useQuery, useMutation } from '@apollo/client/react'
 import { v4 as uuidv4 } from 'uuid'
 import { MessageTemplate } from '@/components/message-template';
@@ -69,90 +68,10 @@ import type { StoryInterface } from '@/models/Story.Interface'
 import type { ChapterInterface } from '@/models/Chapter.Interface'
 import type { BucketsInterface } from '@/models/history/Buckets.Interface'
 import { HistoryPoint } from '@/models/history/HistoryPoint.Interface'
+import { LIST_ALL_STORIES, FETCH_STORY_BY_ID, START_STORY } from '@/models/graphql/graphql'
 
 // TODO - replace with real user ID from auth context
 const userId = 'f257727e-94ab-44ac-aa0e-c4d51a0d67ac'
-
-// GraphQL query to list all stories for a user
-const LIST_ALL_STORIES = gql`
-    query ListAllStories {
-        listStories(userId: "${userId}") {
-            explainLanguage
-            startedAt
-            storyId
-            storyType
-            targetLanguage
-            title
-            userId
-        }
-    }
-`
-
-// GraphQL query to fetch a story by ID
-const FETCH_STORY_BY_ID = gql`
-    query FetchStoryById($userId: ID!, $storyId: ID!) {
-        fetchStoryById(userId: $userId, storyId: $storyId) {
-            explainLanguage
-            startedAt
-            storyId
-            storyType
-            targetLanguage
-            title
-            userId
-            chapters {
-                chapterId
-                content
-                createdAt
-                storyId
-                template
-                placeholders {
-                    name
-                    text
-                }
-            }            
-        }
-    }
-`
-
-// GraphQL mutation to start a new story
-const START_STORY = gql`
-    mutation StartStory(
-        $userId: ID!
-        $clientRequestId: ID!
-        $targetLanguage: LanguageName!
-        $explainLanguage: LanguageName!
-        $storyType: StoryType!
-    ) {
-        startStory(
-            args: {
-                userId: $userId
-                clientRequestId: $clientRequestId
-                targetLanguage: $targetLanguage
-                explainLanguage: $explainLanguage
-                storyType: $storyType
-            }
-        ) {
-            explainLanguage
-            startedAt
-            storyId
-            storyType
-            targetLanguage
-            title
-            userId
-            chapters {
-                chapterId
-                content
-                createdAt
-                storyId
-                template
-                placeholders {
-                    name
-                    text
-                }
-            }
-        }
-    }
-`
 
 // const messages = [
 //     {
@@ -261,7 +180,7 @@ function ChatSidebar({
                     </div>
                     <div className="text-lg font-semibold tracking-tight text-gray-900 dark:text-gray-100 select-none">
                         <span className="bg-gradient-to-r from-gray-700 via-gray-500 to-gray-400 bg-clip-text text-transparent">
-                            lingg.ai
+                            <a href="/#/">lingg.ai</a>
                         </span>
                     </div>
                 </div>
@@ -986,7 +905,13 @@ function FullChatApp() {
 
     const [stories, setStories] = useState<StoryInterface[]>([])
     const [newStoryId, setNewStoryId] = useState<string | undefined>(undefined)
-    const { data } = useQuery<{ listStories: StoryInterface[] }>(LIST_ALL_STORIES)
+    const { data } = useQuery<{ listStories: StoryInterface[] }>(LIST_ALL_STORIES,
+        {
+            variables: {
+                userId
+            }
+        }
+    )
 
     // On initial load, set stories from server
     useEffect(() => {

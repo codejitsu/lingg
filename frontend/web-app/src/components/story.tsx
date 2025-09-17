@@ -66,6 +66,9 @@ import { MessageTemplate } from '@/components/message-template';
 import { useParams } from 'react-router-dom'
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import type { StoryInterface } from '@/models/Story.Interface'
+import type { ChapterInterface } from '@/models/Chapter.Interface'
+import type { BucketsInterface } from '@/models/history/Buckets.Interface'
+import { HistoryPoint } from '@/models/history/HistoryPoint.Interface'
 
 // TODO - replace with real user ID from auth context
 const userId = 'f257727e-94ab-44ac-aa0e-c4d51a0d67ac'
@@ -151,19 +154,6 @@ const START_STORY = gql`
     }
 `
 
-type Period = {
-    period: string
-    stories: StoryInterface[]
-}
-
-type Buckets = {
-    today: Period
-    yesterday: Period
-    last7days: Period
-    lastMonth: Period
-    everythingElse: Period
-}
-
 // const messages = [
 //     {
 //         id: 1,
@@ -222,12 +212,12 @@ function ChatSidebar({
         if (newStoryId) setHidden(false)
     }, [newStoryId])
 
-    const buckets: Buckets = {
-        today: { period: 'Today', stories: [] },
-        yesterday: { period: 'Yesterday', stories: [] },
-        last7days: { period: 'Last 7 days', stories: [] },
-        lastMonth: { period: 'Last month', stories: [] },
-        everythingElse: { period: 'Older than a month', stories: [] },
+    const buckets: BucketsInterface = {
+        today: { period: HistoryPoint.TODAY, stories: [] },
+        yesterday: { period: HistoryPoint.YESTERDAY, stories: [] },
+        last7days: { period: HistoryPoint.LAST_7_DAYS, stories: [] },
+        lastMonth: { period: HistoryPoint.LAST_MONTH, stories: [] },
+        everythingElse: { period: HistoryPoint.EVERYTHING_ELSE, stories: [] },
     }
 
     const now = new Date()
@@ -305,23 +295,12 @@ function ChatSidebar({
 }
 
 function ChatContent({ onNewStory, currentStoryId }: { onNewStory: (story: StoryInterface) => void, currentStoryId?: string }) {
-    type Placeholder = {
-        name: string
-        text: string
-    }
-
-    type Chapter = {
-        content: string
-        template: string
-        placeholders: Placeholder[]
-    }
-
     type StartStoryResult = {
         startStory: {
             storyId: string
             title: string
             startedAt: string
-            chapters: Chapter[]
+            chapters: ChapterInterface[]
         }
     }
     const [startStory] = useMutation<StartStoryResult>(START_STORY)
@@ -436,7 +415,7 @@ function ChatContent({ onNewStory, currentStoryId }: { onNewStory: (story: Story
     type FetchStoryResult = {
         storyId: string
         title: string
-        chapters: Chapter[]
+        chapters: ChapterInterface[]
     }
 
     const { data: storyData, error: storyError, loading: storyLoading } = useQuery<{ fetchStoryById: FetchStoryResult }>(

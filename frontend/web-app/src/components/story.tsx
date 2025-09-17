@@ -40,6 +40,7 @@ import {
     ThumbsDown,
     ThumbsUp,
     Trash,
+    PopcornIcon,
 } from 'lucide-react'
 import { CheckIcon, ChevronsUpDownIcon } from 'lucide-react'
 import {
@@ -63,6 +64,7 @@ import { useQuery, useMutation } from '@apollo/client/react'
 import { v4 as uuidv4 } from 'uuid'
 import { MessageTemplate } from '@/components/message-template';
 import { useParams } from 'react-router-dom'
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 // TODO - replace with real user ID from auth context
 const userId = 'f257727e-94ab-44ac-aa0e-c4d51a0d67ac'
@@ -582,6 +584,16 @@ function ChatContent({ onNewStory, currentStoryId }: { onNewStory: (story: Story
             >
                 <ChatContainerRoot className="h-full">
                     <ChatContainerContent className="space-y-0 px-5 py-12">
+                        <div className={`flex flex-col justify-center items-center h-[300px] text-left ${chatMessages.length > 0 ? 'hidden' : ''}`}>
+                            <Alert variant="default" className="bg-secondary w-full max-w-md">
+                                <PopcornIcon className="mx-auto mb-2" />
+                                <AlertTitle className="text-left">Heads up!</AlertTitle>
+                                <AlertDescription className="text-left">
+                                    You can select stories from the list or create a new one.
+                                </AlertDescription>
+                            </Alert>
+                        </div>
+
                         {chatMessages.map((message, index) => {
                             const isAssistant = message.role === 'assistant'
                             const isLastMessage =

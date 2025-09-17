@@ -291,7 +291,7 @@ function ChatSidebar({
                                     key={story.storyId}
                                     className={`text-muted-foreground flex items-center justify-between ${story.storyId === currentStoryId ? 'border-l-4 rounded-none' : ''}`}
                                 >
-                                    <a href={`/story/${story.storyId}`}>{story.title}</a>
+                                    <a href={`/#/story/${story.storyId}`}>{story.title}</a>
                                     {story.storyId === newStoryId && !hidden && (
                                         <span className="ml-2 text-xs font-semibold text-green-700 bg-green-200 rounded px-2 py-0.5 animate-pulse">
                                             New
@@ -455,6 +455,7 @@ function ChatContent({ onNewStory, currentStoryId }: { onNewStory: (story: Story
 
     useEffect(() => {
         if (currentStoryId) {
+            setChatMessages([]);
             setIsLoading(true);
             setIsTyping(true);
         }

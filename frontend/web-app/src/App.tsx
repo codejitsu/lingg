@@ -1,10 +1,10 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { HashRouter, Routes, Route } from 'react-router-dom'
 import { FullChatApp } from '@/components/story'
 import './App.css'
 
 function App() {
     return (
-        <BrowserRouter>
+        <HashRouter>
             <Routes>
                 <Route path="/" element={
                     <div
@@ -29,7 +29,7 @@ function App() {
                     </div>
                 } />
             </Routes>        
-        </BrowserRouter>
+        </HashRouter>
     )
 }
 

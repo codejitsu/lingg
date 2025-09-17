@@ -460,6 +460,12 @@ function ChatContent({ onNewStory, currentStoryId }: { onNewStory: (story: Story
             setChatMessages([]);
             setIsLoading(true);
             setIsTyping(true);
+        } else {
+            setChatMessages([]);
+            setTitle('Start a new story');
+            setIsLoading(false);
+            setIsTyping(false);
+            return
         }
 
         if (storyData?.fetchStoryById?.title) {

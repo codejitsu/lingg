@@ -17,6 +17,17 @@ function App() {
                         <FullChatApp />
                     </div>
                 } />
+                <Route path="#" element={
+                    <div
+                        style={{
+                            border: '1px solid #eee',
+                            borderRadius: '16px',
+                            padding: '4px',
+                        }}
+                    >
+                        <FullChatApp />
+                    </div>
+                } />                
                 <Route path="/story/:storyId" element={
                     <div
                         style={{

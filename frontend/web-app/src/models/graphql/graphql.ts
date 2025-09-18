@@ -4,13 +4,9 @@ import { gql } from '@apollo/client'
 export const LIST_ALL_STORIES = gql`
     query ListAllStories($userId: ID!) {
         listStories(userId: $userId) {
-            explainLanguage
             startedAt
             storyId
-            storyType
-            targetLanguage
             title
-            userId
         }
     }
 `

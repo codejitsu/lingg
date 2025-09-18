@@ -1,3 +1,6 @@
+/// <reference types="vitest" />
+/// <reference types="vite/client" />
+
 import path from "path"
 import tailwindcss from "@tailwindcss/vite"
 import { defineConfig } from 'vite'
@@ -26,5 +29,10 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/graphql/, ''),
       },
     },
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    exclude: ['node_modules'],
   },
 })

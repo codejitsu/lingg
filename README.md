@@ -50,3 +50,6 @@ cargo lambda build --workspace --release
 ## local development
 - add api.endpoint.json to .gitignore
 - store endpoint url and the auth key: ```terraform output -json > ../../../frontend/web-app/src/lib/api.endpoint.json```
+
+## testing
+- pnpm add -D vitest @testing-library/react @testing-library/jest-dom jsdom @testing-library/user-event @types/jest

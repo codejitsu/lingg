@@ -4,7 +4,7 @@ use crate::ai::{build_story_id, generate_new_story};
 
 use lambda_appsync::{appsync_operation, AppsyncError, AppsyncEvent, ID};
 
-use crate::{Operation, StartStoryInput, Story};
+use crate::{Operation, StartStoryInput, Story, StartStoryPayload};
 
 use uuid::Uuid;
 
@@ -37,7 +37,7 @@ pub async fn fetch_story_by_id(
 pub async fn start_story(
     input: StartStoryInput,
     _event: &AppsyncEvent<Operation>,
-) -> Result<Story, AppsyncError> {
+) -> Result<StartStoryPayload, AppsyncError> {
     let story_id = build_story_id(&input.user_id, &input.client_request_id);
     let existing_story = get_story_with_chapters_by_id(&input.user_id, story_id).await;
 
@@ -47,7 +47,10 @@ pub async fn start_story(
                 "Story already exists, returning existing story: {:?} for user: {:?}",
                 story.story_id, input.user_id
             );
-            return Ok(story);
+            return Ok(StartStoryPayload {
+                errors: vec![],
+                story: Some(story),
+            });
         }
         Ok(None) => {
             println!(
@@ -58,9 +61,27 @@ pub async fn start_story(
             let story = generate_new_story(&input).await;
 
             match story {
-                Ok(story) => save_story_to_db(story, input.user_id, input.client_request_id, 0)
-                    .await
-                    .map_err(|e| AppsyncError::new("StorageWriteError", e.to_string())),
+                Ok(story) => {
+                    let save_story_result = save_story_to_db(story, input.user_id, input.client_request_id, 0)
+                    .await;
+                    
+                    match save_story_result {
+                        Ok(saved_story) => {
+                            println!("Story saved successfully: {:?} for user {:?}", saved_story.story_id, input.user_id);
+
+                            Ok(StartStoryPayload {
+                                errors: vec![],
+                                story: Some(saved_story),
+                            })
+                        }
+                        Err(e) => {
+                            println!("Error saving story: {:?} for user {:?}", e, input.user_id);
+
+                            Err(AppsyncError::new("StorageWriteError", e.to_string()))
+                        }
+                        
+                    }
+                },
                 Err(e) => Err(AppsyncError::new("ModelError", e.to_string())),
             }
         }

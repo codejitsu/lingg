@@ -229,10 +229,13 @@ function ChatContent({
 }) {
     type StartStoryResult = {
         startStory: {
-            storyId: string
-            title: string
-            startedAt: string
-            chapters: ChapterInterface[]
+            errors: { message: string }[]
+            story: {
+                storyId: string
+                title: string
+                startedAt: string
+                chapters: ChapterInterface[]
+            }
         }
     }
     const [startStory] = useMutation<StartStoryResult>(START_STORY)
@@ -437,30 +440,30 @@ function ChatContent({
             })
 
             // Optionally, you can display the story or its first chapter as a message
-            if (data?.startStory?.chapters?.[0]?.template) {
+            if (data?.startStory?.story?.chapters?.[0]?.template) {
                 setChatMessages((prev) => [
                     ...prev,
                     {
                         id: prev.length + 1,
                         role: 'assistant',
-                        content: data.startStory.chapters[0].content,
-                        template: data.startStory.chapters[0].template,
-                        placeholders: data.startStory.chapters[0].placeholders,
+                        content: data.startStory.story.chapters[0].content,
+                        template: data.startStory.story.chapters[0].template,
+                        placeholders: data.startStory.story.chapters[0].placeholders,
                     },
                 ])
             }
 
             // Update the title with the returned story title
-            if (data?.startStory?.title) {
-                setTitle(data.startStory.title)
+            if (data?.startStory?.story?.title) {
+                setTitle(data.startStory.story.title)
             }
 
             // Add the new story to the top of the list
-            if (data?.startStory) {
+            if (data?.startStory?.story) {
                 onNewStory({
-                    storyId: data.startStory.storyId,
-                    title: data.startStory.title,
-                    startedAt: data.startStory.startedAt,
+                    storyId: data.startStory.story.storyId,
+                    title: data.startStory.story.title,
+                    startedAt: data.startStory.story.startedAt,
                 })
             }
         } catch (error: unknown) {

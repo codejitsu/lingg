@@ -55,22 +55,27 @@ export const START_STORY = gql`
                 storyType: $storyType
             }
         ) {
-            explainLanguage
-            startedAt
-            storyId
-            storyType
-            targetLanguage
-            title
-            userId
-            chapters {
-                chapterId
-                content
-                createdAt
+            errors {
+                message
+            }
+            story {            
+                explainLanguage
+                startedAt
                 storyId
-                template
-                placeholders {
-                    name
-                    text
+                storyType
+                targetLanguage
+                title
+                userId
+                chapters {
+                    chapterId
+                    content
+                    createdAt
+                    storyId
+                    template
+                    placeholders {
+                        name
+                        text
+                    }
                 }
             }
         }

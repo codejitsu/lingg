@@ -193,7 +193,7 @@ function ChatSidebar({
 
     return (
         <Sidebar>
-            <Header title="lingg.io" />
+            <Header title="lingg.ai" />
             <SidebarContent className="pt-4">
                 {conversationHistory.map((group) => (
                     <SidebarGroup key={group.period}>

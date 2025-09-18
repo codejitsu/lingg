@@ -51,7 +51,7 @@ export const START_STORY = gql`
         $storyType: StoryType!
     ) {
         startStory(
-            args: {
+            input: {
                 userId: $userId
                 clientRequestId: $clientRequestId
                 targetLanguage: $targetLanguage

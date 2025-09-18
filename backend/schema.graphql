@@ -56,7 +56,7 @@ type Story {
     chapters: [Chapter!]!
 }
 
-input StartStoryArguments {
+input StartStoryInput {
     userId: ID!
     clientRequestId: ID!
     targetLanguage: LanguageName!
@@ -73,7 +73,7 @@ input StartStoryArguments {
 #}
 
 type Mutation {
-    startStory(args: StartStoryArguments!): Story!
+    startStory(input: StartStoryInput!): Story!
     #solveTemplate(args: SolveQuizArguments!): QuizResult!
 }
 

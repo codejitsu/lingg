@@ -4,7 +4,7 @@ use crate::ai::{build_story_id, generate_new_story};
 
 use lambda_appsync::{appsync_operation, AppsyncError, AppsyncEvent, ID};
 
-use crate::{Operation, StartStoryArguments, Story};
+use crate::{Operation, StartStoryInput, Story};
 
 use uuid::Uuid;
 
@@ -35,30 +35,30 @@ pub async fn fetch_story_by_id(
 
 #[appsync_operation(mutation(startStory), with_appsync_event)]
 pub async fn start_story(
-    args: StartStoryArguments,
+    input: StartStoryInput,
     _event: &AppsyncEvent<Operation>,
 ) -> Result<Story, AppsyncError> {
-    let story_id = build_story_id(&args.user_id, &args.client_request_id);
-    let existing_story = get_story_with_chapters_by_id(&args.user_id, story_id).await;
+    let story_id = build_story_id(&input.user_id, &input.client_request_id);
+    let existing_story = get_story_with_chapters_by_id(&input.user_id, story_id).await;
 
     match existing_story {
         Ok(Some(story)) => {
             println!(
                 "Story already exists, returning existing story: {:?} for user: {:?}",
-                story.story_id, args.user_id
+                story.story_id, input.user_id
             );
             return Ok(story);
         }
         Ok(None) => {
             println!(
                 "No existing story found, creating new story for user: {:?}",
-                args.user_id
+                input.user_id
             );
 
-            let story = generate_new_story(&args).await;
+            let story = generate_new_story(&input).await;
 
             match story {
-                Ok(story) => save_story_to_db(story, args.user_id, args.client_request_id, 0)
+                Ok(story) => save_story_to_db(story, input.user_id, input.client_request_id, 0)
                     .await
                     .map_err(|e| AppsyncError::new("StorageWriteError", e.to_string())),
                 Err(e) => Err(AppsyncError::new("ModelError", e.to_string())),

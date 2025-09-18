@@ -21,7 +21,6 @@ import {
     SidebarContent,
     SidebarGroup,
     SidebarGroupLabel,
-    SidebarHeader,
     SidebarInset,
     SidebarMenu,
     SidebarMenuButton,
@@ -32,7 +31,6 @@ import { cn } from '@/lib/utils'
 import {
     ArrowUp,
     BookMarked,
-    Bot,
     Copy,
     Languages,
     MessageCircleQuestionMark,
@@ -73,6 +71,8 @@ import {
     FETCH_STORY_BY_ID,
     START_STORY,
 } from '@/models/graphql/graphql'
+
+import Header from './chat/sidebar/children/Header.component'
 
 // TODO - replace with real user ID from auth context
 const userId = 'f257727e-94ab-44ac-aa0e-c4d51a0d67ac'
@@ -177,18 +177,7 @@ function ChatSidebar({
 
     return (
         <Sidebar>
-            <SidebarHeader className="flex flex-row items-center justify-between gap-2 px-2 py-4">
-                <div className="flex flex-row items-center gap-2 px-2">
-                    <div className="bg-primary/10 size-10 rounded-md flex items-center justify-center">
-                        <Bot className="size-6 text-primary" />
-                    </div>
-                    <div className="text-lg font-semibold tracking-tight text-gray-900 dark:text-gray-100 select-none">
-                        <span className="bg-gradient-to-r from-gray-700 via-gray-500 to-gray-400 bg-clip-text text-transparent">
-                            <a href="/#/">lingg.ai</a>
-                        </span>
-                    </div>
-                </div>
-            </SidebarHeader>
+            <Header title="lingg.ai" />
             <SidebarContent className="pt-4">
                 {conversationHistory.map((group) => (
                     <SidebarGroup key={group.period}>

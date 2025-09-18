@@ -4,7 +4,7 @@ use crate::ai::{build_story_id, generate_new_story};
 
 use lambda_appsync::{appsync_operation, AppsyncError, AppsyncEvent, ID};
 
-use crate::{Operation, StartStoryInput, Story, StartStoryPayload};
+use crate::{Operation, StartStoryInput, StartStoryPayload, Story};
 
 use uuid::Uuid;
 
@@ -62,12 +62,15 @@ pub async fn start_story(
 
             match story {
                 Ok(story) => {
-                    let save_story_result = save_story_to_db(story, input.user_id, input.client_request_id, 0)
-                    .await;
-                    
+                    let save_story_result =
+                        save_story_to_db(story, input.user_id, input.client_request_id, 0).await;
+
                     match save_story_result {
                         Ok(saved_story) => {
-                            println!("Story saved successfully: {:?} for user {:?}", saved_story.story_id, input.user_id);
+                            println!(
+                                "Story saved successfully: {:?} for user {:?}",
+                                saved_story.story_id, input.user_id
+                            );
 
                             Ok(StartStoryPayload {
                                 errors: vec![],
@@ -79,9 +82,8 @@ pub async fn start_story(
 
                             Err(AppsyncError::new("StorageWriteError", e.to_string()))
                         }
-                        
                     }
-                },
+                }
                 Err(e) => Err(AppsyncError::new("ModelError", e.to_string())),
             }
         }

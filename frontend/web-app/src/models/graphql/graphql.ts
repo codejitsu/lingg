@@ -58,7 +58,7 @@ export const START_STORY = gql`
             errors {
                 message
             }
-            story {            
+            story {
                 explainLanguage
                 startedAt
                 storyId

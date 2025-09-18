@@ -448,7 +448,8 @@ function ChatContent({
                         role: 'assistant',
                         content: data.startStory.story.chapters[0].content,
                         template: data.startStory.story.chapters[0].template,
-                        placeholders: data.startStory.story.chapters[0].placeholders,
+                        placeholders:
+                            data.startStory.story.chapters[0].placeholders,
                     },
                 ])
             }

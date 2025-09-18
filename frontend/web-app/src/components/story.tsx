@@ -31,12 +31,15 @@ import {
 import { cn } from '@/lib/utils'
 import {
     ArrowUp,
+    BadgeCheck,
     BookMarked,
     Copy,
     ChevronUp,
     Languages,
+    LogOut,
     MessageCircleQuestionMark,
     Pencil,
+    Sparkles,
     ThumbsDown,
     ThumbsUp,
     Trash,
@@ -62,6 +65,8 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
@@ -188,7 +193,7 @@ function ChatSidebar({
 
     return (
         <Sidebar>
-            <Header title="lingg.ai" />
+            <Header title="lingg.io" />
             <SidebarContent className="pt-4">
                 {conversationHistory.map((group) => (
                     <SidebarGroup key={group.period}>
@@ -230,15 +235,18 @@ function ChatSidebar({
                         side="top"
                         className="w-[--radix-popper-anchor-width]"
                         >
-                        <DropdownMenuItem>
-                            <span>Account</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                            <span>Billing</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                            <span>Sign out</span>
-                        </DropdownMenuItem>
+                            <DropdownMenuLabel>Username</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem>
+                                <Sparkles /><span>Upgrade to Pro</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem>
+                                <BadgeCheck /><span>Your Account</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                                <LogOut /><span>Sign out</span>
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                     </SidebarMenuItem>

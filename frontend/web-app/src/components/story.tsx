@@ -19,19 +19,21 @@ import { Button } from '@/components/ui/button'
 import {
     Sidebar,
     SidebarContent,
+    SidebarFooter,
     SidebarGroup,
     SidebarGroupLabel,
     SidebarInset,
     SidebarMenu,
     SidebarMenuButton,
+    SidebarMenuItem,
     SidebarProvider,
-    SidebarTrigger,
 } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
 import {
     ArrowUp,
     BookMarked,
     Copy,
+    ChevronUp,
     Languages,
     MessageCircleQuestionMark,
     Pencil,
@@ -39,6 +41,7 @@ import {
     ThumbsUp,
     Trash,
     PopcornIcon,
+    User2,
 } from 'lucide-react'
 import { CheckIcon, ChevronsUpDownIcon } from 'lucide-react'
 import {
@@ -54,6 +57,14 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover'
+
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+
 import { Loader } from '@/components/prompt-kit/loader'
 import { useRef, useState, useEffect } from 'react'
 
@@ -205,7 +216,35 @@ function ChatSidebar({
                     </SidebarGroup>
                 ))}
             </SidebarContent>
-        </Sidebar>
+            <SidebarFooter className="p-4">
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                        <SidebarMenuButton>
+                            <User2 /> Username
+                            <ChevronUp className="ml-auto" />
+                        </SidebarMenuButton>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                        side="top"
+                        className="w-[--radix-popper-anchor-width]"
+                        >
+                        <DropdownMenuItem>
+                            <span>Account</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                            <span>Billing</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                            <span>Sign out</span>
+                        </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    </SidebarMenuItem>
+                </SidebarMenu>
+            </SidebarFooter>
+    </Sidebar>
     )
 }
 
@@ -480,7 +519,6 @@ function ChatContent({
     return (
         <main className="flex h-[95%] w-full flex-col overflow-hidden">
             <header className="bg-background z-10 flex h-16 w-full shrink-0 items-center gap-2 border-b px-4">
-                <SidebarTrigger className="-ml-1" />
                 <div className="text-foreground">{title}</div>
             </header>
 

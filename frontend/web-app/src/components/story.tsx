@@ -401,6 +401,8 @@ function ChatContent({
         skip: !currentStoryId,
     })
 
+    const workOnExistingStory = currentStoryId ? true : false
+
     useEffect(() => {
         if (currentStoryId) {
             setChatMessages([])
@@ -951,7 +953,7 @@ function ChatContent({
                                         onClick={handleSubmit}
                                         className="rounded-full"
                                     >
-                                        Start new story
+                                        { workOnExistingStory ? 'Verify' : 'Start new story' }
                                         {!isLoading ? (
                                             <ArrowUp size={18} />
                                         ) : (

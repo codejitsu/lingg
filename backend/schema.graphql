@@ -36,6 +36,13 @@ type Placeholder {
     text: String!
 }
 
+enum ChapterStatus {
+    Created
+    VerifiedNoMistakes
+    VerifiedWithMistakes
+    Completed
+}
+
 type Chapter {
     chapterId: ID!
     storyId: ID!
@@ -43,6 +50,7 @@ type Chapter {
     template: String!
     placeholders: [Placeholder!]!
     createdAt: AWSDateTime!
+    status: ChapterStatus!
 }
 
 type Story {

@@ -1,4 +1,5 @@
-use crate::{dynamodb, Chapter, LanguageName, Placeholder, Story, StoryType};
+use crate::{dynamodb, Chapter, ChapterStatus, LanguageName, Placeholder, Story, StoryType};
+// use crate::model_helpers::ChapterStatus;
 
 use aws_sdk_dynamodb::types::{AttributeValue, TransactWriteItem, Update};
 use lambda_appsync::ID;
@@ -121,6 +122,8 @@ pub async fn get_stories_by_user_id(user_id: &ID) -> Result<Vec<Story>, StorageE
                         let created_at =
                             item.get("created_at").and_then(|v| v.as_s().ok()).unwrap();
 
+                        let chapter_status = item.get("status").and_then(|v| v.as_s().ok()).unwrap();
+
                         let placeholders = if let Some(attr) = item.get("placeholders") {
                             if let Ok(list) = attr.as_l() {
                                 list.iter()
@@ -144,10 +147,11 @@ pub async fn get_stories_by_user_id(user_id: &ID) -> Result<Vec<Story>, StorageE
                         let chapter = Chapter {
                             chapter_id: ID::try_from(chapter_id.to_string()).unwrap(),
                             story_id: ID::try_from(story_id.to_string()).unwrap(),
+                            status: ChapterStatus::try_from(chapter_status.as_str()).unwrap(),
                             content: content.to_string().into(),
                             template: template.to_string().into(),
                             created_at: created_at.to_string().into(),
-                            placeholders,
+                            placeholders: placeholders,
                         };
 
                         if let Some(chapters_for_story) = chapters.get_mut(&story_id.to_string()) {
@@ -250,6 +254,8 @@ pub async fn get_story_with_chapters_by_id(
                         let created_at =
                             item.get("created_at").and_then(|v| v.as_s().ok()).unwrap();
 
+                        let chapter_status = item.get("status").and_then(|v| v.as_s().ok()).unwrap();
+
                         let placeholders = if let Some(attr) = item.get("placeholders") {
                             if let Ok(list) = attr.as_l() {
                                 list.iter()
@@ -273,6 +279,7 @@ pub async fn get_story_with_chapters_by_id(
                         chapters.push(Chapter {
                             chapter_id: ID::try_from(chapter_id.to_string()).unwrap(),
                             story_id: ID::try_from(story_id.to_string()).unwrap(),
+                            status: ChapterStatus::try_from(chapter_status.as_str()).unwrap(),
                             content: content.to_string(),
                             template: template.to_string(),
                             created_at: created_at.to_string().into(),
@@ -393,7 +400,12 @@ pub async fn save_story_to_db(
             content = :content, 
             created_at = :created_at,
             placeholders = :placeholders,
-            template = :template",
+            template = :template,
+            status = :status",
+        )
+        .expression_attribute_values(
+            ":status",
+            AttributeValue::S(story.chapters[chapter_index].status.to_string()),
         )
         .expression_attribute_values(
             ":content",

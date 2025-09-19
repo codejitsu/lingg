@@ -2,6 +2,7 @@ mod ai;
 mod operations;
 mod placeholders;
 mod storage;
+mod model_helpers;
 
 use lambda_appsync::appsync_lambda_main;
 

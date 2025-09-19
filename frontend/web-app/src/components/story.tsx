@@ -133,6 +133,7 @@ const initialMessages: {
     role: 'user' | 'assistant'
     content: string
     template: string
+    status?: string
     placeholders: { name: string; text: string }[]
 }[] = []
 
@@ -428,6 +429,7 @@ function ChatContent({
                     content: chapter.content,
                     template: chapter.template,
                     placeholders: chapter.placeholders,
+                    status: chapter.status,
                 })),
             )
         }
@@ -488,6 +490,7 @@ function ChatContent({
                         template: data.startStory.story.chapters[0].template,
                         placeholders:
                             data.startStory.story.chapters[0].placeholders,
+                        status: data.startStory.story.chapters[0].status,
                     },
                 ])
             }

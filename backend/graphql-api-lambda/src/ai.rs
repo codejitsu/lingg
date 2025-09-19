@@ -1,7 +1,7 @@
 use aws_sdk_bedrockruntime::error::SdkError;
 use aws_sdk_bedrockruntime::operation::converse::{ConverseError, ConverseOutput};
 
-use crate::{Chapter, Placeholder, StartStoryInput, Story};
+use crate::{Chapter, ChapterStatus, Placeholder, StartStoryInput, Story};
 
 use lambda_appsync::ID;
 use uuid::Uuid;
@@ -91,6 +91,7 @@ fn process_model_output(
     let chapter = Chapter {
         chapter_id: ID::try_from(chapter_id.to_string()).unwrap(),
         story_id: ID::try_from(story_id.to_string()).unwrap(),
+        status: ChapterStatus::Created,
         content: text,
         template: template,
         created_at: chrono::Utc::now().to_rfc3339().into(),

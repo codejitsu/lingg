@@ -24,6 +24,7 @@ export const FETCH_STORY_BY_ID = gql`
             userId
             chapters {
                 chapterId
+                status
                 content
                 createdAt
                 storyId
@@ -68,6 +69,7 @@ export const START_STORY = gql`
                 userId
                 chapters {
                     chapterId
+                    status
                     content
                     createdAt
                     storyId

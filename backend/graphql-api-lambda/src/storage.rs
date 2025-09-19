@@ -122,7 +122,7 @@ pub async fn get_stories_by_user_id(user_id: &ID) -> Result<Vec<Story>, StorageE
                         let created_at =
                             item.get("created_at").and_then(|v| v.as_s().ok()).unwrap();
 
-                        let chapter_status = item.get("status").and_then(|v| v.as_s().ok()).unwrap();
+                        let chapter_status = item.get("chapter_status").and_then(|v| v.as_s().ok()).unwrap();
 
                         let placeholders = if let Some(attr) = item.get("placeholders") {
                             if let Ok(list) = attr.as_l() {
@@ -254,7 +254,7 @@ pub async fn get_story_with_chapters_by_id(
                         let created_at =
                             item.get("created_at").and_then(|v| v.as_s().ok()).unwrap();
 
-                        let chapter_status = item.get("status").and_then(|v| v.as_s().ok()).unwrap();
+                        let chapter_status = item.get("chapter_status").and_then(|v| v.as_s().ok()).unwrap();
 
                         let placeholders = if let Some(attr) = item.get("placeholders") {
                             if let Ok(list) = attr.as_l() {
@@ -401,10 +401,10 @@ pub async fn save_story_to_db(
             created_at = :created_at,
             placeholders = :placeholders,
             template = :template,
-            status = :status",
+            chapter_status = :chapter_status",
         )
         .expression_attribute_values(
-            ":status",
+            ":chapter_status",
             AttributeValue::S(story.chapters[chapter_index].status.to_string()),
         )
         .expression_attribute_values(

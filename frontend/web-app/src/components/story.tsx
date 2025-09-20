@@ -91,6 +91,8 @@ import {
 import Header from './chat/sidebar/children/Header.component'
 import type { FetchStoryResult } from '@/models/graphql/FetchStoryResult.Interface'
 import type { ChatMessage } from '@/models/messages/ChatMessage.Interface'
+import type { NextAction } from '@/models/messages/NextAction'
+import ChapterStatusInterface from '@/models/ChapterStatus.Interface'
 
 // TODO - replace with real user ID from auth context
 const userId = 'f257727e-94ab-44ac-aa0e-c4d51a0d67ac'
@@ -354,9 +356,11 @@ function ChatContent({
         skip: !currentStoryId,
     })
 
-    const workOnExistingStory = currentStoryId ? true : false
+    const [nextAction, setNextAction] = useState<NextAction | '...'>('...')
 
     useEffect(() => {
+        setNextAction('...')
+        
         if (currentStoryId) {
             setChatMessages([])
             setIsLoading(true)
@@ -384,6 +388,24 @@ function ChatContent({
                     status: chapter.status,
                 })),
             )
+
+            if (storyData.fetchStoryById.chapters.length > 0) {
+                const lastChapter =
+                    storyData.fetchStoryById.chapters[
+                        storyData.fetchStoryById.chapters.length - 1
+                    ]
+                if (lastChapter.status === ChapterStatusInterface.Created) {
+                    setNextAction('VerifyChapter')
+                } else if (lastChapter.status === ChapterStatusInterface.VerifiedNoMistakes) {
+                    setNextAction('StartNewChapter')
+                } else if (lastChapter.status === ChapterStatusInterface.VerifiedWithMistakes) {
+                    setNextAction('FixMistakes')
+                } else if (lastChapter.status === ChapterStatusInterface.Completed) {
+                    setNextAction('StartNewChapter')
+                }
+            } else {
+                setNextAction('StartNewStory')
+            }
         }
 
         if (storyError) {
@@ -445,6 +467,8 @@ function ChatContent({
                         status: data.startStory.story.chapters[0].status,
                     },
                 ])
+
+                setNextAction('VerifyChapter')
             }
 
             // Update the title with the returned story title
@@ -908,7 +932,19 @@ function ChatContent({
                                         onClick={handleSubmit}
                                         className="rounded-full"
                                     >
-                                        { workOnExistingStory ? 'Verify' : 'Start new story' }
+                                        {
+                                            nextAction === '...'
+                                            ? 'Start new story'
+                                            : nextAction === 'StartNewStory'
+                                            ? 'Start new story'
+                                            : nextAction === 'VerifyChapter'
+                                            ? 'Verify'
+                                            : nextAction === 'FixMistakes'
+                                            ? 'Recheck'
+                                            : nextAction === 'StartNewChapter'
+                                            ? 'New Chapter'
+                                            : 'Error'
+                                        }
                                         {!isLoading ? (
                                             <ArrowUp size={18} />
                                         ) : (

@@ -89,53 +89,11 @@ import {
 } from '@/models/graphql/graphql'
 
 import Header from './chat/sidebar/children/Header.component'
+import type { FetchStoryResult } from '@/models/graphql/FetchStoryResult.Interface'
+import type { ChatMessage } from '@/models/messages/ChatMessage.Interface'
 
 // TODO - replace with real user ID from auth context
 const userId = 'f257727e-94ab-44ac-aa0e-c4d51a0d67ac'
-
-// const messages = [
-//     {
-//         id: 1,
-//         role: 'user',
-//         content: 'Hello! Can you help me with a coding question?',
-//         template: 'Hello! Can you help me with a cod{ph-1} question?',
-//         placeholders: [{ name: 'ph-1', text: 'ing' }],
-//     },
-//     {
-//         id: 2,
-//         role: 'assistant',
-//         content:
-//             "Of course! I'd be happy to help with your coding question. What would you like to know?",
-//         template:
-//             "Of course! I'd be happy to help with your cod{ph-1} que{ph-2}ion. What would you like to know?",
-//         placeholders: [{ name: 'ph-1', text: 'ing' }, { name: 'ph-2', text: 'st' }],
-//     },
-//     {
-//         id: 3,
-//         role: 'user',
-//         content: 'How do I create a responsive layout with CSS Grid?',
-//         template: 'How do I create a responsive layout with CSS Grid?',
-//         placeholders: [],
-//     },
-//     {
-//         id: 4,
-//         role: 'assistant',
-//         content:
-//             "Creating a responsive layout with CSS Grid is straightforward. Here's a basic example:\n\n```css\n.container {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));\n  gap: 1rem;\n}\n```\n\nThis creates a grid where:\n- Columns automatically fit as many as possible\n- Each column is at least 250px wide\n- Columns expand to fill available space\n- There's a 1rem gap between items\n\nWould you like me to explain more about how this works?",
-//         template:
-//             "Creating a responsive layout with CSS Grid is straightforward. Here's a basic example:\n\n```css\n.container {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));\n  gap: 1rem;\n}\n```\n\nThis creates a grid where:\n- Columns automatically fit as many as possible\n- Each column is at least 250px wide\n- Columns expand to fill available space\n- There's a 1rem gap between items\n\nWould you like me to explain more about how this works?",
-//         placeholders: [],
-//     },
-// ]
-
-const initialMessages: {
-    id: number
-    role: 'user' | 'assistant'
-    content: string
-    template: string
-    status?: string
-    placeholders: { name: string; text: string }[]
-}[] = []
 
 function ChatSidebar({
     stories,
@@ -279,7 +237,7 @@ function ChatContent({
 
     const [prompt, setPrompt] = useState('')
     const [isLoading, setIsLoading] = useState(false)
-    const [chatMessages, setChatMessages] = useState(initialMessages)
+    const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
     const chatContainerRef = useRef<HTMLDivElement>(null)
 
     const [openTargetLanguage, setOpenTargetLanguage] = useState(false)
@@ -384,12 +342,6 @@ function ChatContent({
         },
     ]
 
-    type FetchStoryResult = {
-        storyId: string
-        title: string
-        chapters: ChapterInterface[]
-    }
-
     const {
         data: storyData,
         error: storyError,
@@ -424,7 +376,7 @@ function ChatContent({
         if (storyData?.fetchStoryById?.chapters) {
             setChatMessages(
                 storyData.fetchStoryById.chapters.map((chapter) => ({
-                    id: 0,
+                    id: chapter.chapterId,
                     role: 'assistant',
                     content: chapter.content,
                     template: chapter.template,
@@ -442,7 +394,7 @@ function ChatContent({
             setChatMessages((prev) => [
                 ...prev,
                 {
-                    id: prev.length + 1,
+                    id: uuidv4(),
                     role: 'assistant',
                     content: `Failed to start story: ${errorMessage}`,
                     template: `Failed to start story: ${errorMessage}`,
@@ -484,7 +436,7 @@ function ChatContent({
                 setChatMessages((prev) => [
                     ...prev,
                     {
-                        id: prev.length + 1,
+                        id: data.startStory.story.chapters[0].chapterId,
                         role: 'assistant',
                         content: data.startStory.story.chapters[0].content,
                         template: data.startStory.story.chapters[0].template,
@@ -516,7 +468,7 @@ function ChatContent({
             setChatMessages((prev) => [
                 ...prev,
                 {
-                    id: prev.length + 1,
+                    id: uuidv4(),
                     role: 'assistant',
                     content: `Failed to start story: ${errorMessage}`,
                     template: `Failed to start story: ${errorMessage}`,

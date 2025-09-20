@@ -892,9 +892,10 @@ function ChatContent({
                                     <Button
                                         size="lg"
                                         disabled={
-                                            !valueExplainLanguage.trim() ||
+                                            nextAction === 'StartNewStory' &&
+                                            (!valueExplainLanguage.trim() ||
                                             !valueTargetLanguage ||
-                                            !valueStoryType.trim() ||
+                                            !valueStoryType.trim()) ||
                                             isLoading
                                         }
                                         onClick={handleSubmit}

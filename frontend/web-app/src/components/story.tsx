@@ -18,10 +18,7 @@ import { ScrollButton } from '@/components/prompt-kit/scroll-button'
 import { Button } from '@/components/ui/button'
 import {
     Sidebar,
-    SidebarContent,
     SidebarFooter,
-    SidebarGroup,
-    SidebarGroupLabel,
     SidebarInset,
     SidebarMenu,
     SidebarMenuButton,
@@ -80,8 +77,6 @@ import { useParams } from 'react-router-dom'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import type { StoryInterface } from '@/models/Story.Interface'
 import type { ChapterInterface } from '@/models/Chapter.Interface'
-import type { BucketsInterface } from '@/models/history/Buckets.Interface'
-import { HistoryPoint } from '@/models/history/HistoryPoint.Interface'
 import {
     LIST_ALL_STORIES,
     FETCH_STORY_BY_ID,
@@ -93,6 +88,7 @@ import type { FetchStoryResult } from '@/models/graphql/FetchStoryResult.Interfa
 import type { ChatMessage } from '@/models/messages/ChatMessage.Interface'
 import type { NextAction } from '@/models/messages/NextAction'
 import ChapterStatusInterface from '@/models/ChapterStatus.Interface'
+import HistoryLinks from './chat/sidebar/children/HistoryLinks.component'
 
 // TODO - replace with real user ID from auth context
 const userId = 'f257727e-94ab-44ac-aa0e-c4d51a0d67ac'
@@ -112,42 +108,6 @@ function ChatSidebar({
         if (newStoryId) setHidden(false)
     }, [newStoryId])
 
-    const buckets: BucketsInterface = {
-        today: { period: HistoryPoint.TODAY, stories: [] },
-        yesterday: { period: HistoryPoint.YESTERDAY, stories: [] },
-        last7days: { period: HistoryPoint.LAST_7_DAYS, stories: [] },
-        lastMonth: { period: HistoryPoint.LAST_MONTH, stories: [] },
-        everythingElse: { period: HistoryPoint.EVERYTHING_ELSE, stories: [] },
-    }
-
-    const now = new Date()
-
-    for (const story of stories) {
-        const startedAt = new Date(story.startedAt)
-        const diffTime = Math.abs(now.getTime() - startedAt.getTime())
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-
-        if (diffDays === 0) {
-            buckets.today.stories.push(story)
-        } else if (diffDays === 1) {
-            buckets.yesterday.stories.push(story)
-        } else if (diffDays <= 7) {
-            buckets.last7days.stories.push(story)
-        } else if (diffDays <= 30) {
-            buckets.lastMonth.stories.push(story)
-        } else {
-            buckets.everythingElse.stories.push(story)
-        }
-    }
-
-    const conversationHistory = [
-        buckets.today,
-        buckets.yesterday,
-        buckets.last7days,
-        buckets.lastMonth,
-        buckets.everythingElse,
-    ].filter((bucket) => bucket.stories.length > 0)
-
     useEffect(() => {
         if (newStoryId) setTimeout(() => setHidden(true), 5000)
     }, [newStoryId])
@@ -155,33 +115,14 @@ function ChatSidebar({
     return (
         <Sidebar>
             <Header title="lingg.ai" />
-            <SidebarContent className="pt-4">
-                {conversationHistory.map((group) => (
-                    <SidebarGroup key={group.period}>
-                        <SidebarGroupLabel className="text-md">
-                            {group.period}
-                        </SidebarGroupLabel>
-                        <SidebarMenu>
-                            {group.stories.map((story) => (
-                                <SidebarMenuButton
-                                    key={story.storyId}
-                                    className={`text-muted-foreground flex items-center justify-between ${story.storyId === currentStoryId ? 'border-l-4 rounded-none' : ''}`}
-                                >
-                                    <a href={`/#/story/${story.storyId}`}>
-                                        {story.title}
-                                    </a>
-                                    {story.storyId === newStoryId &&
-                                        !hidden && (
-                                            <span className="ml-2 text-xs font-semibold text-green-700 bg-green-200 rounded px-2 py-0.5 animate-pulse">
-                                                New
-                                            </span>
-                                        )}
-                                </SidebarMenuButton>
-                            ))}
-                        </SidebarMenu>
-                    </SidebarGroup>
-                ))}
-            </SidebarContent>
+
+            <HistoryLinks
+                stories={stories}
+                newStoryId={newStoryId}
+                currentStoryId={currentStoryId}
+                hidden={hidden}
+            />
+
             <SidebarFooter className="p-4">
                 <SidebarMenu>
                     <SidebarMenuItem>
@@ -685,6 +626,7 @@ function ChatContent({
                     >
                         <div className="flex flex-col">
                             <PromptInputActions className="mt-3 flex w-full items-center justify-between gap-2 px-3 pb-3">
+                                { nextAction === 'StartNewStory' || nextAction === '...' ? (
                                 <div className="flex flex-col items-center gap-2">
                                     <div className="flex items-center gap-2">
                                         <Languages size={18} />
@@ -920,6 +862,8 @@ function ChatContent({
                                         </Popover>
                                     </div>
                                 </div>
+                                ) : (<div></div>) }
+
                                 <div className="flex items-center gap-2">
                                     <Button
                                         size="lg"

@@ -1,10 +1,11 @@
 const ChapterStatusInterface = {
-    Created: "Created",
-    VerifiedNoMistakes: "VerifiedNoMistakes",
-    VerifiedWithMistakes: "VerifiedWithMistakes",
-    Completed: "Completed"
-} as const;
+    Created: 'Created',
+    VerifiedNoMistakes: 'VerifiedNoMistakes',
+    VerifiedWithMistakes: 'VerifiedWithMistakes',
+    Completed: 'Completed',
+} as const
 
-type ChapterStatusInterface = typeof ChapterStatusInterface[keyof typeof ChapterStatusInterface];
+type ChapterStatusInterface =
+    (typeof ChapterStatusInterface)[keyof typeof ChapterStatusInterface]
 
-export default ChapterStatusInterface;
+export default ChapterStatusInterface

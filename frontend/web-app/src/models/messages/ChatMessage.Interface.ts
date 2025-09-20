@@ -1,5 +1,5 @@
-import type ChapterStatusInterface from "../ChapterStatus.Interface"
-import type { PlaceholderInterface } from "../Placeholder.Interface"
+import type ChapterStatusInterface from '../ChapterStatus.Interface'
+import type { PlaceholderInterface } from '../Placeholder.Interface'
 
 export interface ChatMessage {
     id: string

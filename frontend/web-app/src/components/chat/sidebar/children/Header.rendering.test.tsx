@@ -11,5 +11,5 @@ describe('Header.component: rendering', () => {
     it('header link navigates to correct URL', () => {
         const { container } = render(<Header title="lingg.ai" />)
         expect(container.querySelector('a')?.getAttribute('href')).toBe('/#/')
-    })    
+    })
 })

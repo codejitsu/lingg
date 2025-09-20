@@ -9,15 +9,15 @@ import {
     SidebarMenuButton,
 } from '@/components/ui/sidebar'
 
-import type { StoryInterface } from '@/models/Story.Interface';
-import type { BucketsInterface } from '@/models/history/Buckets.Interface';
-import { HistoryPoint } from '@/models/history/HistoryPoint.Interface';
+import type { StoryInterface } from '@/models/Story.Interface'
+import type { BucketsInterface } from '@/models/history/Buckets.Interface'
+import { HistoryPoint } from '@/models/history/HistoryPoint.Interface'
 
 function HistoryLinks({
     stories,
     newStoryId,
     currentStoryId,
-    hidden
+    hidden,
 }: React.ComponentProps<typeof SidebarContent> & {
     stories: StoryInterface[]
     newStoryId?: string
@@ -76,19 +76,18 @@ function HistoryLinks({
                                 <a href={`/#/story/${story.storyId}`}>
                                     {story.title}
                                 </a>
-                                {story.storyId === newStoryId &&
-                                    !hidden && (
-                                        <span className="ml-2 text-xs font-semibold text-green-700 bg-green-200 rounded px-2 py-0.5 animate-pulse">
-                                            New
-                                        </span>
-                                    )}
+                                {story.storyId === newStoryId && !hidden && (
+                                    <span className="ml-2 text-xs font-semibold text-green-700 bg-green-200 rounded px-2 py-0.5 animate-pulse">
+                                        New
+                                    </span>
+                                )}
                             </SidebarMenuButton>
                         ))}
                     </SidebarMenu>
                 </SidebarGroup>
             ))}
         </SidebarContent>
-    );
+    )
 }
 
 export default HistoryLinks

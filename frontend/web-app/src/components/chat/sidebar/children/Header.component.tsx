@@ -1,19 +1,25 @@
 'use client'
 
 import * as React from 'react'
-import {
-    SidebarHeader,
-} from '@/components/ui/sidebar'
+import { SidebarHeader } from '@/components/ui/sidebar'
 
-import {
-    Bot,
-} from 'lucide-react'
+import { Bot } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 
-function Header({ className, title, ...props }: React.ComponentProps<typeof SidebarHeader>) {
+function Header({
+    className,
+    title,
+    ...props
+}: React.ComponentProps<typeof SidebarHeader>) {
     return (
-        <SidebarHeader className={cn("flex flex-row items-center justify-between gap-2 px-2 py-4", className)} {...props}>
+        <SidebarHeader
+            className={cn(
+                'flex flex-row items-center justify-between gap-2 px-2 py-4',
+                className,
+            )}
+            {...props}
+        >
             <div className="flex flex-row items-center gap-2 px-2">
                 <div className="bg-primary/10 size-10 rounded-md flex items-center justify-center">
                     <Bot className="size-6 text-primary" />
@@ -24,7 +30,7 @@ function Header({ className, title, ...props }: React.ComponentProps<typeof Side
                     </span>
                 </div>
             </div>
-        </SidebarHeader>        
+        </SidebarHeader>
     )
 }
 export default Header

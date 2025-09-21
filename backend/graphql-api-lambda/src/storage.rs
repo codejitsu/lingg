@@ -112,9 +112,12 @@ pub async fn get_stories_by_user_id(user_id: &ID) -> Result<Vec<Story>, StorageE
                         );
                     } else if sk.contains("#CHAP#") {
                         // chapter
-                        let chapter = Chapter::try_from(&item).map_err(|e| StorageError(e.to_string()))?;
+                        let chapter =
+                            Chapter::try_from(&item).map_err(|e| StorageError(e.to_string()))?;
 
-                        if let Some(chapters_for_story) = chapters.get_mut(&chapter.story_id.to_string()) {
+                        if let Some(chapters_for_story) =
+                            chapters.get_mut(&chapter.story_id.to_string())
+                        {
                             chapters_for_story.push(chapter);
                         } else {
                             chapters.insert(chapter.story_id.to_string(), vec![chapter]);
@@ -206,7 +209,8 @@ pub async fn get_story_with_chapters_by_id(
                         });
                     } else {
                         // This is a chapter
-                        let chapter = Chapter::try_from(&item).map_err(|e| StorageError(e.to_string()))?;
+                        let chapter =
+                            Chapter::try_from(&item).map_err(|e| StorageError(e.to_string()))?;
 
                         chapters.push(chapter);
                     }

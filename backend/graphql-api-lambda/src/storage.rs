@@ -1,5 +1,4 @@
-use crate::{dynamodb, Chapter, ChapterStatus, LanguageName, Placeholder, Story, StoryType};
-// use crate::model_helpers::ChapterStatus;
+use crate::{dynamodb, Chapter, LanguageName, Story, StoryType};
 
 use aws_sdk_dynamodb::types::{AttributeValue, TransactWriteItem, Update};
 use lambda_appsync::ID;
@@ -113,54 +112,12 @@ pub async fn get_stories_by_user_id(user_id: &ID) -> Result<Vec<Story>, StorageE
                         );
                     } else if sk.contains("#CHAP#") {
                         // chapter
-                        let story_id = sk.split("#").nth(1).unwrap();
-                        let chapter_id = sk.split("#").nth(3).unwrap();
+                        let chapter = Chapter::try_from(&item).map_err(|e| StorageError(e.to_string()))?;
 
-                        let content = item.get("content").and_then(|v| v.as_s().ok()).unwrap();
-
-                        let template = item.get("template").and_then(|v| v.as_s().ok()).unwrap();
-                        let created_at =
-                            item.get("created_at").and_then(|v| v.as_s().ok()).unwrap();
-
-                        let chapter_status = item
-                            .get("chapter_status")
-                            .and_then(|v| v.as_s().ok())
-                            .unwrap();
-
-                        let placeholders = if let Some(attr) = item.get("placeholders") {
-                            if let Ok(list) = attr.as_l() {
-                                list.iter()
-                                    .filter_map(|v| v.as_m().ok())
-                                    .filter_map(|m| {
-                                        let name = m.get("name").and_then(|v| v.as_s().ok())?;
-                                        let text = m.get("text").and_then(|v| v.as_s().ok())?;
-                                        Some(Placeholder {
-                                            name: name.to_string(),
-                                            text: text.to_string(),
-                                        })
-                                    })
-                                    .collect()
-                            } else {
-                                vec![]
-                            }
-                        } else {
-                            vec![]
-                        };
-
-                        let chapter = Chapter {
-                            chapter_id: ID::try_from(chapter_id.to_string()).unwrap(),
-                            story_id: ID::try_from(story_id.to_string()).unwrap(),
-                            status: ChapterStatus::try_from(chapter_status.as_str()).unwrap(),
-                            content: content.to_string().into(),
-                            template: template.to_string().into(),
-                            created_at: created_at.to_string().into(),
-                            placeholders: placeholders,
-                        };
-
-                        if let Some(chapters_for_story) = chapters.get_mut(&story_id.to_string()) {
+                        if let Some(chapters_for_story) = chapters.get_mut(&chapter.story_id.to_string()) {
                             chapters_for_story.push(chapter);
                         } else {
-                            chapters.insert(story_id.to_string(), vec![chapter]);
+                            chapters.insert(chapter.story_id.to_string(), vec![chapter]);
                         }
                     }
                 }
@@ -249,48 +206,9 @@ pub async fn get_story_with_chapters_by_id(
                         });
                     } else {
                         // This is a chapter
-                        let chapter_id = sk.trim_start_matches(
-                            format!("STORY#{}#CHAP#", story_id.to_string()).as_str(),
-                        );
-                        let content = item.get("content").and_then(|v| v.as_s().ok()).unwrap();
-                        let template = item.get("template").and_then(|v| v.as_s().ok()).unwrap();
-                        let created_at =
-                            item.get("created_at").and_then(|v| v.as_s().ok()).unwrap();
+                        let chapter = Chapter::try_from(&item).map_err(|e| StorageError(e.to_string()))?;
 
-                        let chapter_status = item
-                            .get("chapter_status")
-                            .and_then(|v| v.as_s().ok())
-                            .unwrap();
-
-                        let placeholders = if let Some(attr) = item.get("placeholders") {
-                            if let Ok(list) = attr.as_l() {
-                                list.iter()
-                                    .filter_map(|v| v.as_m().ok())
-                                    .filter_map(|m| {
-                                        let name = m.get("name").and_then(|v| v.as_s().ok())?;
-                                        let text = m.get("text").and_then(|v| v.as_s().ok())?;
-                                        Some(Placeholder {
-                                            name: name.to_string(),
-                                            text: text.to_string(),
-                                        })
-                                    })
-                                    .collect()
-                            } else {
-                                vec![]
-                            }
-                        } else {
-                            vec![]
-                        };
-
-                        chapters.push(Chapter {
-                            chapter_id: ID::try_from(chapter_id.to_string()).unwrap(),
-                            story_id: ID::try_from(story_id.to_string()).unwrap(),
-                            status: ChapterStatus::try_from(chapter_status.as_str()).unwrap(),
-                            content: content.to_string(),
-                            template: template.to_string(),
-                            created_at: created_at.to_string().into(),
-                            placeholders,
-                        });
+                        chapters.push(chapter);
                     }
                 }
 
@@ -343,44 +261,7 @@ pub async fn get_chapter_by_id(
     match item {
         Ok(output) => {
             if let Some(item) = output.item {
-                let content = item.get("content").and_then(|v| v.as_s().ok()).unwrap();
-                let template = item.get("template").and_then(|v| v.as_s().ok()).unwrap();
-                let created_at = item.get("created_at").and_then(|v| v.as_s().ok()).unwrap();
-
-                let chapter_status = item
-                    .get("chapter_status")
-                    .and_then(|v| v.as_s().ok())
-                    .unwrap();
-
-                let placeholders = if let Some(attr) = item.get("placeholders") {
-                    if let Ok(list) = attr.as_l() {
-                        list.iter()
-                            .filter_map(|v| v.as_m().ok())
-                            .filter_map(|m| {
-                                let name = m.get("name").and_then(|v| v.as_s().ok())?;
-                                let text = m.get("text").and_then(|v| v.as_s().ok())?;
-                                Some(Placeholder {
-                                    name: name.to_string(),
-                                    text: text.to_string(),
-                                })
-                            })
-                            .collect()
-                    } else {
-                        vec![]
-                    }
-                } else {
-                    vec![]
-                };
-
-                let chapter = Chapter {
-                    chapter_id: chapter_id.clone(),
-                    story_id: story_id.clone(),
-                    status: ChapterStatus::try_from(chapter_status.as_str()).unwrap(),
-                    content: content.to_string().into(),
-                    template: template.to_string().into(),
-                    created_at: created_at.to_string().into(),
-                    placeholders,
-                };
+                let chapter = Chapter::try_from(&item).map_err(|e| StorageError(e.to_string()))?;
 
                 Ok(Some(chapter))
             } else {

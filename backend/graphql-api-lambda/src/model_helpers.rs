@@ -1,5 +1,5 @@
-use std::convert::TryFrom;
 use crate::{ChapterStatus, Placeholder};
+use std::convert::TryFrom;
 
 impl TryFrom<&str> for ChapterStatus {
     type Error = ();
@@ -10,7 +10,7 @@ impl TryFrom<&str> for ChapterStatus {
             "VerifiedNoMistakes" => Ok(ChapterStatus::VerifiedNoMistakes),
             "VerifiedWithMistakes" => Ok(ChapterStatus::VerifiedWithMistakes),
             "Completed" => Ok(ChapterStatus::Completed),
-            
+
             _ => Err(()),
         }
     }

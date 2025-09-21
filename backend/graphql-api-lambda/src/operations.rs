@@ -1,10 +1,14 @@
-use crate::storage::{get_chapter_by_id, get_stories_by_user_id, get_story_with_chapters_by_id, save_story_to_db};
+use crate::storage::{
+    get_chapter_by_id, get_stories_by_user_id, get_story_with_chapters_by_id, save_story_to_db,
+};
 
 use crate::ai::{build_story_id, generate_new_story};
 
 use lambda_appsync::{appsync_operation, AppsyncError, AppsyncEvent, ID};
 
-use crate::{Operation, StartStoryInput, StartStoryPayload, Story, CheckTemplateInput, CheckTemplatePayload};
+use crate::{
+    CheckTemplateInput, CheckTemplatePayload, Operation, StartStoryInput, StartStoryPayload, Story,
+};
 
 use uuid::Uuid;
 

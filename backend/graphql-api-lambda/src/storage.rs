@@ -122,7 +122,10 @@ pub async fn get_stories_by_user_id(user_id: &ID) -> Result<Vec<Story>, StorageE
                         let created_at =
                             item.get("created_at").and_then(|v| v.as_s().ok()).unwrap();
 
-                        let chapter_status = item.get("chapter_status").and_then(|v| v.as_s().ok()).unwrap();
+                        let chapter_status = item
+                            .get("chapter_status")
+                            .and_then(|v| v.as_s().ok())
+                            .unwrap();
 
                         let placeholders = if let Some(attr) = item.get("placeholders") {
                             if let Ok(list) = attr.as_l() {
@@ -254,7 +257,10 @@ pub async fn get_story_with_chapters_by_id(
                         let created_at =
                             item.get("created_at").and_then(|v| v.as_s().ok()).unwrap();
 
-                        let chapter_status = item.get("chapter_status").and_then(|v| v.as_s().ok()).unwrap();
+                        let chapter_status = item
+                            .get("chapter_status")
+                            .and_then(|v| v.as_s().ok())
+                            .unwrap();
 
                         let placeholders = if let Some(attr) = item.get("placeholders") {
                             if let Ok(list) = attr.as_l() {
@@ -309,16 +315,27 @@ pub async fn get_story_with_chapters_by_id(
 // Querying chapter by id:
 // PK = USER#<user_id>
 // SK = STORY#<story_id>#CHAP#<chapter_id>
-pub async fn get_chapter_by_id(user_id: &ID, story_id: &ID, chapter_id: &ID) -> Result<Option<Chapter>, StorageError> {
+pub async fn get_chapter_by_id(
+    user_id: &ID,
+    story_id: &ID,
+    chapter_id: &ID,
+) -> Result<Option<Chapter>, StorageError> {
     let client = dynamodb();
     let table_name = table_name();
 
-    let sk = format!("STORY#{}#CHAP#{}", story_id.to_string(), chapter_id.to_string());
+    let sk = format!(
+        "STORY#{}#CHAP#{}",
+        story_id.to_string(),
+        chapter_id.to_string()
+    );
 
     let item = client
         .get_item()
         .table_name(&table_name)
-        .key("PK", AttributeValue::S(format!("USER#{}", user_id.to_string())))
+        .key(
+            "PK",
+            AttributeValue::S(format!("USER#{}", user_id.to_string())),
+        )
         .key("SK", AttributeValue::S(sk))
         .send()
         .await;
@@ -330,7 +347,10 @@ pub async fn get_chapter_by_id(user_id: &ID, story_id: &ID, chapter_id: &ID) -> 
                 let template = item.get("template").and_then(|v| v.as_s().ok()).unwrap();
                 let created_at = item.get("created_at").and_then(|v| v.as_s().ok()).unwrap();
 
-                let chapter_status = item.get("chapter_status").and_then(|v| v.as_s().ok()).unwrap();
+                let chapter_status = item
+                    .get("chapter_status")
+                    .and_then(|v| v.as_s().ok())
+                    .unwrap();
 
                 let placeholders = if let Some(attr) = item.get("placeholders") {
                     if let Ok(list) = attr.as_l() {
@@ -524,4 +544,3 @@ pub async fn save_story_to_db(
         Err(e) => Err(StorageError(e.to_string())),
     }
 }
-

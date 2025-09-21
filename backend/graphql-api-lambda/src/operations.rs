@@ -4,7 +4,7 @@ use crate::ai::{build_story_id, generate_new_story};
 
 use lambda_appsync::{appsync_operation, AppsyncError, AppsyncEvent, ID};
 
-use crate::{Operation, StartStoryInput, StartStoryPayload, Story, CheckTemplateInput, CheckTemplatePayload, MistakeExplanation};
+use crate::{Operation, StartStoryInput, StartStoryPayload, Story, CheckTemplateInput, CheckTemplatePayload};
 
 use uuid::Uuid;
 

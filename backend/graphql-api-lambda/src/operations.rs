@@ -1,10 +1,10 @@
-use crate::storage::{get_stories_by_user_id, get_story_with_chapters_by_id, save_story_to_db};
+use crate::storage::{get_chapter_by_id, get_stories_by_user_id, get_story_with_chapters_by_id, save_story_to_db};
 
 use crate::ai::{build_story_id, generate_new_story};
 
 use lambda_appsync::{appsync_operation, AppsyncError, AppsyncEvent, ID};
 
-use crate::{Operation, StartStoryInput, StartStoryPayload, Story};
+use crate::{Operation, StartStoryInput, StartStoryPayload, Story, CheckTemplateInput, CheckTemplatePayload, MistakeExplanation};
 
 use uuid::Uuid;
 
@@ -91,4 +91,19 @@ pub async fn start_story(
             return Err(AppsyncError::new("StorageReadError", e.to_string()));
         }
     }
+}
+
+#[appsync_operation(mutation(checkTemplate), with_appsync_event)]
+pub async fn check_template(
+    input: CheckTemplateInput,
+    _event: &AppsyncEvent<Operation>,
+) -> Result<CheckTemplatePayload, AppsyncError> {
+    // check if there is a result for this request Id already - if so return it
+
+    let _chapter = get_chapter_by_id(&input.user_id, &input.story_id, &input.chapter_id).await;
+
+    Ok(CheckTemplatePayload {
+        errors: vec![],
+        mistakes: vec![],
+    })
 }

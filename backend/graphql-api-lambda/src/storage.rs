@@ -306,6 +306,71 @@ pub async fn get_story_with_chapters_by_id(
     }
 }
 
+// Querying chapter by id:
+// PK = USER#<user_id>
+// SK = STORY#<story_id>#CHAP#<chapter_id>
+pub async fn get_chapter_by_id(user_id: &ID, story_id: &ID, chapter_id: &ID) -> Result<Option<Chapter>, StorageError> {
+    let client = dynamodb();
+    let table_name = table_name();
+
+    let sk = format!("STORY#{}#CHAP#{}", story_id.to_string(), chapter_id.to_string());
+
+    let item = client
+        .get_item()
+        .table_name(&table_name)
+        .key("PK", AttributeValue::S(format!("USER#{}", user_id.to_string())))
+        .key("SK", AttributeValue::S(sk))
+        .send()
+        .await;
+
+    match item {
+        Ok(output) => {
+            if let Some(item) = output.item {
+                let content = item.get("content").and_then(|v| v.as_s().ok()).unwrap();
+                let template = item.get("template").and_then(|v| v.as_s().ok()).unwrap();
+                let created_at = item.get("created_at").and_then(|v| v.as_s().ok()).unwrap();
+
+                let chapter_status = item.get("chapter_status").and_then(|v| v.as_s().ok()).unwrap();
+
+                let placeholders = if let Some(attr) = item.get("placeholders") {
+                    if let Ok(list) = attr.as_l() {
+                        list.iter()
+                            .filter_map(|v| v.as_m().ok())
+                            .filter_map(|m| {
+                                let name = m.get("name").and_then(|v| v.as_s().ok())?;
+                                let text = m.get("text").and_then(|v| v.as_s().ok())?;
+                                Some(Placeholder {
+                                    name: name.to_string(),
+                                    text: text.to_string(),
+                                })
+                            })
+                            .collect()
+                    } else {
+                        vec![]
+                    }
+                } else {
+                    vec![]
+                };
+
+                let chapter = Chapter {
+                    chapter_id: chapter_id.clone(),
+                    story_id: story_id.clone(),
+                    status: ChapterStatus::try_from(chapter_status.as_str()).unwrap(),
+                    content: content.to_string().into(),
+                    template: template.to_string().into(),
+                    created_at: created_at.to_string().into(),
+                    placeholders,
+                };
+
+                Ok(Some(chapter))
+            } else {
+                Ok(None)
+            }
+        }
+        Err(e) => Err(StorageError(e.to_string())),
+    }
+}
+
 // User -> [Story]
 // Story -> [Chapter]
 //
@@ -459,3 +524,4 @@ pub async fn save_story_to_db(
         Err(e) => Err(StorageError(e.to_string())),
     }
 }
+

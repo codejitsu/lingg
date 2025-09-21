@@ -83,17 +83,33 @@ type StartStoryPayload {
     story: Story
 }
 
-#input SolveTemplateArguments {
-#    userId: ID!
-#    clientRequestId: ID!
-#    storyId: ID!
-#    chapterId: ID!
-#    placeholders: [Placeholder!]!
-#}
+# check template
+
+input CheckTemplateInput {
+    userId: ID!
+    clientRequestId: ID!
+    storyId: ID!
+    chapterId: ID!
+    placeholders: [Placeholder!]!
+}
+
+type CheckTemplateError {
+    message: String!
+}
+
+type CheckTemplatePayload {
+    errors: [CheckTemplateError!]!
+    mistakes: [MistakeExplanation!]!
+}
+
+type MistakeExplanation {
+    placeholder: Placeholder!
+    explanation: String!
+}
 
 type Mutation {
     startStory(input: StartStoryInput!): StartStoryPayload!
-    #solveTemplate(args: SolveQuizArguments!): QuizResult!
+    checkTemplate(input: CheckTemplateInput!): CheckTemplatePayload!
 }
 
 type Query {

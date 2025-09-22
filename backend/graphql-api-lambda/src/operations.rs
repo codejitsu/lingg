@@ -1,3 +1,4 @@
+use crate::placeholders::apply_template;
 use crate::storage::{
     get_chapter_by_id, get_stories_by_user_id, get_story_with_chapters_by_id, save_story_to_db,
 };
@@ -7,7 +8,7 @@ use crate::ai::{build_story_id, generate_new_story};
 use lambda_appsync::{appsync_operation, AppsyncError, AppsyncEvent, ID};
 
 use crate::{
-    CheckTemplateInput, CheckTemplatePayload, Operation, StartStoryInput, StartStoryPayload, Story,
+    CheckTemplateError, CheckTemplateInput, CheckTemplatePayload, Operation, StartStoryInput, StartStoryPayload, Story
 };
 
 use uuid::Uuid;
@@ -104,10 +105,33 @@ pub async fn check_template(
 ) -> Result<CheckTemplatePayload, AppsyncError> {
     // check if there is a result for this request Id already - if so return it
 
-    let _chapter = get_chapter_by_id(&input.user_id, &input.story_id, &input.chapter_id).await;
+    let chapter = get_chapter_by_id(&input.user_id, &input.story_id, &input.chapter_id).await;
 
-    Ok(CheckTemplatePayload {
-        errors: vec![],
-        mistakes: vec![],
-    })
+    match chapter {
+        Ok(Some(chap)) => {
+            let template_applied = apply_template(&chap.template, &input.placeholders);
+
+            return Ok(CheckTemplatePayload {
+                errors: vec![],
+                mistakes: vec![],
+            });
+        }
+        Ok(None) => {
+            println!(
+                "No existing chapter found for story: {:?}, chapter: {:?}, for user: {:?}",
+                input.story_id, input.chapter_id, input.user_id
+            );
+
+            return Ok(CheckTemplatePayload {
+                errors: vec![CheckTemplateError {
+                    message: "Chapter not found".to_string(),
+                }],
+                mistakes: vec![],
+            });
+        }
+        Err(e) => {
+            return Err(AppsyncError::new("StorageReadError", e.to_string()));
+        }
+        
+    }
 }

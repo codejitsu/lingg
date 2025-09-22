@@ -112,8 +112,7 @@ pub async fn get_stories_by_user_id(user_id: &ID) -> Result<Vec<Story>, StorageE
                         );
                     } else if sk.contains("#CHAP#") {
                         // chapter
-                        let chapter =
-                            Chapter::try_from(&item).map_err(|e| StorageError(e.to_string()))?;
+                        let chapter = Chapter::try_from(&item)?;
 
                         if let Some(chapters_for_story) =
                             chapters.get_mut(&chapter.story_id.to_string())
@@ -209,8 +208,7 @@ pub async fn get_story_with_chapters_by_id(
                         });
                     } else {
                         // This is a chapter
-                        let chapter =
-                            Chapter::try_from(&item).map_err(|e| StorageError(e.to_string()))?;
+                        let chapter = Chapter::try_from(&item)?;
 
                         chapters.push(chapter);
                     }
@@ -265,7 +263,7 @@ pub async fn get_chapter_by_id(
     match item {
         Ok(output) => {
             if let Some(item) = output.item {
-                let chapter = Chapter::try_from(&item).map_err(|e| StorageError(e.to_string()))?;
+                let chapter = Chapter::try_from(&item)?;
 
                 Ok(Some(chapter))
             } else {

@@ -1,9 +1,9 @@
 use aws_sdk_bedrockruntime::error::SdkError;
 use aws_sdk_bedrockruntime::operation::converse::{ConverseError, ConverseOutput};
 
-use crate::{Chapter, ChapterStatus, Placeholder, StartStoryInput, Story};
+use crate::{Chapter, ChapterStatus, LanguageName, Placeholder, StartStoryInput, Story};
 
-use lambda_appsync::ID;
+use lambda_appsync::{serde_json, ID};
 use uuid::Uuid;
 
 use aws_config::BehaviorVersion;
@@ -160,4 +160,59 @@ pub async fn generate_new_story(input: &StartStoryInput) -> Result<Story, Bedroc
         .map_err(|e| BedrockConverseError(e.to_string()))?;
 
     Ok(story)
+}
+
+pub async fn verify_spelling_and_grammar(template: &str, applied_template: &str, target_language: &LanguageName, explain_language: &LanguageName) -> Result<Vec<String>, BedrockConverseError> {
+    let message = format!(
+        "Check the following text for spelling and grammar mistakes. The text is in {} language.
+        Return a list of mistakes found, or return an empty list if no mistakes were found. All found mistakes must be explained in {} language.
+
+        User has filled empty placeholders in the template. Some of the words may be misspelled or grammatically incorrect.
+        Your task is to find mistakes in the filled text, not in the template itself. All words that were part of the template are guaranteed to be correct.
+        Only check the parts that were filled by the user. The text with filled placeholders must make sense.
+
+        Initial template with empty placeholders is below: 
+        --------------------------------------------
+        {}
+
+        Text with filled placeholders is below: 
+        --------------------------------------------
+        {}
+
+        Return the result as a JSON array of strings, where each string is a mistake found.
+        
+        Example:
+        --------
+        [
+            {{
+                \"ph-1\": \"mistake 1\"
+            }},
+            {{
+                \"ph-2\": \"mistake 2\"
+            }}
+        ]",
+        target_language, explain_language, template, applied_template
+    );
+
+    let client = get_client().await;
+    let bedrock_model_id = get_model_id();
+
+    let mistakes_text = client
+        .converse()
+        .model_id(bedrock_model_id)
+        .messages(
+            Message::builder()
+                .role(ConversationRole::User)
+                .content(ContentBlock::Text(message.to_string()))
+                .build()
+                .unwrap(),
+        )
+        .send()
+        .await
+        .map(|output| get_converse_output_text(output).unwrap())
+        .map_err(|e| BedrockConverseError(e.to_string()))?;
+
+    let mistakes: Vec<String> = serde_json::from_str(&mistakes_text).unwrap_or_else(|_| vec![]);
+
+    Ok(mistakes)
 }

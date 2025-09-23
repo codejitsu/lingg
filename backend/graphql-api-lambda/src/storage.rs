@@ -1,4 +1,6 @@
-use crate::{dynamodb, Chapter, ChapterStatus, LanguageName, Story, StoryType, UserInputValueInput};
+use crate::{
+    dynamodb, Chapter, ChapterStatus, LanguageName, Story, StoryType, UserInputValueInput,
+};
 
 use aws_sdk_dynamodb::types::{AttributeValue, TransactWriteItem, Update};
 use lambda_appsync::ID;
@@ -470,9 +472,12 @@ pub async fn store_user_input_for_chapter(
     let update = client
         .update_item()
         .table_name(&table_name)
-        .key("PK", AttributeValue::S(format!("USER#{}", user_id.to_string())))
+        .key(
+            "PK",
+            AttributeValue::S(format!("USER#{}", user_id.to_string())),
+        )
         .key("SK", AttributeValue::S(sk))
-        .update_expression("SET user_input = :user_input, chapter_status = :chapter_status")    
+        .update_expression("SET user_input = :user_input, chapter_status = :chapter_status")
         .expression_attribute_values(
             ":chapter_status",
             AttributeValue::S(ChapterStatus::Completed.to_string()),

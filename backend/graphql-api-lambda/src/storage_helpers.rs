@@ -60,7 +60,10 @@ impl TryFrom<&HashMap<String, AttributeValue>> for Chapter {
                     .filter_map(|m| {
                         let name = m.get("name").and_then(|v| v.as_s().ok())?;
                         let text = m.get("text").and_then(|v| v.as_s().ok())?;
-                        Some(UserInputValue { name: name.to_string(), text: text.to_string() })
+                        Some(UserInputValue {
+                            name: name.to_string(),
+                            text: text.to_string(),
+                        })
                     })
                     .collect()
             } else {

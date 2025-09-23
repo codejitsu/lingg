@@ -124,7 +124,7 @@ async fn get_client() -> Client {
         .timeout_config(
             TimeoutConfig::builder()
                 .read_timeout(Duration::from_secs(3600))
-                .build()
+                .build(),
         )
         .load()
         .await;
@@ -172,7 +172,11 @@ pub async fn generate_new_story(input: &StartStoryInput) -> Result<Story, Bedroc
     Ok(story)
 }
 
-pub async fn generate_new_chapter(story: &str, target_language: &LanguageName, story_id: &ID) -> Result<Chapter, BedrockConverseError> {
+pub async fn generate_new_chapter(
+    story: &str,
+    target_language: &LanguageName,
+    story_id: &ID,
+) -> Result<Chapter, BedrockConverseError> {
     let message = format!(
         "Create a new chapter for the following story in {} language. The chapter should be around 100 words.
         The chapter should continue the story and not repeat anything that was already said in the story.
@@ -213,12 +217,24 @@ pub async fn generate_new_chapter(story: &str, target_language: &LanguageName, s
         content: chapter_text,
         template: template.0,
         created_at: chrono::Utc::now().to_rfc3339().into(),
-        placeholders: template.1.iter().map(|(k, v)| Placeholder { name: k.clone(), text: v.clone() }).collect(),
+        placeholders: template
+            .1
+            .iter()
+            .map(|(k, v)| Placeholder {
+                name: k.clone(),
+                text: v.clone(),
+            })
+            .collect(),
         user_input: vec![],
     })
 }
 
-pub async fn verify_spelling_and_grammar(template: &str, applied_template: &str, target_language: &LanguageName, explain_language: &LanguageName) -> Result<HashMap<String, String>, BedrockConverseError> {
+pub async fn verify_spelling_and_grammar(
+    template: &str,
+    applied_template: &str,
+    target_language: &LanguageName,
+    explain_language: &LanguageName,
+) -> Result<HashMap<String, String>, BedrockConverseError> {
     let message = format!(
         "Check the following text for spelling and grammar mistakes. The text is in {} language.
         Return a list of mistakes found, or return an empty list if no mistakes were found. All found mistakes must be explained in {} language.
@@ -264,7 +280,8 @@ pub async fn verify_spelling_and_grammar(template: &str, applied_template: &str,
         .map(|output| get_converse_output_text(output).unwrap())
         .map_err(|e| BedrockConverseError(e.to_string()))?;
 
-    let mistakes: HashMap<String, String> = serde_json::from_str(&mistakes_text).unwrap_or_else(|_| HashMap::new());
+    let mistakes: HashMap<String, String> =
+        serde_json::from_str(&mistakes_text).unwrap_or_else(|_| HashMap::new());
 
     Ok(mistakes)
 }

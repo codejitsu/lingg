@@ -2,15 +2,20 @@ use std::str::FromStr;
 
 use crate::placeholders::apply_template;
 use crate::storage::{
-    get_chapter_by_id, get_stories_by_user_id, get_story_with_chapters_by_id, store_story, store_user_input_for_chapter,
+    get_chapter_by_id, get_stories_by_user_id, get_story_with_chapters_by_id, store_story,
+    store_user_input_for_chapter,
 };
 
-use crate::ai::{build_story_id, generate_new_chapter, generate_new_story, verify_spelling_and_grammar};
+use crate::ai::{
+    build_story_id, generate_new_chapter, generate_new_story, verify_spelling_and_grammar,
+};
 
 use lambda_appsync::{appsync_operation, AppsyncError, AppsyncEvent, ID};
 
 use crate::{
-    Chapter, ChapterStatus, CheckTemplateError, CheckTemplateInput, CheckTemplatePayload, MistakeExplanation, Operation, Placeholder, StartStoryInput, StartStoryPayload, Story, UserInputValue
+    Chapter, ChapterStatus, CheckTemplateError, CheckTemplateInput, CheckTemplatePayload,
+    MistakeExplanation, Operation, Placeholder, StartStoryInput, StartStoryPayload, Story,
+    UserInputValue,
 };
 
 use uuid::Uuid;
@@ -121,46 +126,91 @@ pub async fn check_template(
                 });
             }
 
-            let template_applied = apply_template(&chap.template, &input.placeholders.iter().map(|ph| UserInputValue { name: ph.name.clone(), text: ph.text.clone() }).collect::<Vec<_>>());
+            let template_applied = apply_template(
+                &chap.template,
+                &input
+                    .placeholders
+                    .iter()
+                    .map(|ph| UserInputValue {
+                        name: ph.name.clone(),
+                        text: ph.text.clone(),
+                    })
+                    .collect::<Vec<_>>(),
+            );
 
             // TODO add first check with some rust nlp lib
 
-            let mistakes_model = verify_spelling_and_grammar(&chap.template, &template_applied, &input.target_language, &input.explain_language).await
-                .map_err(|e| AppsyncError::new("ModelError", e.to_string()))?;
+            let mistakes_model = verify_spelling_and_grammar(
+                &chap.template,
+                &template_applied,
+                &input.target_language,
+                &input.explain_language,
+            )
+            .await
+            .map_err(|e| AppsyncError::new("ModelError", e.to_string()))?;
 
-            let mistakes: Vec<MistakeExplanation> = mistakes_model.into_iter().map(|(ph, explanation)| {
-                MistakeExplanation {
-                    placeholder: input.placeholders.iter().find(|p| p.name == ph).map(|p| Placeholder { name: p.name.clone(), text: p.text.clone() }).unwrap(),
+            let mistakes: Vec<MistakeExplanation> = mistakes_model
+                .into_iter()
+                .map(|(ph, explanation)| MistakeExplanation {
+                    placeholder: input
+                        .placeholders
+                        .iter()
+                        .find(|p| p.name == ph)
+                        .map(|p| Placeholder {
+                            name: p.name.clone(),
+                            text: p.text.clone(),
+                        })
+                        .unwrap(),
                     explanation,
-                }
-            }).collect();
+                })
+                .collect();
 
             let next_chapter: Option<Chapter> = if mistakes.is_empty() {
-                let input_stored = store_user_input_for_chapter(&input.user_id, &input.story_id,
-                    &input.chapter_id, &input.client_request_id, &input.placeholders).await;
+                let input_stored = store_user_input_for_chapter(
+                    &input.user_id,
+                    &input.story_id,
+                    &input.chapter_id,
+                    &input.client_request_id,
+                    &input.placeholders,
+                )
+                .await;
 
                 match input_stored {
                     Ok(_) => {
                         println!("Stored final placeholders for chapter: {:?} of story: {:?} for user: {:?}", 
                             input.chapter_id, input.story_id, input.user_id);
-                        
-                        let story = get_story_with_chapters_by_id(&input.user_id, Uuid::from_str(&input.story_id.to_string()).unwrap()).await;
-                    
+
+                        let story = get_story_with_chapters_by_id(
+                            &input.user_id,
+                            Uuid::from_str(&input.story_id.to_string()).unwrap(),
+                        )
+                        .await;
+
                         match story {
                             Ok(Some(story)) => {
                                 // iterate over all chapters and apply the user input placeholders to each chapter content
                                 // then merge all chapter contents into one string
 
-                                let chapters_merged: String = story.chapters.iter().map(|c| apply_template(&c.template, &c.user_input)).collect::<Vec<String>>().join(" ");
+                                let chapters_merged: String = story
+                                    .chapters
+                                    .iter()
+                                    .map(|c| apply_template(&c.template, &c.user_input))
+                                    .collect::<Vec<String>>()
+                                    .join(" ");
 
-                                let next_chapter = generate_new_chapter(&chapters_merged, &input.target_language, &story.story_id).await;
+                                let next_chapter = generate_new_chapter(
+                                    &chapters_merged,
+                                    &input.target_language,
+                                    &story.story_id,
+                                )
+                                .await;
 
                                 // TODO store chapter in the storage
 
                                 next_chapter.ok()
                             }
                             _ => None,
-                        }                        
+                        }
                     }
                     Err(e) => {
                         println!("Error storing final placeholders for chapter: {:?} of story: {:?} for user: {:?}, error: {:?}", 
@@ -195,6 +245,5 @@ pub async fn check_template(
         Err(e) => {
             return Err(AppsyncError::new("StorageReadError", e.to_string()));
         }
-        
     }
 }

@@ -1,3 +1,7 @@
+use std::collections::HashMap;
+use std::time::Duration;
+
+use aws_config::timeout::TimeoutConfig;
 use aws_sdk_bedrockruntime::error::SdkError;
 use aws_sdk_bedrockruntime::operation::converse::{ConverseError, ConverseOutput};
 
@@ -95,7 +99,8 @@ fn process_model_output(
         content: text,
         template: template,
         created_at: chrono::Utc::now().to_rfc3339().into(),
-        placeholders,
+        placeholders: placeholders,
+        user_input: vec![],
     };
 
     let story = Story {
@@ -116,6 +121,11 @@ async fn get_client() -> Client {
     let aws_region = env::var("REGION").unwrap();
     let sdk_config = aws_config::defaults(BehaviorVersion::latest())
         .region(Region::new(aws_region))
+        .timeout_config(
+            TimeoutConfig::builder()
+                .read_timeout(Duration::from_secs(3600))
+                .build()
+        )
         .load()
         .await;
 
@@ -162,7 +172,53 @@ pub async fn generate_new_story(input: &StartStoryInput) -> Result<Story, Bedroc
     Ok(story)
 }
 
-pub async fn verify_spelling_and_grammar(template: &str, applied_template: &str, target_language: &LanguageName, explain_language: &LanguageName) -> Result<Vec<String>, BedrockConverseError> {
+pub async fn generate_new_chapter(story: &str, target_language: &LanguageName, story_id: &ID) -> Result<Chapter, BedrockConverseError> {
+    let message = format!(
+        "Create a new chapter for the following story in {} language. The chapter should be around 100 words.
+        The chapter should continue the story and not repeat anything that was already said in the story.
+        Don't use any swear words or adult content.
+        The chapter should be not finalized, so we can iterate further. Don't include anyting like 'The End' or 'To be continued'.
+        Dont include any new lines or line breaks. Return only the chapter text.
+
+        ## Story is below:
+        --------------------------------------------
+        {}",
+        target_language, story
+    );
+
+    let client = get_client().await;
+    let bedrock_model_id = get_model_id();
+
+    let chapter_text = client
+        .converse()
+        .model_id(bedrock_model_id)
+        .messages(
+            Message::builder()
+                .role(ConversationRole::User)
+                .content(ContentBlock::Text(message.to_string()))
+                .build()
+                .unwrap(),
+        )
+        .send()
+        .await
+        .map(|output| get_converse_output_text(output).unwrap())
+        .map_err(|e| BedrockConverseError(e.to_string()))?;
+
+    let template = replace_parts_of_words(&chapter_text, 0.3);
+
+    Ok(Chapter {
+        chapter_id: ID::try_from(Uuid::now_v7().to_string()).unwrap(),
+        story_id: story_id.clone(),
+        status: ChapterStatus::Created,
+        content: chapter_text,
+        template: template.0,
+        created_at: chrono::Utc::now().to_rfc3339().into(),
+        placeholders: template.1.iter().map(|(k, v)| Placeholder { name: k.clone(), text: v.clone() }).collect(),
+        user_input: vec![],
+    })
+}
+
+pub async fn verify_spelling_and_grammar(template: &str, applied_template: &str, target_language: &LanguageName, explain_language: &LanguageName) -> Result<HashMap<String, String>, BedrockConverseError> {
     let message = format!(
         "Check the following text for spelling and grammar mistakes. The text is in {} language.
         Return a list of mistakes found, or return an empty list if no mistakes were found. All found mistakes must be explained in {} language.
@@ -179,18 +235,14 @@ pub async fn verify_spelling_and_grammar(template: &str, applied_template: &str,
         --------------------------------------------
         {}
 
-        Return the result as a JSON array of strings, where each string is a mistake found.
+        Return the result as a JSON object, where each field is a placeholder name to mistake mapping.
         
         Example:
         --------
-        [
-            {{
-                \"ph-1\": \"mistake 1\"
-            }},
-            {{
-                \"ph-2\": \"mistake 2\"
-            }}
-        ]",
+        {{
+            \"ph-1\": \"mistake 1\",
+            \"ph-2\": \"mistake 2\"
+        }}",
         target_language, explain_language, template, applied_template
     );
 
@@ -212,7 +264,7 @@ pub async fn verify_spelling_and_grammar(template: &str, applied_template: &str,
         .map(|output| get_converse_output_text(output).unwrap())
         .map_err(|e| BedrockConverseError(e.to_string()))?;
 
-    let mistakes: Vec<String> = serde_json::from_str(&mistakes_text).unwrap_or_else(|_| vec![]);
+    let mistakes: HashMap<String, String> = serde_json::from_str(&mistakes_text).unwrap_or_else(|_| HashMap::new());
 
     Ok(mistakes)
 }

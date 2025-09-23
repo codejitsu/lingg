@@ -2,7 +2,7 @@ use rand::Rng;
 use std::collections::HashMap;
 use unicode_segmentation::UnicodeSegmentation;
 
-use crate::Placeholder;
+use crate::UserInputValue;
 
 pub fn replace_parts_of_words(text: &str, ratio: f64) -> (String, HashMap<String, String>) {
     let mut rng = rand::rng();
@@ -90,7 +90,7 @@ pub fn replace_parts_of_words(text: &str, ratio: f64) -> (String, HashMap<String
 
 pub fn apply_template(
     template: &str,
-    placeholders: &Vec<Placeholder>,
+    placeholders: &Vec<UserInputValue>,
 ) -> String {
     let mut result = template.to_string();
     let placeholder_map: HashMap<String, String> = placeholders
@@ -116,7 +116,7 @@ mod tests {
     fn test_apply_template_basic() {
         let template = "Hello, {name}!";
         let placeholders = vec![
-            Placeholder { name: "name".to_string(), text: "Alice".to_string() }
+            UserInputValue { name: "name".to_string(), text: "Alice".to_string() }
         ];
         let result = apply_template(template, &placeholders);
         assert_eq!(result, "Hello, Alice!");
@@ -126,9 +126,9 @@ mod tests {
     fn test_apply_template_multiple_placeholders() {
         let template = "{greeting}, {name}! Today is {day}.";
         let placeholders = vec![
-            Placeholder { name: "greeting".to_string(), text: "Hi".to_string() },
-            Placeholder { name: "name".to_string(), text: "Bob".to_string() },
-            Placeholder { name: "day".to_string(), text: "Monday".to_string() },
+            UserInputValue { name: "greeting".to_string(), text: "Hi".to_string() },
+            UserInputValue { name: "name".to_string(), text: "Bob".to_string() },
+            UserInputValue { name: "day".to_string(), text: "Monday".to_string() },
         ];
         let result = apply_template(template, &placeholders);
         assert_eq!(result, "Hi, Bob! Today is Monday.");
@@ -138,7 +138,7 @@ mod tests {
     fn test_apply_template_missing_placeholder() {
         let template = "Hello, {name}! Welcome to {place}.";
         let placeholders = vec![
-            Placeholder { name: "name".to_string(), text: "Charlie".to_string() }
+            UserInputValue { name: "name".to_string(), text: "Charlie".to_string() }
         ];
         let result = apply_template(template, &placeholders);
         assert_eq!(result, "Hello, Charlie! Welcome to {place}.");
@@ -148,7 +148,7 @@ mod tests {
     fn test_apply_template_empty_template() {
         let template = "";
         let placeholders = vec![
-            Placeholder { name: "name".to_string(), text: "Dana".to_string() }
+            UserInputValue { name: "name".to_string(), text: "Dana".to_string() }
         ];
         let result = apply_template(template, &placeholders);
         assert_eq!(result, "");
@@ -166,7 +166,7 @@ mod tests {
     fn test_apply_template_placeholder_with_braces_in_text() {
         let template = "Value: {key}";
         let placeholders = vec![
-            Placeholder { name: "key".to_string(), text: "{42}".to_string() }
+            UserInputValue { name: "key".to_string(), text: "{42}".to_string() }
         ];
         let result = apply_template(template, &placeholders);
         assert_eq!(result, "Value: {42}");
@@ -176,7 +176,7 @@ mod tests {
     fn test_apply_template_multiple_occurrences() {
         let template = "{word} is a {word}.";
         let placeholders = vec![
-            Placeholder { name: "word".to_string(), text: "test".to_string() }
+            UserInputValue { name: "word".to_string(), text: "test".to_string() }
         ];
         let result = apply_template(template, &placeholders);
         assert_eq!(result, "test is a test.");
@@ -186,7 +186,7 @@ mod tests {
     fn test_apply_template_unicode_placeholder_names() {
         let template = "Привіт, {ім'я}!";
         let placeholders = vec![
-            Placeholder { name: "ім'я".to_string(), text: "Олег".to_string() }
+            UserInputValue { name: "ім'я".to_string(), text: "Олег".to_string() }
         ];
         let result = apply_template(template, &placeholders);
         assert_eq!(result, "Привіт, Олег!");

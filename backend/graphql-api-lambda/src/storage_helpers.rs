@@ -2,7 +2,7 @@ use aws_sdk_dynamodb::types::AttributeValue;
 use lambda_appsync::ID;
 use std::{collections::HashMap, convert::TryFrom};
 
-use crate::{storage::StorageError, Chapter, ChapterStatus, Placeholder};
+use crate::{storage::StorageError, Chapter, ChapterStatus, Placeholder, UserInputValue};
 
 impl TryFrom<&HashMap<String, AttributeValue>> for Chapter {
     type Error = StorageError;
@@ -53,6 +53,23 @@ impl TryFrom<&HashMap<String, AttributeValue>> for Chapter {
             vec![]
         };
 
+        let user_input = if let Some(attr) = item.get("user_input") {
+            if let Ok(list) = attr.as_l() {
+                list.iter()
+                    .filter_map(|v| v.as_m().ok())
+                    .filter_map(|m| {
+                        let name = m.get("name").and_then(|v| v.as_s().ok())?;
+                        let text = m.get("text").and_then(|v| v.as_s().ok())?;
+                        Some(UserInputValue { name: name.to_string(), text: text.to_string() })
+                    })
+                    .collect()
+            } else {
+                vec![]
+            }
+        } else {
+            vec![]
+        };
+
         Ok(Chapter {
             chapter_id: ID::try_from(chapter_id.to_string())
                 .map_err(|_| "Cannot parse 'chapter_id' value")?,
@@ -63,7 +80,8 @@ impl TryFrom<&HashMap<String, AttributeValue>> for Chapter {
             content: content.to_string().into(),
             template: template.to_string().into(),
             created_at: created_at.to_string().into(),
-            placeholders,
+            placeholders: placeholders,
+            user_input: user_input,
         })
     }
 }

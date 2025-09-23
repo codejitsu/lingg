@@ -1,4 +1,4 @@
-use crate::{dynamodb, Chapter, LanguageName, Story, StoryType};
+use crate::{dynamodb, Chapter, ChapterStatus, LanguageName, Story, StoryType, UserInputValueInput};
 
 use aws_sdk_dynamodb::types::{AttributeValue, TransactWriteItem, Update};
 use lambda_appsync::ID;
@@ -287,7 +287,7 @@ pub async fn get_chapter_by_id(
 //
 // PK = USER#<user_id>
 // SK = STORY#<story_id>#CHAP#<chapter_id>
-pub async fn save_story_to_db(
+pub async fn store_story(
     story: Story,
     user_id: ID,
     client_request_id: ID,
@@ -368,6 +368,7 @@ pub async fn save_story_to_db(
             content = :content, 
             created_at = :created_at,
             placeholders = :placeholders,
+            user_input = :user_input,
             template = :template,
             chapter_status = :chapter_status",
         )
@@ -388,6 +389,25 @@ pub async fn save_story_to_db(
             AttributeValue::L(
                 story.chapters[chapter_index]
                     .placeholders
+                    .iter()
+                    .map(|p| {
+                        AttributeValue::M(
+                            vec![
+                                ("name".into(), AttributeValue::S(p.name.clone())),
+                                ("text".into(), AttributeValue::S(p.text.clone())),
+                            ]
+                            .into_iter()
+                            .collect(),
+                        )
+                    })
+                    .collect(),
+            ),
+        )
+        .expression_attribute_values(
+            ":user_input",
+            AttributeValue::L(
+                story.chapters[chapter_index]
+                    .user_input
                     .iter()
                     .map(|p| {
                         AttributeValue::M(
@@ -424,6 +444,63 @@ pub async fn save_story_to_db(
 
     match tx {
         Ok(_) => Ok(story),
+        Err(e) => Err(StorageError(e.to_string())),
+    }
+}
+
+// Just update the only user_input field of the chapter
+// PK = USER#<user_id>
+// SK = STORY#<story_id>#CHAP#<chapter_id>
+pub async fn store_user_input_for_chapter(
+    user_id: &ID,
+    story_id: &ID,
+    chapter_id: &ID,
+    _client_request_id: &ID,
+    user_input: &Vec<UserInputValueInput>,
+) -> Result<(), StorageError> {
+    let client = dynamodb();
+    let table_name = table_name();
+
+    let sk = format!(
+        "STORY#{}#CHAP#{}",
+        story_id.to_string(),
+        chapter_id.to_string()
+    );
+
+    let update = client
+        .update_item()
+        .table_name(&table_name)
+        .key("PK", AttributeValue::S(format!("USER#{}", user_id.to_string())))
+        .key("SK", AttributeValue::S(sk))
+        .update_expression("SET user_input = :user_input, chapter_status = :chapter_status")    
+        .expression_attribute_values(
+            ":chapter_status",
+            AttributeValue::S(ChapterStatus::Completed.to_string()),
+        )
+        .expression_attribute_values(
+            ":user_input",
+            AttributeValue::L(
+                user_input
+                    .iter()
+                    .map(|p| {
+                        AttributeValue::M(
+                            vec![
+                                ("name".into(), AttributeValue::S(p.name.clone())),
+                                ("text".into(), AttributeValue::S(p.text.clone())),
+                            ]
+                            .into_iter()
+                            .collect(),
+                        )
+                    })
+                    .collect(),
+            ),
+        )
+        .condition_expression("attribute_exists(PK) AND attribute_exists(SK)")
+        .send()
+        .await;
+
+    match update {
+        Ok(_) => Ok(()),
         Err(e) => Err(StorageError(e.to_string())),
     }
 }

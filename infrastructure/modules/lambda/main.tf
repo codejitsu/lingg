@@ -88,7 +88,7 @@ resource "aws_lambda_function" "graphql_api_lambda" {
 
   runtime     = var.lambda_runtime
   handler     = "bootstrap"
-  timeout     = 10
+  timeout     = 300
   memory_size = 256
 
   tags_all = var.graphql_api_lambda_tags

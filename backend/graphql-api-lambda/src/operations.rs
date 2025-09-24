@@ -2,8 +2,7 @@ use std::str::FromStr;
 
 use crate::placeholders::apply_template;
 use crate::storage::{
-    get_chapter_by_id, get_stories_by_user_id, get_story_with_chapters_by_id, store_story,
-    store_user_input_for_chapter,
+    get_chapter_by_id, get_stories_by_user_id, get_story_with_chapters_by_id, store_chapter, store_story, store_user_input_for_chapter
 };
 
 use crate::ai::{
@@ -166,6 +165,7 @@ pub async fn check_template(
                 .collect();
 
             let next_chapter: Option<Chapter> = if mistakes.is_empty() {
+                // TODO think about partial failiure handling here (transaction or saga pattern)
                 let input_stored = store_user_input_for_chapter(
                     &input.user_id,
                     &input.story_id,
@@ -198,16 +198,41 @@ pub async fn check_template(
                                     .collect::<Vec<String>>()
                                     .join(" ");
 
-                                let next_chapter = generate_new_chapter(
+                                let next_chapter_result = generate_new_chapter(
                                     &chapters_merged,
                                     &input.target_language,
                                     &story.story_id,
                                 )
                                 .await;
 
-                                // TODO store chapter in the storage
+                                let next_chapter = match next_chapter_result {
+                                    Ok(chapter) => {
+                                        println!("Generated next chapter for story: {:?}, chapter: {:?}", 
+                                            story.story_id, chapter.chapter_id);
 
-                                next_chapter.ok()
+                                        let store_chapter_result = store_chapter(&input.user_id, &chapter).await;
+                                        
+                                        match store_chapter_result {
+                                            Ok(_) => {
+                                                println!("Stored next chapter for story: {:?}, chapter: {:?}", 
+                                                    story.story_id, chapter.chapter_id);
+                                                Some(chapter)
+                                            },
+                                            Err(e) => {
+                                                println!("Error storing next chapter for story: {:?}, chapter: {:?}, error: {:?}", 
+                                                    story.story_id, chapter.chapter_id, e);
+                                                None
+                                            }
+                                        }
+                                    },
+                                    Err(e) => {
+                                        println!("Error generating next chapter for story: {:?}, error: {:?}", 
+                                            story.story_id, e);
+                                        None    
+                                    }
+                                };
+
+                                next_chapter
                             }
                             _ => None,
                         }

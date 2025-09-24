@@ -509,3 +509,65 @@ pub async fn store_user_input_for_chapter(
         Err(e) => Err(StorageError(e.to_string())),
     }
 }
+
+pub async fn store_chapter(user_id: &ID, chapter: &Chapter) -> Result<(), StorageError> {
+    let client = dynamodb();
+    let table_name = table_name();
+
+    let sk = format!(
+        "STORY#{}#CHAP#{}",
+        chapter.story_id.to_string(),
+        chapter.chapter_id.to_string()
+    );
+
+    // PK = USER#<user_id>
+    // SK = STORY#<story_id>#CHAP#<chapter_id>
+    let put = client.put_item()
+        .table_name(&table_name)
+        .item("PK", AttributeValue::S(format!("USER#{}", user_id)))
+        .item("SK", AttributeValue::S(sk))
+        .item("chapter_status", AttributeValue::S(chapter.status.to_string()))
+        .item("content", AttributeValue::S(chapter.content.clone()))
+        .item("created_at", AttributeValue::S(chapter.created_at.to_string()))
+        .item("placeholders", AttributeValue::L(
+            chapter
+                .placeholders
+                .iter()
+                .map(|p| {
+                    AttributeValue::M(
+                        vec![
+                            ("name".into(), AttributeValue::S(p.name.clone())),
+                            ("text".into(), AttributeValue::S(p.text.clone())),
+                        ]
+                        .into_iter()
+                        .collect(),
+                    )
+                })
+                .collect(),
+        ))
+        .item("user_input", AttributeValue::L(
+            chapter
+                .user_input
+                .iter()
+                .map(|p| {
+                    AttributeValue::M(
+                        vec![
+                            ("name".into(), AttributeValue::S(p.name.clone())),
+                            ("text".into(), AttributeValue::S(p.text.clone())),
+                        ]
+                        .into_iter()
+                        .collect(),
+                    )
+                })
+                .collect(),
+        ))
+        .item("template", AttributeValue::S(chapter.template.clone()))
+        .condition_expression("attribute_not_exists(SK)")
+        .send()
+        .await;
+
+    match put {
+        Ok(_) => Ok(()),
+        Err(e) => Err(StorageError(e.to_string())),
+    }
+}

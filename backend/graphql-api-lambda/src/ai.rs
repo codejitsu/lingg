@@ -102,6 +102,7 @@ fn process_model_output(
         placeholders: placeholders,
         user_input: vec![],
         completed_at: None,
+        finalized_content: None,
     };
 
     let story = Story {
@@ -228,6 +229,7 @@ pub async fn generate_new_chapter(
             .collect(),
         user_input: vec![],
         completed_at: None,
+        finalized_content: None,
     })
 }
 

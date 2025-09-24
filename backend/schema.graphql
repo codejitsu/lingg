@@ -58,6 +58,7 @@ type Chapter {
     createdAt: AWSDateTime!
     completedAt: AWSDateTime
     status: ChapterStatus!
+    finalizedContent: String
 }
 
 type Story {

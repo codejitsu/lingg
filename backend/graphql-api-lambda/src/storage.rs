@@ -477,10 +477,14 @@ pub async fn store_user_input_for_chapter(
             AttributeValue::S(format!("USER#{}", user_id.to_string())),
         )
         .key("SK", AttributeValue::S(sk))
-        .update_expression("SET user_input = :user_input, chapter_status = :chapter_status")
+        .update_expression("SET user_input = :user_input, chapter_status = :chapter_status, completed_at = :completed_at")
         .expression_attribute_values(
             ":chapter_status",
             AttributeValue::S(ChapterStatus::Completed.to_string()),
+        )
+        .expression_attribute_values(
+            ":completed_at",
+            AttributeValue::S(chrono::Utc::now().to_rfc3339()),
         )
         .expression_attribute_values(
             ":user_input",
@@ -562,6 +566,13 @@ pub async fn store_chapter(user_id: &ID, chapter: &Chapter) -> Result<(), Storag
                 .collect(),
         ))
         .item("template", AttributeValue::S(chapter.template.clone()))
+        .item(
+            "completed_at",
+            match &chapter.completed_at {
+                Some(val) => AttributeValue::S(val.to_string()),
+                None => AttributeValue::Null(true),
+            },
+        )
         .condition_expression("attribute_not_exists(SK)")
         .send()
         .await;

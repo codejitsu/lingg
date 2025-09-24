@@ -31,6 +31,10 @@ impl TryFrom<&HashMap<String, AttributeValue>> for Chapter {
             .and_then(|v| v.as_s().ok())
             .ok_or("Error by reading 'created_at' field.")?;
 
+        let completed_at = item
+            .get("completed_at")
+            .and_then(|v| v.as_s().ok());
+
         let chapter_status = item
             .get("chapter_status")
             .and_then(|v| v.as_s().ok())
@@ -85,6 +89,7 @@ impl TryFrom<&HashMap<String, AttributeValue>> for Chapter {
             created_at: created_at.to_string().into(),
             placeholders: placeholders,
             user_input: user_input,
+            completed_at: completed_at.map(|d| d.to_string().into()),
         })
     }
 }

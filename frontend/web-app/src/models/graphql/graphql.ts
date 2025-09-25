@@ -26,7 +26,9 @@ export const FETCH_STORY_BY_ID = gql`
                 chapterId
                 status
                 content
+                finalizedContent
                 createdAt
+                completedAt
                 storyId
                 template
                 placeholders {

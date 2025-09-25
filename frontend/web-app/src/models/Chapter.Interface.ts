@@ -5,6 +5,7 @@ export interface ChapterInterface {
     chapterId: string
     status: ChapterStatusInterface
     content: string
+    finalizedContent?: string
     template: string
     placeholders: PlaceholderInterface[]
 }

@@ -31,6 +31,7 @@ import {
     BadgeCheck,
     BookMarked,
     Copy,
+    CheckCheck,
     ChevronUp,
     Languages,
     LogOut,
@@ -327,6 +328,7 @@ function ChatContent({
                     id: chapter.chapterId,
                     role: 'assistant',
                     content: chapter.content,
+                    finalizedContent: chapter.finalizedContent,
                     template: chapter.template,
                     placeholders: chapter.placeholders,
                     status: chapter.status,
@@ -491,6 +493,7 @@ function ChatContent({
                             const isAssistant = message.role === 'assistant'
                             const isLastMessage =
                                 index === chatMessages.length - 1
+                            const isCompletedChapter = message.status === ChapterStatusInterface.Completed
 
                             return (
                                 <Message
@@ -503,9 +506,13 @@ function ChatContent({
                                     )}
                                 >
                                     {isAssistant ? (
-                                        <div className="group flex w-full flex-col gap-0">
+                                        <div className="group flex w-full flex-col gap-2">
                                             <div className="text-secondary-foreground prose flex-1 rounded-lg bg-secondary text-left p-3">
-                                                {
+                                                { isCompletedChapter ? (
+                                                    <MessageContent className="bg-muted text-primary max-w-[85%] rounded-3xl px-5 py-2.5 sm:max-w-[100%] text-justify">
+                                                        {message.finalizedContent ? message.finalizedContent : "No content available"}
+                                                    </MessageContent>
+                                                ) : (
                                                     <MessageTemplate
                                                         template={
                                                             message.template
@@ -513,18 +520,17 @@ function ChatContent({
                                                         placeholdersMap={
                                                             message.placeholders
                                                         }
-                                                    />
+                                                    />                                                    
+                                                )
                                                 }
                                             </div>
                                             <MessageActions
-                                                className={cn(
-                                                    '-ml-2.5 flex gap-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100',
-                                                    isLastMessage &&
-                                                        'opacity-100',
-                                                )}
+                                                className=
+                                                    '-ml-2.5 self-end flex gap-0 py-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100 text-right opacity-100'
+                                                
                                             >
                                                 <MessageAction
-                                                    tooltip="Copy"
+                                                    tooltip="Completed"
                                                     delayDuration={100}
                                                 >
                                                     <Button
@@ -532,11 +538,11 @@ function ChatContent({
                                                         size="icon"
                                                         className="rounded-full"
                                                     >
-                                                        <Copy />
+                                                        <CheckCheck className={`size-4 ${isCompletedChapter ? "text-green-500" : ""}`}/>
                                                     </Button>
                                                 </MessageAction>
                                                 <MessageAction
-                                                    tooltip="Upvote"
+                                                    tooltip="Good job!"
                                                     delayDuration={100}
                                                 >
                                                     <Button
@@ -545,18 +551,6 @@ function ChatContent({
                                                         className="rounded-full"
                                                     >
                                                         <ThumbsUp />
-                                                    </Button>
-                                                </MessageAction>
-                                                <MessageAction
-                                                    tooltip="Downvote"
-                                                    delayDuration={100}
-                                                >
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="rounded-full"
-                                                    >
-                                                        <ThumbsDown />
                                                     </Button>
                                                 </MessageAction>
                                             </MessageActions>

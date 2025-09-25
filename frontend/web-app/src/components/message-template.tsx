@@ -1,4 +1,4 @@
-import React, { useState, type ChangeEvent } from 'react'
+import React, { useEffect, useState, type ChangeEvent } from 'react'
 
 interface MessageTemplateProps {
     template: string
@@ -22,6 +22,10 @@ export const MessageTemplate: React.FC<MessageTemplateProps> = ({
     const [values, setValues] = useState<Record<string, string>>(
         placeholders.reduce((acc, ph) => ({ ...acc, [ph]: '' }), {}),
     )
+
+    useEffect(() => {
+        onChange?.(values)
+    }, [values, onChange])
 
     // Handle input change
     const handleInputChange =

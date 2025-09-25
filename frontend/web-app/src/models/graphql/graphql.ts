@@ -85,3 +85,46 @@ export const START_STORY = gql`
         }
     }
 `
+
+// GraphQL mutation to apply values to a template and check its validity
+export const CHECK_TEMPLATE = gql`
+    mutation CheckTemplate(
+        $userId: ID!
+        $storyId: ID!
+        $chapterId: ID!
+        $clientRequestId: ID!
+        $targetLanguage: LanguageName!
+        $explainLanguage: LanguageName!        
+        $placeholders: [UserInputValueInput!]!
+    ) {
+        checkTemplate(input: { userId: $userId, storyId: $storyId, chapterId: $chapterId, clientRequestId: $clientRequestId, targetLanguage: $targetLanguage, explainLanguage: $explainLanguage, placeholders: $placeholders }) {
+            chapter {
+                    chapterId
+                    content
+                    createdAt
+                    placeholders {
+                        name
+                        text
+                    }
+                    status
+                    storyId
+                    template
+                    userInput {
+                        name
+                        text
+                    }
+                    completedAt
+                }
+                errors {
+                    message
+                }
+                mistakes {
+                    explanation
+                    placeholder {
+                        name
+                        text
+                    }
+                }
+            }
+        }
+`

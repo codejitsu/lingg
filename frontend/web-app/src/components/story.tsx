@@ -329,6 +329,7 @@ function ChatContent({
             setIsLoading(true)
             setIsTyping(true)
         } else {
+            setNextAction('StartNewStory')            
             setChatMessages([])
             setTitle('Start a new story')
             setIsLoading(false)
@@ -508,6 +509,14 @@ function ChatContent({
 
                 if (data?.checkTemplate?.chapter) {
                     // TODO the previous chapter should become read-only
+
+                    chatMessages[chatMessages.length - 1].status = ChapterStatusInterface.Completed
+
+                    chatMessages[chatMessages.length - 1].finalizedContent = Object.entries(placeholders).reduce(
+                        (content, [name, text]) =>
+                            content.replace(`{${name}}`, text),
+                        chatMessages[chatMessages.length - 1].template || '',
+                    )
 
                     // Update status of the latest chat message before adding a new chapter
                     setChatMessages((prev) => {

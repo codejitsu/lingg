@@ -604,7 +604,7 @@ function ChatContent({
                             </Alert>
                         </div>
 
-                        {chatMessages.map((message, index) => {
+                        {chatMessages.map((message) => {
                             const isAssistant = message.role === 'assistant'
                             const isCompletedChapter = message.status === ChapterStatusInterface.Completed
 

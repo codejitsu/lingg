@@ -73,6 +73,7 @@ import type { NextAction } from '@/models/messages/NextAction'
 import ChapterStatusInterface from '@/models/ChapterStatus.Interface'
 import HistoryLinks from './chat/sidebar/children/HistoryLinks.component'
 import Footer from './chat/sidebar/children/Footer.component'
+import type { MistakeInterface } from '@/models/messages/Mistake.Interface'
 
 // TODO - replace with real user ID from auth context
 const userId = 'f257727e-94ab-44ac-aa0e-c4d51a0d67ac'
@@ -132,13 +133,7 @@ function ChatContent({
     type CheckTemplateResult = {
         checkTemplate: {
             errors: { message: string }[]
-            mistakes: { 
-                explanation: string 
-                placeholder: { 
-                    name: string 
-                    text: string
-                }
-            }[]
+            mistakes: MistakeInterface[]
             chapter: ChapterInterface
         }
     }
@@ -299,6 +294,7 @@ function ChatContent({
                     template: chapter.template,
                     placeholders: chapter.placeholders,
                     status: chapter.status,
+                    mistakes: []
                 })),
             )
 
@@ -342,6 +338,7 @@ function ChatContent({
                     content: `Failed to start story: ${errorMessage}`,
                     template: `Failed to start story: ${errorMessage}`,
                     placeholders: [],
+                    mistakes: []
                 },
             ])
         }
@@ -390,6 +387,7 @@ function ChatContent({
                             placeholders:
                                 data.startStory.story.chapters[0].placeholders,
                             status: data.startStory.story.chapters[0].status,
+                            mistakes: [],
                         },
                     ])
 
@@ -422,6 +420,7 @@ function ChatContent({
                         content: `Failed to start story: ${errorMessage}`,
                         template: `Failed to start story: ${errorMessage}`,
                         placeholders: [],
+                        mistakes: []
                     },
                 ])
             } finally {
@@ -456,8 +455,6 @@ function ChatContent({
                 })
 
                 if (data?.checkTemplate?.chapter) {
-                    // TODO the previous chapter should become read-only
-
                     chatMessages[chatMessages.length - 1].status = ChapterStatusInterface.Completed
 
                     chatMessages[chatMessages.length - 1].finalizedContent = Object.entries(placeholders).reduce(
@@ -487,6 +484,7 @@ function ChatContent({
                             template: data?.checkTemplate?.chapter.template,
                             placeholders: data?.checkTemplate?.chapter.placeholders,
                             status: data?.checkTemplate?.chapter.status,
+                            mistakes: []
                         },
                     ])
 
@@ -495,6 +493,7 @@ function ChatContent({
 
                 if (data?.checkTemplate?.mistakes) {
                     console.log(data?.checkTemplate.mistakes)
+                    chatMessages[chatMessages.length - 1].mistakes = data?.checkTemplate.mistakes
                 }
 
                 if (data?.checkTemplate?.errors) {
@@ -513,6 +512,7 @@ function ChatContent({
                         content: `Failed to start story: ${errorMessage}`,
                         template: `Failed to start story: ${errorMessage}`,
                         placeholders: [],
+                        mistakes: []
                     },
                 ])
             } finally {
@@ -581,7 +581,7 @@ function ChatContent({
                                                         placeholdersMap={
                                                             message.placeholders
                                                         }
-
+                                                        mistakes={message.mistakes}
                                                         onChange={(values) => setPlaceholders(values)}
                                                     />
                                                 )

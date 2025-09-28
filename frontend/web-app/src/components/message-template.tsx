@@ -1,8 +1,10 @@
+import type { MistakeInterface } from '@/models/messages/Mistake.Interface';
 import React, { useEffect, useState, type ChangeEvent } from 'react'
 
 interface MessageTemplateProps {
     template: string
     placeholdersMap: { name: string; text: string }[]
+    mistakes: MistakeInterface[]
     onChange?: (values: Record<string, string>) => void
 }
 
@@ -11,6 +13,7 @@ const PLACEHOLDER_REGEX = /\{(ph-\d+)\}/g
 export const MessageTemplate: React.FC<MessageTemplateProps> = ({
     template,
     placeholdersMap,
+    mistakes,
     onChange,
 }) => {
     // Find all unique placeholders
@@ -54,13 +57,20 @@ export const MessageTemplate: React.FC<MessageTemplateProps> = ({
 
         const replacementLength = initialText.length
 
+        const mistakeForPlaceholder = mistakes.find(m => m.placeholder.name === phName) || null;
+
+        let className = "inline-block border-b-3 border-double border-gray-500 focus:outline-none focus:border-pink-500"
+        if (mistakeForPlaceholder) {
+            className = "inline-block border-b-3 border-dotted border-red-500 focus:outline-none focus:border-red-500"
+        }
+
         parts.push(
             <input
                 key={phName + '-' + idx}
                 type="text"
                 value={values[phName] || ''}
                 onChange={handleInputChange(phName)}
-                className="inline-block border-b-3 border-double border-gray-500 focus:outline-none focus:border-pink-500"
+                className={className}
                 placeholder=""
                 maxLength={replacementLength}
                 spellCheck="false"

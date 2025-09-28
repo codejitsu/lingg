@@ -261,6 +261,8 @@ pub async fn verify_spelling_and_grammar(
         - The output must be a valid JSON only. 
         - If no mistakes were found, return an empty JSON object.
         - NO additional text, only JSON.
+        - The result must be a JSON object, where each field is a placeholder name to mistake mapping.
+        - There must be no prefixes or suffixes, only JSON. No `json` prefix or suffix.
         
         Example:
         --------

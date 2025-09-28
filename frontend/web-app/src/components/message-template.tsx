@@ -1,6 +1,13 @@
 import type { MistakeInterface } from '@/models/messages/Mistake.Interface';
 import React, { useEffect, useState, type ChangeEvent } from 'react'
 
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card"
+import { MessageCircleWarning } from 'lucide-react';
+
 interface MessageTemplateProps {
     template: string
     placeholdersMap: { name: string; text: string }[]
@@ -64,19 +71,43 @@ export const MessageTemplate: React.FC<MessageTemplateProps> = ({
             className = "inline-block border-b-3 border-dotted border-red-500 focus:outline-none focus:border-red-500"
         }
 
-        parts.push(
-            <input
-                key={phName + '-' + idx}
-                type="text"
-                value={values[phName] || ''}
-                onChange={handleInputChange(phName)}
-                className={className}
-                placeholder=""
-                maxLength={replacementLength}
-                spellCheck="false"
-                style={{ width: `${replacementLength}ch` }}
-            />,
-        )
+        if (mistakeForPlaceholder === null) {
+            parts.push(
+                <input
+                    key={phName + '-' + idx}
+                    type="text"
+                    value={values[phName] || ''}
+                    onChange={handleInputChange(phName)}
+                    className={className}
+                    placeholder=""
+                    maxLength={replacementLength}
+                    spellCheck="false"
+                    style={{ width: `${replacementLength}ch` }}
+                />,
+            )
+        } else {
+            parts.push(
+                <span style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+                    <input
+                        key={phName + '-' + idx}
+                        type="text"
+                        value={values[phName] || ''}
+                        onChange={handleInputChange(phName)}
+                        className={className}
+                        placeholder=""
+                        maxLength={replacementLength}
+                        spellCheck="false"
+                        style={{ width: `${replacementLength}ch` }}
+                    />
+                    <HoverCard>
+                        <HoverCardTrigger style={{ marginRight: 4, cursor: 'pointer' }}><MessageCircleWarning className='size-3 text-red-500'/></HoverCardTrigger>
+                        <HoverCardContent>
+                            {mistakeForPlaceholder.explanation}
+                        </HoverCardContent>
+                    </HoverCard>                    
+                </span>,
+            )            
+        }
         lastIndex = match.index + placeholder.length
         idx++
     }

@@ -2,7 +2,10 @@ use aws_sdk_dynamodb::types::AttributeValue;
 use lambda_appsync::ID;
 use std::{collections::HashMap, convert::TryFrom};
 
-use crate::{placeholders::apply_template, storage::StorageError, Chapter, ChapterStatus, Placeholder, UserInputValue};
+use crate::{
+    placeholders::apply_template, storage::StorageError, Chapter, ChapterStatus, Placeholder,
+    UserInputValue,
+};
 
 impl TryFrom<&HashMap<String, AttributeValue>> for Chapter {
     type Error = StorageError;
@@ -31,9 +34,7 @@ impl TryFrom<&HashMap<String, AttributeValue>> for Chapter {
             .and_then(|v| v.as_s().ok())
             .ok_or("Error by reading 'created_at' field.")?;
 
-        let completed_at = item
-            .get("completed_at")
-            .and_then(|v| v.as_s().ok());
+        let completed_at = item.get("completed_at").and_then(|v| v.as_s().ok());
 
         let chapter_status = item
             .get("chapter_status")
@@ -92,7 +93,11 @@ impl TryFrom<&HashMap<String, AttributeValue>> for Chapter {
             placeholders: placeholders,
             user_input: user_input.clone(),
             completed_at: completed_at.map(|d| d.to_string().into()),
-            finalized_content: if is_completed { Some(apply_template(template, &user_input)) } else { None },
+            finalized_content: if is_completed {
+                Some(apply_template(template, &user_input))
+            } else {
+                None
+            },
         })
     }
 }

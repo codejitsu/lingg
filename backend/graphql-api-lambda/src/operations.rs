@@ -2,7 +2,8 @@ use std::str::FromStr;
 
 use crate::placeholders::apply_template;
 use crate::storage::{
-    get_chapter_by_id, get_stories_by_user_id, get_story_with_chapters_by_id, store_chapter, store_story, store_user_input_for_chapter
+    get_chapter_by_id, get_stories_by_user_id, get_story_with_chapters_by_id, store_chapter,
+    store_story, store_user_input_for_chapter,
 };
 
 use crate::ai::{
@@ -207,28 +208,31 @@ pub async fn check_template(
 
                                 let next_chapter = match next_chapter_result {
                                     Ok(chapter) => {
-                                        println!("Generated next chapter for story: {:?}, chapter: {:?}", 
-                                            story.story_id, chapter.chapter_id);
+                                        println!(
+                                            "Generated next chapter for story: {:?}, chapter: {:?}",
+                                            story.story_id, chapter.chapter_id
+                                        );
 
-                                        let store_chapter_result = store_chapter(&input.user_id, &chapter).await;
-                                        
+                                        let store_chapter_result =
+                                            store_chapter(&input.user_id, &chapter).await;
+
                                         match store_chapter_result {
                                             Ok(_) => {
                                                 println!("Stored next chapter for story: {:?}, chapter: {:?}", 
                                                     story.story_id, chapter.chapter_id);
                                                 Some(chapter)
-                                            },
+                                            }
                                             Err(e) => {
                                                 println!("Error storing next chapter for story: {:?}, chapter: {:?}, error: {:?}", 
                                                     story.story_id, chapter.chapter_id, e);
                                                 None
                                             }
                                         }
-                                    },
+                                    }
                                     Err(e) => {
                                         println!("Error generating next chapter for story: {:?}, error: {:?}", 
                                             story.story_id, e);
-                                        None    
+                                        None
                                     }
                                 };
 

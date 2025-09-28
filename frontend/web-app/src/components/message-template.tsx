@@ -6,7 +6,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card"
-import { MessageCircleWarning } from 'lucide-react';
+import { CircleAlert, MessageCircleWarning } from 'lucide-react';
 
 interface MessageTemplateProps {
     template: string
@@ -102,7 +102,10 @@ export const MessageTemplate: React.FC<MessageTemplateProps> = ({
                     <HoverCard>
                         <HoverCardTrigger style={{ marginRight: 4, cursor: 'pointer' }}><MessageCircleWarning className='size-3 text-red-500'/></HoverCardTrigger>
                         <HoverCardContent>
-                            {mistakeForPlaceholder.explanation}
+                            <div className="flex text-left items-center">
+                                <CircleAlert className="size-4 text-gray-700 mr-2" />
+                                {mistakeForPlaceholder.explanation}
+                            </div>
                         </HoverCardContent>
                     </HoverCard>                    
                 </span>,

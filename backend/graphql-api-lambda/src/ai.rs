@@ -247,24 +247,40 @@ pub async fn verify_spelling_and_grammar(
         Your task is to find mistakes in the filled text, not in the template itself. All words that were part of the template are guaranteed to be correct.
         Only check the parts that were filled by the user. The text with filled placeholders must make sense.
 
-        Initial template with empty placeholders is below: 
+        # Initial template with empty placeholders is below: 
         --------------------------------------------
-        {}
+        '{}'
 
-        Text with filled placeholders is below: 
+        # Text with filled placeholders is below: 
         --------------------------------------------
-        {}
+        '{}'
 
         Return the result as a JSON object, where each field is a placeholder name to mistake mapping.
 
         # Rules:
+        - Users may fill placegholders with different texts, not exactly what was in the template.
+        - The main rule is that the filled text must make sense and be grammatically correct.
+        - Don't include any hints from the template in the result.
+        - Don't say that the letters from the template are missing. Just say 'missing letter' if a letter is missing in the filled part.
+        - Don't say that the word from the template is misspelled. Just say 'spelling error' if a filled word is misspelled.
+        - Don't say that the word from the template is grammatically incorrect. Just say 'grammar error' if a filled word is grammatically
+        - Only check the parts that were filled by the user.
+        - If a placeholder was filled correctly, don't include it in the result.
+        - If a placeholder was filled incorrectly, include it in the result.
         - The output must be a valid JSON only. 
         - If no mistakes were found, return an empty JSON object.
         - NO additional text, only JSON.
         - The result must be a JSON object, where each field is a placeholder name to mistake mapping.
         - There must be no prefixes or suffixes, only JSON. No `json` prefix or suffix.
+        - Don't include the original text, only the mistake: the user should not see the original text. 
+        - For example, if the entered text was misspelled, just say 'spelling error' or 'grammar error', or 'this does not make sense'.        
         
-        Example:
+        # Example logic:
+        - If the text with placeholder 'do{{ph-1}}' was filled with 'j', the mistake is 'spelling error'.
+        - If the text with placeholder 'Good {{ph-2}}!' was filled with 'school', the mistake is 'wrong word'.
+        - If the text with placeholder 'I am {{ph-3}} years old' was filled with 'to', the mistake is 'missing letter'.
+
+        # Example output:
         --------
         {{
             \"ph-1\": \"mistake 1\",

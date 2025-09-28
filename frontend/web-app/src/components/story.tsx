@@ -18,30 +18,21 @@ import { ScrollButton } from '@/components/prompt-kit/scroll-button'
 import { Button } from '@/components/ui/button'
 import {
     Sidebar,
-    SidebarFooter,
     SidebarInset,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
     SidebarProvider,
 } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
 import {
     ArrowUp,
-    BadgeCheck,
     BookMarked,
     Copy,
     CheckCheck,
-    ChevronUp,
     Languages,
-    LogOut,
     MessageCircleQuestionMark,
     Pencil,
-    Sparkles,
     ThumbsUp,
     Trash,
     PopcornIcon,
-    User2,
 } from 'lucide-react'
 import { CheckIcon, ChevronsUpDownIcon } from 'lucide-react'
 import {
@@ -57,15 +48,6 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover'
-
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 
 import { Loader } from '@/components/prompt-kit/loader'
 import { useRef, useState, useEffect } from 'react'
@@ -90,6 +72,7 @@ import type { ChatMessage } from '@/models/messages/ChatMessage.Interface'
 import type { NextAction } from '@/models/messages/NextAction'
 import ChapterStatusInterface from '@/models/ChapterStatus.Interface'
 import HistoryLinks from './chat/sidebar/children/HistoryLinks.component'
+import Footer from './chat/sidebar/children/Footer.component'
 
 // TODO - replace with real user ID from auth context
 const userId = 'f257727e-94ab-44ac-aa0e-c4d51a0d67ac'
@@ -116,48 +99,13 @@ function ChatSidebar({
     return (
         <Sidebar>
             <Header title="lingg.ai" />
-
             <HistoryLinks
                 stories={stories}
                 newStoryId={newStoryId}
                 currentStoryId={currentStoryId}
                 hidden={hidden}
             />
-
-            <SidebarFooter className="p-4">
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <SidebarMenuButton>
-                                    <User2 /> Username
-                                    <ChevronUp className="ml-auto" />
-                                </SidebarMenuButton>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                                side="top"
-                                className="w-[--radix-popper-anchor-width]"
-                            >
-                                <DropdownMenuLabel>Username</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem>
-                                    <Sparkles />
-                                    <span>Upgrade to Pro</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem>
-                                    <BadgeCheck />
-                                    <span>Your Account</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    <LogOut />
-                                    <span>Sign out</span>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </SidebarMenuItem>
-                </SidebarMenu>
-            </SidebarFooter>
+            <Footer />
         </Sidebar>
     )
 }

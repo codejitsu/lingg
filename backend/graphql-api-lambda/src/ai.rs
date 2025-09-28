@@ -256,6 +256,11 @@ pub async fn verify_spelling_and_grammar(
         {}
 
         Return the result as a JSON object, where each field is a placeholder name to mistake mapping.
+
+        # Rules:
+        - The output must be a valid JSON only. 
+        - If no mistakes were found, return an empty JSON object.
+        - NO additional text, only JSON.
         
         Example:
         --------
@@ -283,6 +288,8 @@ pub async fn verify_spelling_and_grammar(
         .await
         .map(|output| get_converse_output_text(output).unwrap())
         .map_err(|e| BedrockConverseError(e.to_string()))?;
+
+    log::debug!("Mistakes from model={:?}", mistakes_text);
 
     let mistakes: HashMap<String, String> =
         serde_json::from_str(&mistakes_text).unwrap_or_else(|_| HashMap::new());

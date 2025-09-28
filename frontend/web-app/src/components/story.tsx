@@ -97,7 +97,7 @@ function ChatSidebar({
     }, [newStoryId])
 
     return (
-        <Sidebar>
+        <Sidebar className="h-full flex flex-col">
             <Header title="lingg.ai" />
             <HistoryLinks
                 stories={stories}
@@ -989,6 +989,9 @@ function ChatContent({
 function FullChatApp() {
     const { storyId } = useParams<{ storyId: string }>()
 
+    // Ensure the main container uses full height and flex layout
+    // Add a wrapper div with h-screen and flex
+
     const [stories, setStories] = useState<StoryInterface[]>([])
     const [newStoryId, setNewStoryId] = useState<string | undefined>(undefined)
     const { data } = useQuery<{ listStories: StoryInterface[] }>(
@@ -1016,23 +1019,23 @@ function FullChatApp() {
     // Handler to add new story to the top
     const handleNewStory = (story: StoryInterface) => {
         setStories((prev) => [story, ...prev])
-        setNewStoryId(story.storyId)
     }
-
     return (
-        <SidebarProvider>
-            <ChatSidebar
-                stories={stories}
-                newStoryId={newStoryId}
-                currentStoryId={storyId}
-            />
-            <SidebarInset>
-                <ChatContent
-                    onNewStory={handleNewStory}
+        <div className="h-screen flex">
+            <SidebarProvider>
+                <ChatSidebar
+                    stories={stories}
+                    newStoryId={newStoryId}
                     currentStoryId={storyId}
                 />
-            </SidebarInset>
-        </SidebarProvider>
+                <SidebarInset>
+                    <ChatContent
+                        onNewStory={handleNewStory}
+                        currentStoryId={storyId}
+                    />
+                </SidebarInset>
+            </SidebarProvider>
+        </div>
     )
 }
 

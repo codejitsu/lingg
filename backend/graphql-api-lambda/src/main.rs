@@ -4,6 +4,7 @@ mod operations;
 mod placeholders;
 mod storage;
 mod storage_helpers;
+mod spellchecker;
 
 use lambda_appsync::appsync_lambda_main;
 

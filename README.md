@@ -25,6 +25,9 @@ Building backend:
 cargo lambda build --workspace --release
 ````
 
+## Possible issues
+- set -x OPENSSL_DIR (brew --prefix openssl)
+
 # Infrastructure
 
 - cd infrastructure/environments/dev

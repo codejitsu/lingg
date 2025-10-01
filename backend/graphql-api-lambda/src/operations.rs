@@ -2,12 +2,10 @@ use crate::placeholders::apply_template;
 use crate::spellchecker::check_spelling_with_template;
 use crate::storage::{
     get_chapter_by_id, get_stories_by_user_id, get_story_with_chapters_by_id, store_chapter,
-    store_story, store_user_input_for_chapter, UserId, StoryId, ChapterId, ClientRequestId,
+    store_story, store_user_input_for_chapter, ChapterId, ClientRequestId, StoryId, UserId,
 };
 
-use crate::ai::{
-    build_story_id, generate_new_chapter, generate_new_story,
-};
+use crate::ai::{build_story_id, generate_new_chapter, generate_new_story};
 
 use lambda_appsync::{appsync_operation, AppsyncError, AppsyncEvent, ID};
 
@@ -35,7 +33,8 @@ pub async fn fetch_story_by_id(
     story_id: ID,
     _event: &AppsyncEvent<Operation>,
 ) -> Result<Option<Story>, AppsyncError> {
-    Uuid::parse_str(&story_id.to_string()).map_err(|e| AppsyncError::new("InvalidStoryID", e.to_string()))?;
+    Uuid::parse_str(&story_id.to_string())
+        .map_err(|e| AppsyncError::new("InvalidStoryID", e.to_string()))?;
 
     let story = get_story_with_chapters_by_id(&UserId(user_id), &StoryId(story_id))
         .await
@@ -49,7 +48,11 @@ pub async fn start_story(
     _event: &AppsyncEvent<Operation>,
 ) -> Result<StartStoryPayload, AppsyncError> {
     let story_id = build_story_id(&input.user_id, &input.client_request_id);
-    let existing_story = get_story_with_chapters_by_id(&UserId(input.user_id), &StoryId(story_id.to_string().try_into().unwrap())).await;
+    let existing_story = get_story_with_chapters_by_id(
+        &UserId(input.user_id),
+        &StoryId(story_id.to_string().try_into().unwrap()),
+    )
+    .await;
 
     match existing_story {
         Ok(Some(story)) => {
@@ -110,9 +113,9 @@ pub async fn check_template(
 ) -> Result<CheckTemplatePayload, AppsyncError> {
     // check if there is a result for this request Id already - if so return it
 
-    let chapter = get_chapter_by_id(&input.user_id, &input.story_id, 
-        &input.chapter_id)
-        .await.map_err(|e| AppsyncError::new("StorageReadError", e.to_string()))?;
+    let chapter = get_chapter_by_id(&input.user_id, &input.story_id, &input.chapter_id)
+        .await
+        .map_err(|e| AppsyncError::new("StorageReadError", e.to_string()))?;
 
     let payload = match chapter {
         Some(chap) => {
@@ -129,9 +132,13 @@ pub async fn check_template(
             let template_applied = apply_template(&chap.template, &input.placeholder_as_inputs());
 
             // check spelling with default checker first
-            let spelling_errors = check_spelling_with_template(&chap.template, &template_applied, &input.target_language)
-                .await
-                .map_err(|e| AppsyncError::new("SpellCheckError", e.to_string()))?;
+            let spelling_errors = check_spelling_with_template(
+                &chap.template,
+                &template_applied,
+                &input.target_language,
+            )
+            .await
+            .map_err(|e| AppsyncError::new("SpellCheckError", e.to_string()))?;
 
             // TODO check if the text does make sense in the target language with a model call
 
@@ -148,7 +155,7 @@ pub async fn check_template(
                         })
                         .unwrap(),
                     // TODO this has to be in the explain language
-                    // TODO add hint for the expected word with number of letters    
+                    // TODO add hint for the expected word with number of letters
                     explanation: mistake.mistake_description,
                 })
                 .collect();
@@ -163,7 +170,7 @@ pub async fn check_template(
                     &input.placeholders,
                 )
                 .await;
-                
+
                 match input_stored {
                     Ok(_) => {
                         println!("Stored final placeholders for chapter: {:?} of story: {:?} for user: {:?}", 

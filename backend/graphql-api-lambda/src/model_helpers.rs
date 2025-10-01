@@ -1,4 +1,7 @@
-use crate::{ChapterStatus, CheckTemplateInput, CheckTemplatePayload, Placeholder, UserInputValue, CheckTemplateError, MistakeExplanation, Chapter};
+use crate::{
+    Chapter, ChapterStatus, CheckTemplateError, CheckTemplateInput, CheckTemplatePayload,
+    MistakeExplanation, Placeholder, UserInputValue,
+};
 use std::convert::TryFrom;
 
 impl TryFrom<&str> for ChapterStatus {

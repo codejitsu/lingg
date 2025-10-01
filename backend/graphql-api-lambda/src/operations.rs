@@ -120,134 +120,134 @@ pub async fn check_template(
     let payload = match chapter {
         Some(chap) => {
             if chap.status == ChapterStatus::Completed {
-                return Ok(CheckTemplatePayload {
-                    errors: vec![CheckTemplateError {
+                CheckTemplatePayload::new(
+                    vec![CheckTemplateError {
                         message: "Chapter already completed".to_string(),
                     }],
-                    mistakes: vec![],
-                    chapter: None,
-                });
-            }
-
-            let template_applied = apply_template(&chap.template, &input.placeholder_as_inputs());
-
-            // check spelling with default checker first
-            let spelling_errors = check_spelling_with_template(
-                &chap.template,
-                &template_applied,
-                &input.target_language,
-            )
-            .await
-            .map_err(|e| AppsyncError::new("SpellCheckError", e.to_string()))?;
-
-            // TODO check if the text does make sense in the target language with a model call
-
-            let mistakes: Vec<MistakeExplanation> = spelling_errors
-                .into_iter()
-                .map(|(ph, mistake)| MistakeExplanation {
-                    placeholder: input
-                        .placeholders
-                        .iter()
-                        .find(|p| p.name == ph)
-                        .map(|p| Placeholder {
-                            name: p.name.clone(),
-                            text: p.text.clone(),
-                        })
-                        .unwrap(),
-                    // TODO this has to be in the explain language
-                    // TODO add hint for the expected word with number of letters
-                    explanation: mistake.mistake_description,
-                })
-                .collect();
-
-            let next_chapter: Option<Chapter> = if mistakes.is_empty() {
-                // TODO think about partial failiure handling here (transaction or saga pattern)
-                let input_stored = store_user_input_for_chapter(
-                    &UserId(input.user_id),
-                    &StoryId(input.story_id),
-                    &ChapterId(input.chapter_id),
-                    &ClientRequestId(input.client_request_id),
-                    &input.placeholders,
+                    vec![],
+                    None,
                 )
-                .await;
+            } else {
+                let template_applied = apply_template(&chap.template, &input.placeholder_as_inputs());
 
-                match input_stored {
-                    Ok(_) => {
-                        println!("Stored final placeholders for chapter: {:?} of story: {:?} for user: {:?}", 
-                            input.chapter_id, input.story_id, input.user_id);
+                // check spelling with default checker first
+                let spelling_errors = check_spelling_with_template(
+                    &chap.template,
+                    &template_applied,
+                    &input.target_language,
+                )
+                .await
+                .map_err(|e| AppsyncError::new("SpellCheckError", e.to_string()))?;
 
-                        let story = get_story_with_chapters_by_id(
-                            &UserId(input.user_id),
-                            &StoryId(input.story_id),
-                        )
-                        .await
-                        .unwrap_or(None);
+                // TODO check if the text does make sense in the target language with a model call
 
-                        match story {
-                            Some(story) => {
-                                // iterate over all chapters and apply the user input placeholders to each chapter content
-                                // then merge all chapter contents into one string
+                let mistakes: Vec<MistakeExplanation> = spelling_errors
+                    .into_iter()
+                    .map(|(ph, mistake)| MistakeExplanation {
+                        placeholder: input
+                            .placeholders
+                            .iter()
+                            .find(|p| p.name == ph)
+                            .map(|p| Placeholder {
+                                name: p.name.clone(),
+                                text: p.text.clone(),
+                            })
+                            .unwrap(),
+                        // TODO this has to be in the explain language
+                        // TODO add hint for the expected word with number of letters
+                        explanation: mistake.mistake_description,
+                    })
+                    .collect();
 
-                                let chapters_merged: String = story
-                                    .chapters
-                                    .iter()
-                                    .map(|c| apply_template(&c.template, &c.user_input))
-                                    .collect::<Vec<String>>()
-                                    .join(" ");
+                let next_chapter: Option<Chapter> = if mistakes.is_empty() {
+                    // TODO think about partial failiure handling here (transaction or saga pattern)
+                    let input_stored = store_user_input_for_chapter(
+                        &UserId(input.user_id),
+                        &StoryId(input.story_id),
+                        &ChapterId(input.chapter_id),
+                        &ClientRequestId(input.client_request_id),
+                        &input.placeholders,
+                    )
+                    .await;
 
-                                let next_chapter_result = generate_new_chapter(
-                                    &chapters_merged,
-                                    &input.target_language,
-                                    &story.story_id,
-                                )
-                                .await;
+                    match input_stored {
+                        Ok(_) => {
+                            println!("Stored final placeholders for chapter: {:?} of story: {:?} for user: {:?}", 
+                                input.chapter_id, input.story_id, input.user_id);
 
-                                let next_chapter = match next_chapter_result {
-                                    Ok(chapter) => {
-                                        println!(
-                                            "Generated next chapter for story: {:?}, chapter: {:?}",
-                                            story.story_id, chapter.chapter_id
-                                        );
+                            let story = get_story_with_chapters_by_id(
+                                &UserId(input.user_id),
+                                &StoryId(input.story_id),
+                            )
+                            .await
+                            .unwrap_or(None);
 
-                                        let store_chapter_result =
-                                            store_chapter(&input.user_id, &chapter).await;
+                            match story {
+                                Some(story) => {
+                                    // iterate over all chapters and apply the user input placeholders to each chapter content
+                                    // then merge all chapter contents into one string
 
-                                        match store_chapter_result {
-                                            Ok(_) => {
-                                                println!("Stored next chapter for story: {:?}, chapter: {:?}", 
-                                                    story.story_id, chapter.chapter_id);
-                                                Some(chapter)
-                                            }
-                                            Err(e) => {
-                                                println!("Error storing next chapter for story: {:?}, chapter: {:?}, error: {:?}", 
-                                                    story.story_id, chapter.chapter_id, e);
-                                                None
+                                    let chapters_merged: String = story
+                                        .chapters
+                                        .iter()
+                                        .map(|c| apply_template(&c.template, &c.user_input))
+                                        .collect::<Vec<String>>()
+                                        .join(" ");
+
+                                    let next_chapter_result = generate_new_chapter(
+                                        &chapters_merged,
+                                        &input.target_language,
+                                        &story.story_id,
+                                    )
+                                    .await;
+
+                                    let next_chapter = match next_chapter_result {
+                                        Ok(chapter) => {
+                                            println!(
+                                                "Generated next chapter for story: {:?}, chapter: {:?}",
+                                                story.story_id, chapter.chapter_id
+                                            );
+
+                                            let store_chapter_result =
+                                                store_chapter(&input.user_id, &chapter).await;
+
+                                            match store_chapter_result {
+                                                Ok(_) => {
+                                                    println!("Stored next chapter for story: {:?}, chapter: {:?}", 
+                                                        story.story_id, chapter.chapter_id);
+                                                    Some(chapter)
+                                                }
+                                                Err(e) => {
+                                                    println!("Error storing next chapter for story: {:?}, chapter: {:?}, error: {:?}", 
+                                                        story.story_id, chapter.chapter_id, e);
+                                                    None
+                                                }
                                             }
                                         }
-                                    }
-                                    Err(e) => {
-                                        println!("Error generating next chapter for story: {:?}, error: {:?}", 
-                                            story.story_id, e);
-                                        None
-                                    }
-                                };
+                                        Err(e) => {
+                                            println!("Error generating next chapter for story: {:?}, error: {:?}", 
+                                                story.story_id, e);
+                                            None
+                                        }
+                                    };
 
-                                next_chapter
+                                    next_chapter
+                                }
+                                _ => None,
                             }
-                            _ => None,
+                        }
+                        Err(e) => {
+                            println!("Error storing final placeholders for chapter: {:?} of story: {:?} for user: {:?}, error: {:?}", 
+                                input.chapter_id, input.story_id, input.user_id, e);
+                            None
                         }
                     }
-                    Err(e) => {
-                        println!("Error storing final placeholders for chapter: {:?} of story: {:?} for user: {:?}, error: {:?}", 
-                            input.chapter_id, input.story_id, input.user_id, e);
-                        None
-                    }
-                }
-            } else {
-                None
-            };
+                } else {
+                    None
+                };
 
-            CheckTemplatePayload::new(vec![], mistakes, next_chapter)
+                CheckTemplatePayload::new(vec![], mistakes, next_chapter)
+            }
         }
         _ => {
             println!(

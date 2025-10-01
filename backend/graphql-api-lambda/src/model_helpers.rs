@@ -1,4 +1,4 @@
-use crate::{ChapterStatus, Placeholder};
+use crate::{ChapterStatus, CheckTemplateInput, Placeholder, UserInputValue};
 use std::convert::TryFrom;
 
 impl TryFrom<&str> for ChapterStatus {
@@ -22,5 +22,24 @@ impl Placeholder {
             name: name.to_string().into(),
             text: text.to_string().into(),
         }
+    }
+}
+
+impl UserInputValue {
+    pub fn new(name: &str, text: &str) -> Self {
+        UserInputValue {
+            name: name.to_string().into(),
+            text: text.to_string().into(),
+        }
+    }
+    
+}
+
+impl CheckTemplateInput {
+    pub fn placeholder_as_inputs(&self) -> Vec<UserInputValue> {
+        self.placeholders
+            .iter()
+            .map(|ph| UserInputValue::new(&ph.name, &ph.text))
+            .collect()
     }
 }

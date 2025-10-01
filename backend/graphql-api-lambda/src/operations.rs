@@ -128,14 +128,7 @@ pub async fn check_template(
 
             let template_applied = apply_template(
                 &chap.template,
-                &input
-                    .placeholders
-                    .iter()
-                    .map(|ph| UserInputValue {
-                        name: ph.name.clone(),
-                        text: ph.text.clone(),
-                    })
-                    .collect::<Vec<_>>(),
+                &input.placeholder_as_inputs(),
             );
 
             // TODO add first check with some rust nlp lib

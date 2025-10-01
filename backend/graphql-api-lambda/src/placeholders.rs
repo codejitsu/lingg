@@ -88,19 +88,11 @@ pub fn replace_parts_of_words(text: &str, ratio: f64) -> (String, HashMap<String
     (out, placeholder_map)
 }
 
-pub fn apply_template(template: &str, placeholders: &Vec<UserInputValue>) -> String {
-    let mut result = template.to_string();
-    let placeholder_map: HashMap<String, String> = placeholders
-        .iter()
-        .map(|ph| (ph.name.clone(), ph.text.clone()))
-        .collect();
-
-    for (key, value) in &placeholder_map {
-        let placeholder = format!("{{{}}}", key);
-        result = result.replace(&placeholder, value);
-    }
-
-    result
+pub fn apply_template(template: &str, placeholders_with_input: &Vec<UserInputValue>) -> String {
+    placeholders_with_input.iter().fold(template.to_string(), |acc, ph| {
+        let placeholder = format!("{{{}}}", ph.name);
+        acc.replace(&placeholder, &ph.text)
+    })
 }
 
 #[cfg(test)]

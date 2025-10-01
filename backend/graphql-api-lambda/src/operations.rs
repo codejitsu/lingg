@@ -110,10 +110,12 @@ pub async fn check_template(
 ) -> Result<CheckTemplatePayload, AppsyncError> {
     // check if there is a result for this request Id already - if so return it
 
-    let chapter = get_chapter_by_id(&input.user_id, &input.story_id, &input.chapter_id).await;
+    let chapter = get_chapter_by_id(&input.user_id, &input.story_id, 
+        &input.chapter_id)
+        .await.map_err(|e| AppsyncError::new("StorageReadError", e.to_string()))?;
 
-    match chapter {
-        Ok(Some(chap)) => {
+    let payload = match chapter {
+        Some(chap) => {
             if chap.status == ChapterStatus::Completed {
                 return Ok(CheckTemplatePayload {
                     errors: vec![CheckTemplateError {
@@ -238,28 +240,23 @@ pub async fn check_template(
                 None
             };
 
-            return Ok(CheckTemplatePayload {
-                errors: vec![],
-                mistakes: mistakes,
-                chapter: next_chapter,
-            });
+            CheckTemplatePayload::new(vec![], mistakes, next_chapter)
         }
-        Ok(None) => {
+        _ => {
             println!(
                 "No existing chapter found for story: {:?}, chapter: {:?}, for user: {:?}",
                 input.story_id, input.chapter_id, input.user_id
             );
 
-            return Ok(CheckTemplatePayload {
-                errors: vec![CheckTemplateError {
+            CheckTemplatePayload::new(
+                vec![CheckTemplateError {
                     message: "Chapter not found".to_string(),
                 }],
-                mistakes: vec![],
-                chapter: None,
-            });
+                vec![],
+                None,
+            )
         }
-        Err(e) => {
-            return Err(AppsyncError::new("StorageReadError", e.to_string()));
-        }
-    }
+    };
+
+    Ok(payload)
 }

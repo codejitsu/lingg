@@ -1,4 +1,4 @@
-use crate::{ChapterStatus, CheckTemplateInput, Placeholder, UserInputValue};
+use crate::{ChapterStatus, CheckTemplateInput, CheckTemplatePayload, Placeholder, UserInputValue, CheckTemplateError, MistakeExplanation, Chapter};
 use std::convert::TryFrom;
 
 impl TryFrom<&str> for ChapterStatus {
@@ -40,5 +40,19 @@ impl CheckTemplateInput {
             .iter()
             .map(|ph| UserInputValue::new(&ph.name, &ph.text))
             .collect()
+    }
+}
+
+impl CheckTemplatePayload {
+    pub fn new(
+        errors: Vec<CheckTemplateError>,
+        mistakes: Vec<MistakeExplanation>,
+        chapter: Option<Chapter>,
+    ) -> Self {
+        CheckTemplatePayload {
+            errors,
+            mistakes,
+            chapter,
+        }
     }
 }

@@ -14,7 +14,11 @@ pub struct Mistake {
 }
 
 impl Mistake {
-    pub fn new(related_placeholder: String, mistake_type: String, mistake_description: String) -> Self {
+    pub fn new(
+        related_placeholder: String,
+        mistake_type: String,
+        mistake_description: String,
+    ) -> Self {
         Self {
             related_placeholder,
             mistake_type,

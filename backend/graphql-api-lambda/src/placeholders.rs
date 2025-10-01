@@ -89,10 +89,12 @@ pub fn replace_parts_of_words(text: &str, ratio: f64) -> (String, HashMap<String
 }
 
 pub fn apply_template(template: &str, placeholders_with_input: &Vec<UserInputValue>) -> String {
-    placeholders_with_input.iter().fold(template.to_string(), |acc, ph| {
-        let placeholder = format!("{{{}}}", ph.name);
-        acc.replace(&placeholder, &ph.text)
-    })
+    placeholders_with_input
+        .iter()
+        .fold(template.to_string(), |acc, ph| {
+            let placeholder = format!("{{{}}}", ph.name);
+            acc.replace(&placeholder, &ph.text)
+        })
 }
 
 #[cfg(test)]

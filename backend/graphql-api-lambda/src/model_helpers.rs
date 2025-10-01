@@ -32,7 +32,6 @@ impl UserInputValue {
             text: text.to_string().into(),
         }
     }
-    
 }
 
 impl CheckTemplateInput {

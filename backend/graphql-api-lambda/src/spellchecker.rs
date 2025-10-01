@@ -6,6 +6,22 @@ use languagetool_rust::api::{
     server::ServerClient,
 };
 use unicode_segmentation::UnicodeSegmentation;
+#[derive(Debug)]
+pub struct Mistake {
+    related_placeholder: String,
+    mistake_type: String,
+    mistake_description: String,
+}
+
+impl Mistake {
+    pub fn new(related_placeholder: String, mistake_type: String, mistake_description: String) -> Self {
+        Self {
+            related_placeholder,
+            mistake_type,
+            mistake_description,
+        }
+    }
+}
 
 async fn check_spelling(
     text: &str,
@@ -41,10 +57,10 @@ pub async fn check_spelling_with_template(
     template: &str,
     template_applied: &str,
     target_language: &LanguageName,
-) -> Result<HashMap<String, String>, Box<dyn std::error::Error>> {
+) -> Result<HashMap<String, Mistake>, Box<dyn std::error::Error>> {
     let resp = check_spelling(template_applied, target_language).await?;
 
-    let mut placeholder_mistakes: HashMap<String, String> = HashMap::new();
+    let mut placeholder_mistakes: HashMap<String, Mistake> = HashMap::new();
 
     // Find all placeholders in the template and their grapheme offsets
     let mut placeholder_offsets: Vec<(usize, usize, String)> = Vec::new();
@@ -130,7 +146,12 @@ pub async fn check_spelling_with_template(
         }
         for (ph_start, ph_end, ph_name) in &template_to_applied {
             if m_start_grapheme < *ph_end && m_end_grapheme > *ph_start {
-                placeholder_mistakes.insert(ph_name.clone(), m.rule.issue_type.clone());
+                let mistake = Mistake::new(
+                    ph_name.clone(),
+                    m.rule.issue_type.clone(),
+                    m.message.clone(),
+                );
+                placeholder_mistakes.insert(ph_name.clone(), mistake);
             }
         }
     }
@@ -588,8 +609,8 @@ mod tests {
         assert!(response.contains_key("ph-1"));
         assert!(response.contains_key("ph-2"));
 
-        assert_eq!(response.get("ph-1").unwrap(), "misspelling");
-        assert_eq!(response.get("ph-2").unwrap(), "misspelling");
+        assert_eq!(response.get("ph-1").unwrap().mistake_type, "misspelling");
+        assert_eq!(response.get("ph-2").unwrap().mistake_type, "misspelling");
     }
 
     #[tokio::test]
@@ -612,7 +633,7 @@ mod tests {
         assert!(result.is_ok());
         let response = result.unwrap();
         assert!(response.contains_key("ph-1"));
-        assert_eq!(response.get("ph-1").unwrap(), "misspelling");
+        assert_eq!(response.get("ph-1").unwrap().mistake_type, "misspelling");
     }
 
     #[tokio::test]
@@ -625,8 +646,8 @@ mod tests {
         let response = result.unwrap();
         assert!(response.contains_key("ph-1"));
         assert!(response.contains_key("ph-2"));
-        assert_eq!(response.get("ph-1").unwrap(), "misspelling");
-        assert_eq!(response.get("ph-2").unwrap(), "misspelling");
+        assert_eq!(response.get("ph-1").unwrap().mistake_type, "misspelling");
+        assert_eq!(response.get("ph-2").unwrap().mistake_type, "misspelling");
     }
 
     #[tokio::test]
@@ -660,7 +681,7 @@ mod tests {
         assert!(result.is_ok());
         let response = result.unwrap();
         assert!(response.contains_key("ph-1"));
-        assert_eq!(response.get("ph-1").unwrap(), "misspelling");
+        assert_eq!(response.get("ph-1").unwrap().mistake_type, "misspelling");
     }
 
     #[tokio::test]
@@ -676,7 +697,7 @@ mod tests {
 
         assert!(response.contains_key("ph-1"));
         assert!(response.contains_key("ph-2"));
-        assert_eq!(response.get("ph-1").unwrap(), "misspelling");
-        assert_eq!(response.get("ph-2").unwrap(), "misspelling");
+        assert_eq!(response.get("ph-1").unwrap().mistake_type, "misspelling");
+        assert_eq!(response.get("ph-2").unwrap().mistake_type, "misspelling");
     }
 }

@@ -127,7 +127,6 @@ pub async fn check_spelling_with_template(template: &str, template_applied: &str
 #[cfg(test)]
 mod tests {
     use lambda_appsync::tokio;
-use unicode_segmentation::UnicodeSegmentation;
 
     use super::*;
 

@@ -2,9 +2,9 @@ mod ai;
 mod model_helpers;
 mod operations;
 mod placeholders;
+mod spellchecker;
 mod storage;
 mod storage_helpers;
-mod spellchecker;
 
 use lambda_appsync::appsync_lambda_main;
 

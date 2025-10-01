@@ -1,10 +1,16 @@
 use std::collections::HashMap;
 
-use languagetool_rust::api::{check::{self, Response}, server::ServerClient};
-use unicode_segmentation::UnicodeSegmentation;
 use crate::LanguageName;
+use languagetool_rust::api::{
+    check::{self, Response},
+    server::ServerClient,
+};
+use unicode_segmentation::UnicodeSegmentation;
 
-async fn check_spelling(text: &str, language: &LanguageName) -> Result<Response, Box<dyn std::error::Error>> {
+async fn check_spelling(
+    text: &str,
+    language: &LanguageName,
+) -> Result<Response, Box<dyn std::error::Error>> {
     let client = ServerClient::from_env_or_default();
 
     let language_code = match language {
@@ -31,7 +37,11 @@ async fn check_spelling(text: &str, language: &LanguageName) -> Result<Response,
     }
 }
 
-pub async fn check_spelling_with_template(template: &str, template_applied: &str, target_language: &LanguageName) -> Result<HashMap<String, String>, Box<dyn std::error::Error>> {
+pub async fn check_spelling_with_template(
+    template: &str,
+    template_applied: &str,
+    target_language: &LanguageName,
+) -> Result<HashMap<String, String>, Box<dyn std::error::Error>> {
     let resp = check_spelling(template_applied, target_language).await?;
 
     let mut placeholder_mistakes: HashMap<String, String> = HashMap::new();
@@ -59,7 +69,8 @@ pub async fn check_spelling_with_template(template: &str, template_applied: &str
     }
 
     // Map template grapheme offsets to template_applied grapheme offsets
-    let template_applied_graphemes: Vec<&str> = UnicodeSegmentation::graphemes(template_applied, true).collect();
+    let template_applied_graphemes: Vec<&str> =
+        UnicodeSegmentation::graphemes(template_applied, true).collect();
     let mut template_to_applied: Vec<(usize, usize, String)> = Vec::new();
     let mut a_idx = 0;
     let mut last_end = 0;
@@ -69,7 +80,9 @@ pub async fn check_spelling_with_template(template: &str, template_applied: &str
         let before_len = before.graphemes(true).count();
         a_idx += before_len;
         // Find the corresponding substring in template_applied
-        let next_ph_start = if let Some((next_start, _, _)) = placeholder_offsets.iter().find(|(s, _, _)| *s > *ph_start) {
+        let next_ph_start = if let Some((next_start, _, _)) =
+            placeholder_offsets.iter().find(|(s, _, _)| *s > *ph_start)
+        {
             *next_start
         } else {
             template_graphemes.len()
@@ -81,7 +94,8 @@ pub async fn check_spelling_with_template(template: &str, template_applied: &str
         let mut applied_ph_end = a_idx;
         if after_len > 0 && !after.is_empty() {
             if let Some(pos) = applied_slice.find(&after) {
-                let grapheme_pos = UnicodeSegmentation::graphemes(&applied_slice[..pos], true).count();
+                let grapheme_pos =
+                    UnicodeSegmentation::graphemes(&applied_slice[..pos], true).count();
                 applied_ph_end = a_idx + grapheme_pos;
             } else {
                 applied_ph_end = template_applied_graphemes.len();
@@ -254,7 +268,7 @@ mod tests {
         assert!(!response.matches.is_empty());
 
         assert_eq!(response.matches.len(), 4);
-    }        
+    }
 
     #[tokio::test]
     async fn test_check_spelling_empty_text() {
@@ -294,7 +308,10 @@ mod tests {
         assert_eq!(first_match.context.offset, 0);
         assert_eq!(first_match.context.length, 2);
         assert_eq!(first_match.rule.id, "MORFOLOGIK_RULE_RU_RU");
-        assert_eq!(first_match.rule.description, "Проверка орфографии с исправлениями");
+        assert_eq!(
+            first_match.rule.description,
+            "Проверка орфографии с исправлениями"
+        );
         assert_eq!(first_match.rule.issue_type, "misspelling");
         assert_eq!(first_match.rule.category.id, "TYPOS");
         assert_eq!(first_match.rule.category.name, "Проверка орфографии");
@@ -314,11 +331,14 @@ mod tests {
         assert_eq!(first_match.length, 11);
         assert_eq!(first_match.context.text, text);
         assert_eq!(first_match.rule.id, "MORFOLOGIK_RULE_RU_RU");
-        assert_eq!(first_match.rule.description, "Проверка орфографии с исправлениями");
+        assert_eq!(
+            first_match.rule.description,
+            "Проверка орфографии с исправлениями"
+        );
         assert_eq!(first_match.rule.issue_type, "misspelling");
         assert_eq!(first_match.rule.category.id, "TYPOS");
-        assert_eq!(first_match.rule.category.name, "Проверка орфографии");        
-    }   
+        assert_eq!(first_match.rule.category.name, "Проверка орфографии");
+    }
 
     #[tokio::test]
     async fn test_check_spelling_incorrect_text_3_russian() {
@@ -336,7 +356,10 @@ mod tests {
         assert_eq!(first_match.context.offset, 15);
         assert_eq!(first_match.context.length, 12);
         assert_eq!(first_match.rule.id, "MORFOLOGIK_RULE_RU_RU");
-        assert_eq!(first_match.rule.description, "Проверка орфографии с исправлениями");
+        assert_eq!(
+            first_match.rule.description,
+            "Проверка орфографии с исправлениями"
+        );
         assert_eq!(first_match.rule.issue_type, "misspelling");
         assert_eq!(first_match.rule.category.id, "TYPOS");
         assert_eq!(first_match.rule.category.name, "Проверка орфографии");
@@ -557,9 +580,9 @@ mod tests {
         let template_applied = "Это прост предлоние."; // 'прост' and 'предлоние' are misspelled
         let language = LanguageName::Russian;
         let result = check_spelling_with_template(template, template_applied, &language).await;
-        
+
         assert!(result.is_ok());
-        
+
         let response = result.unwrap();
 
         assert!(response.contains_key("ph-1"));

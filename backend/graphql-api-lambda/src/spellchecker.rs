@@ -1,7 +1,10 @@
+use std::collections::HashMap;
+
 use languagetool_rust::api::{check::{self, Response}, server::ServerClient};
+use unicode_segmentation::UnicodeSegmentation;
 use crate::LanguageName;
 
-pub async fn check_spelling(text: &str, language: &LanguageName) -> Result<Response, Box<dyn std::error::Error>> {
+async fn check_spelling(text: &str, language: &LanguageName) -> Result<Response, Box<dyn std::error::Error>> {
     let client = ServerClient::from_env_or_default();
 
     let language_code = match language {
@@ -28,9 +31,103 @@ pub async fn check_spelling(text: &str, language: &LanguageName) -> Result<Respo
     }
 }
 
+pub async fn check_spelling_with_template(template: &str, template_applied: &str, target_language: &LanguageName) -> Result<HashMap<String, String>, Box<dyn std::error::Error>> {
+    let resp = check_spelling(template_applied, target_language).await?;
+
+    let mut placeholder_mistakes: HashMap<String, String> = HashMap::new();
+
+    // Find all placeholders in the template and their grapheme offsets
+    let mut placeholder_offsets: Vec<(usize, usize, String)> = Vec::new();
+    let mut idx = 0;
+    let template_graphemes: Vec<&str> = UnicodeSegmentation::graphemes(template, true).collect();
+    while idx < template_graphemes.len() {
+        if template_graphemes[idx] == "{" {
+            let mut end_idx = idx + 1;
+            while end_idx < template_graphemes.len() && template_graphemes[end_idx] != "}" {
+                end_idx += 1;
+            }
+            if end_idx < template_graphemes.len() {
+                let name = template_graphemes[idx + 1..end_idx].concat();
+                placeholder_offsets.push((idx, end_idx + 1, name));
+                idx = end_idx + 1;
+            } else {
+                break;
+            }
+        } else {
+            idx += 1;
+        }
+    }
+
+    // Map template grapheme offsets to template_applied grapheme offsets
+    let template_applied_graphemes: Vec<&str> = UnicodeSegmentation::graphemes(template_applied, true).collect();
+    let mut template_to_applied: Vec<(usize, usize, String)> = Vec::new();
+    let mut a_idx = 0;
+    let mut last_end = 0;
+    for (ph_start, ph_end, ph_name) in &placeholder_offsets {
+        // Copy up to the placeholder
+        let before = template_graphemes[last_end..*ph_start].concat();
+        let before_len = before.graphemes(true).count();
+        a_idx += before_len;
+        // Find the corresponding substring in template_applied
+        let next_ph_start = if let Some((next_start, _, _)) = placeholder_offsets.iter().find(|(s, _, _)| *s > *ph_start) {
+            *next_start
+        } else {
+            template_graphemes.len()
+        };
+        let after = template_graphemes[*ph_end..next_ph_start].concat();
+        let after_len = after.graphemes(true).count();
+        // Find the substring in template_applied that matches 'after'
+        let applied_slice = template_applied_graphemes[a_idx..].concat();
+        let mut applied_ph_end = a_idx;
+        if after_len > 0 && !after.is_empty() {
+            if let Some(pos) = applied_slice.find(&after) {
+                let grapheme_pos = UnicodeSegmentation::graphemes(&applied_slice[..pos], true).count();
+                applied_ph_end = a_idx + grapheme_pos;
+            } else {
+                applied_ph_end = template_applied_graphemes.len();
+            }
+        } else {
+            applied_ph_end = template_applied_graphemes.len();
+        }
+        template_to_applied.push((a_idx, applied_ph_end, ph_name.clone()));
+        a_idx = applied_ph_end + after_len;
+        last_end = *ph_end;
+    }
+
+    // For each mistake, find which placeholder range it falls into (using grapheme offsets)
+    for m in &resp.matches {
+        // Convert byte offsets to grapheme offsets
+        let mut byte_count = 0;
+        let mut m_start_grapheme = 0;
+        let mut m_end_grapheme = 0;
+        for (i, g) in template_applied_graphemes.iter().enumerate() {
+            if byte_count == m.offset {
+                m_start_grapheme = i;
+            }
+            if byte_count == m.offset + m.length {
+                m_end_grapheme = i;
+                break;
+            }
+            byte_count += g.len();
+        }
+        // If m_end_grapheme wasn't set, set it to the end
+        if m_end_grapheme == 0 {
+            m_end_grapheme = template_applied_graphemes.len();
+        }
+        for (ph_start, ph_end, ph_name) in &template_to_applied {
+            if m_start_grapheme < *ph_end && m_end_grapheme > *ph_start {
+                placeholder_mistakes.insert(ph_name.clone(), m.rule.issue_type.clone());
+            }
+        }
+    }
+
+    Ok(placeholder_mistakes)
+}
+
 #[cfg(test)]
 mod tests {
     use lambda_appsync::tokio;
+use unicode_segmentation::UnicodeSegmentation;
 
     use super::*;
 
@@ -451,5 +548,113 @@ mod tests {
         assert!(result.is_ok());
         let response = result.unwrap();
         assert!(response.matches.is_empty());
+    }
+
+    // test with template
+
+    #[tokio::test]
+    async fn test_check_spelling_with_template() {
+        let template = "Это прос{ph-1} пред{ph-2}ние.";
+        let template_applied = "Это прост предлоние."; // 'прост' and 'предлоние' are misspelled
+        let language = LanguageName::Russian;
+        let result = check_spelling_with_template(template, template_applied, &language).await;
+        
+        assert!(result.is_ok());
+        
+        let response = result.unwrap();
+
+        assert!(response.contains_key("ph-1"));
+        assert!(response.contains_key("ph-2"));
+
+        assert_eq!(response.get("ph-1").unwrap(), "misspelling");
+        assert_eq!(response.get("ph-2").unwrap(), "misspelling");
+    }
+
+    #[tokio::test]
+    async fn test_check_spelling_with_template_no_mistakes() {
+        let template = "This is a {ph-1} sentence.";
+        let template_applied = "This is a correct sentence.";
+        let language = LanguageName::English;
+        let result = check_spelling_with_template(template, template_applied, &language).await;
+        assert!(result.is_ok());
+        let response = result.unwrap();
+        assert!(response.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_check_spelling_with_template_one_mistake() {
+        let template = "This is a {ph-1} sentence.";
+        let template_applied = "This is a incorect sentence."; // 'incorect' is misspelled
+        let language = LanguageName::English;
+        let result = check_spelling_with_template(template, template_applied, &language).await;
+        assert!(result.is_ok());
+        let response = result.unwrap();
+        assert!(response.contains_key("ph-1"));
+        assert_eq!(response.get("ph-1").unwrap(), "misspelling");
+    }
+
+    #[tokio::test]
+    async fn test_check_spelling_with_template_multiple_mistakes() {
+        let template = "Das ist ein {ph-1} {ph-2}.";
+        let template_applied = "Das ist ein inkorekter Sat."; // both 'inkorekter' and 'Sat' are misspelled
+        let language = LanguageName::German;
+        let result = check_spelling_with_template(template, template_applied, &language).await;
+        assert!(result.is_ok());
+        let response = result.unwrap();
+        assert!(response.contains_key("ph-1"));
+        assert!(response.contains_key("ph-2"));
+        assert_eq!(response.get("ph-1").unwrap(), "misspelling");
+        assert_eq!(response.get("ph-2").unwrap(), "misspelling");
+    }
+
+    #[tokio::test]
+    async fn test_check_spelling_with_template_placeholder_not_misspelled() {
+        let template = "Это {ph-1} предложение.";
+        let template_applied = "Это простое предложение."; // no mistakes
+        let language = LanguageName::Russian;
+        let result = check_spelling_with_template(template, template_applied, &language).await;
+        assert!(result.is_ok());
+        let response = result.unwrap();
+        assert!(response.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_check_spelling_with_template_empty_template() {
+        let template = "";
+        let template_applied = "";
+        let language = LanguageName::English;
+        let result = check_spelling_with_template(template, template_applied, &language).await;
+        assert!(result.is_ok());
+        let response = result.unwrap();
+        assert!(response.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_check_spelling_with_template_placeholder_at_end() {
+        let template = "Correct sentence {ph-1}";
+        let template_applied = "Correct sentence sentnce"; // 'sentnce' is misspelled
+        let language = LanguageName::English;
+        let result = check_spelling_with_template(template, template_applied, &language).await;
+        assert!(result.is_ok());
+        let response = result.unwrap();
+        assert!(response.contains_key("ph-1"));
+        assert_eq!(response.get("ph-1").unwrap(), "misspelling");
+    }
+
+    #[tokio::test]
+    async fn test_check_spelling_with_template_adjacent_placeholders() {
+        let template = "{ph-1} {ph-2}";
+        let template_applied = "incorect sentnce"; // both are misspelled
+        let language = LanguageName::English;
+        let result = check_spelling_with_template(template, template_applied, &language).await;
+        assert!(result.is_ok());
+        let response = result.unwrap();
+
+        println!("Response: {:?}", response);
+
+        assert!(response.contains_key("ph-1"));
+        assert!(response.contains_key("ph-2"));
+        assert_eq!(response.get("ph-1").unwrap(), "misspelling");
+        assert_eq!(response.get("ph-2").unwrap(), "misspelling");
     }
 }

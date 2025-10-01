@@ -1,13 +1,12 @@
-use std::str::FromStr;
-
 use crate::placeholders::apply_template;
+use crate::spellchecker::check_spelling_with_template;
 use crate::storage::{
     get_chapter_by_id, get_stories_by_user_id, get_story_with_chapters_by_id, store_chapter,
-    store_story, store_user_input_for_chapter,
+    store_story, store_user_input_for_chapter, UserId, StoryId, ChapterId, ClientRequestId,
 };
 
 use crate::ai::{
-    build_story_id, generate_new_chapter, generate_new_story, verify_spelling_and_grammar,
+    build_story_id, generate_new_chapter, generate_new_story,
 };
 
 use lambda_appsync::{appsync_operation, AppsyncError, AppsyncEvent, ID};
@@ -15,7 +14,6 @@ use lambda_appsync::{appsync_operation, AppsyncError, AppsyncEvent, ID};
 use crate::{
     Chapter, ChapterStatus, CheckTemplateError, CheckTemplateInput, CheckTemplatePayload,
     MistakeExplanation, Operation, Placeholder, StartStoryInput, StartStoryPayload, Story,
-    UserInputValue,
 };
 
 use uuid::Uuid;
@@ -37,9 +35,9 @@ pub async fn fetch_story_by_id(
     story_id: ID,
     _event: &AppsyncEvent<Operation>,
 ) -> Result<Option<Story>, AppsyncError> {
-    let story_uuid = Uuid::parse_str(&story_id.to_string())
-        .map_err(|e| AppsyncError::new("InvalidStoryID", e.to_string()))?;
-    let story = get_story_with_chapters_by_id(&user_id, story_uuid)
+    Uuid::parse_str(&story_id.to_string()).map_err(|e| AppsyncError::new("InvalidStoryID", e.to_string()))?;
+
+    let story = get_story_with_chapters_by_id(&UserId(user_id), &StoryId(story_id))
         .await
         .map_err(|e| AppsyncError::new("StorageReadError", e.to_string()))?;
     Ok(story)
@@ -51,7 +49,7 @@ pub async fn start_story(
     _event: &AppsyncEvent<Operation>,
 ) -> Result<StartStoryPayload, AppsyncError> {
     let story_id = build_story_id(&input.user_id, &input.client_request_id);
-    let existing_story = get_story_with_chapters_by_id(&input.user_id, story_id).await;
+    let existing_story = get_story_with_chapters_by_id(&UserId(input.user_id), &StoryId(story_id.to_string().try_into().unwrap())).await;
 
     match existing_story {
         Ok(Some(story)) => {
@@ -128,20 +126,16 @@ pub async fn check_template(
 
             let template_applied = apply_template(&chap.template, &input.placeholder_as_inputs());
 
-            // TODO add first check with some rust nlp lib
+            // check spelling with default checker first
+            let spelling_errors = check_spelling_with_template(&chap.template, &template_applied, &input.target_language)
+                .await
+                .map_err(|e| AppsyncError::new("SpellCheckError", e.to_string()))?;
 
-            let mistakes_model = verify_spelling_and_grammar(
-                &chap.template,
-                &template_applied,
-                &input.target_language,
-                &input.explain_language,
-            )
-            .await
-            .map_err(|e| AppsyncError::new("ModelError", e.to_string()))?;
+            // TODO check if the text does make sense in the target language with a model call
 
-            let mistakes: Vec<MistakeExplanation> = mistakes_model
+            let mistakes: Vec<MistakeExplanation> = spelling_errors
                 .into_iter()
-                .map(|(ph, explanation)| MistakeExplanation {
+                .map(|(ph, mistake)| MistakeExplanation {
                     placeholder: input
                         .placeholders
                         .iter()
@@ -151,34 +145,37 @@ pub async fn check_template(
                             text: p.text.clone(),
                         })
                         .unwrap(),
-                    explanation,
+                    // TODO this has to be in the explain language
+                    // TODO add hint for the expected word with number of letters    
+                    explanation: mistake.mistake_description,
                 })
                 .collect();
 
             let next_chapter: Option<Chapter> = if mistakes.is_empty() {
                 // TODO think about partial failiure handling here (transaction or saga pattern)
                 let input_stored = store_user_input_for_chapter(
-                    &input.user_id,
-                    &input.story_id,
-                    &input.chapter_id,
-                    &input.client_request_id,
+                    &UserId(input.user_id),
+                    &StoryId(input.story_id),
+                    &ChapterId(input.chapter_id),
+                    &ClientRequestId(input.client_request_id),
                     &input.placeholders,
                 )
                 .await;
-
+                
                 match input_stored {
                     Ok(_) => {
                         println!("Stored final placeholders for chapter: {:?} of story: {:?} for user: {:?}", 
                             input.chapter_id, input.story_id, input.user_id);
 
                         let story = get_story_with_chapters_by_id(
-                            &input.user_id,
-                            Uuid::from_str(&input.story_id.to_string()).unwrap(),
+                            &UserId(input.user_id),
+                            &StoryId(input.story_id),
                         )
-                        .await;
+                        .await
+                        .unwrap_or(None);
 
                         match story {
-                            Ok(Some(story)) => {
+                            Some(story) => {
                                 // iterate over all chapters and apply the user input placeholders to each chapter content
                                 // then merge all chapter contents into one string
 

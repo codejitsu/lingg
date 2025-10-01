@@ -8,9 +8,9 @@ use languagetool_rust::api::{
 use unicode_segmentation::UnicodeSegmentation;
 #[derive(Debug)]
 pub struct Mistake {
-    related_placeholder: String,
-    mistake_type: String,
-    mistake_description: String,
+    pub related_placeholder: String,
+    pub mistake_type: String,
+    pub mistake_description: String,
 }
 
 impl Mistake {

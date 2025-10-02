@@ -1,7 +1,8 @@
 export interface MistakeInterface {
-    explanation: string 
-    placeholder: { 
-        name: string 
+    explanation: string
+    hint: string
+    placeholder: {
+        name: string
         text: string
     }
 }

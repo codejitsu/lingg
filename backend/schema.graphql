@@ -121,6 +121,7 @@ type CheckTemplatePayload {
 type MistakeExplanation {
     placeholder: Placeholder!
     explanation: String!
+    hint: String!
 }
 
 type Mutation {

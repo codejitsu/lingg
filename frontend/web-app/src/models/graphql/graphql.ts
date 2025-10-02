@@ -120,6 +120,7 @@ export const CHECK_TEMPLATE = gql`
                 }
                 mistakes {
                     explanation
+                    hint
                     placeholder {
                         name
                         text

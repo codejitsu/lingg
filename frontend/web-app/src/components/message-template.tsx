@@ -104,8 +104,11 @@ export const MessageTemplate: React.FC<MessageTemplateProps> = ({
                         <HoverCardContent>
                             <div className="flex text-left items-center">
                                 <CircleAlert className="size-4 text-gray-700 mr-2" />
-                                {mistakeForPlaceholder.explanation}
+                                { mistakeForPlaceholder.explanation }
                             </div>
+                            <div className="text-muted-foreground text-xs">
+                                { mistakeForPlaceholder.hint }
+                            </div>                            
                         </HoverCardContent>
                     </HoverCard>                    
                 </span>,

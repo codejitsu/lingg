@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::placeholders::{apply_template, validate_user_input_values};
 use crate::spellchecker::check_spelling_with_template;
 use crate::storage::{
@@ -8,6 +10,7 @@ use crate::storage::{
 use crate::ai::{build_story_id, generate_new_chapter, generate_new_story};
 
 use lambda_appsync::{appsync_operation, AppsyncError, AppsyncEvent, ID};
+use unicode_segmentation::UnicodeSegmentation;
 
 use crate::{
     Chapter, ChapterStatus, CheckTemplateError, CheckTemplateInput, CheckTemplatePayload,
@@ -123,6 +126,7 @@ pub async fn check_template(
         let mistakes = errors.iter().map(|e| MistakeExplanation {
             placeholder: Placeholder::new(&e.name, &e.text),
             explanation: e.message.clone(),
+            hint: "".to_string(), // TODO add hint field to validation error
         }).collect(); 
 
         return Ok(CheckTemplatePayload::new(
@@ -159,6 +163,12 @@ pub async fn check_template(
 
                 // TODO check if the text does make sense in the target language with a model call
 
+                let placeholder_map: HashMap<String, String> = chap
+                    .placeholders
+                    .iter()
+                    .map(|p| (p.name.clone(), p.text.clone()))
+                    .collect();
+
                 let mistakes: Vec<MistakeExplanation> = spelling_errors
                     .into_iter()
                     .map(|(ph, mistake)| MistakeExplanation {
@@ -173,7 +183,8 @@ pub async fn check_template(
                             .unwrap(),
                         // TODO this has to be in the explain language
                         // TODO add hint for the expected word with number of letters
-                        explanation: mistake.mistake_description,
+                        explanation: mistake.mistake_type,
+                        hint: format!("Expected word with {} letters", placeholder_map.get(ph.as_str()).map(|v| UnicodeSegmentation::graphemes(v.as_str(), true).count()).unwrap_or(0)),
                     })
                     .collect();
 

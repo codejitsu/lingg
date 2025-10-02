@@ -128,7 +128,8 @@ pub async fn check_template(
                     None,
                 )
             } else {
-                let template_applied = apply_template(&chap.template, &input.placeholder_as_inputs());
+                let template_applied =
+                    apply_template(&chap.template, &input.placeholder_as_inputs());
 
                 // check spelling with default checker first
                 let spelling_errors = check_spelling_with_template(
@@ -207,12 +208,14 @@ pub async fn check_template(
                                         story.story_id, next_chapter.chapter_id
                                     );
 
-                                    store_chapter(&input.user_id, &next_chapter)
-                                    .await
-                                    .map_err(|e| AppsyncError::new("StorageWriteError", e.to_string()))?;
+                                    store_chapter(&input.user_id, &next_chapter).await.map_err(
+                                        |e| AppsyncError::new("StorageWriteError", e.to_string()),
+                                    )?;
 
-                                    println!("Stored next chapter for story: {:?}, chapter: {:?}", 
-                                        story.story_id, next_chapter.chapter_id);
+                                    println!(
+                                        "Stored next chapter for story: {:?}, chapter: {:?}",
+                                        story.story_id, next_chapter.chapter_id
+                                    );
                                     Some(next_chapter)
                                 }
                                 _ => None,

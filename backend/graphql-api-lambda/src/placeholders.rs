@@ -2,7 +2,15 @@ use rand::Rng;
 use std::collections::HashMap;
 use unicode_segmentation::UnicodeSegmentation;
 
-use crate::UserInputValue;
+use crate::{UserInputValue, UserInputValueInput};
+#[derive(Debug)]
+pub struct InputValidationError {
+    pub name: String,
+    pub text: String,
+    pub message: String,
+    pub is_blank: bool,
+    pub is_empty: bool,
+}
 
 pub fn replace_parts_of_words(text: &str, ratio: f64) -> (String, HashMap<String, String>) {
     let mut rng = rand::rng();
@@ -95,6 +103,39 @@ pub fn apply_template(template: &str, placeholders_with_input: &Vec<UserInputVal
             let placeholder = format!("{{{}}}", ph.name);
             acc.replace(&placeholder, &ph.text)
         })
+}
+
+// TODO also check on special characters
+pub fn validate_user_input_values(
+    user_inputs: &Vec<UserInputValueInput>,
+) -> Result<(), Vec<InputValidationError>> {
+    let mut errors = Vec::new();
+
+    for input in user_inputs {
+        if input.text.is_empty() {
+            errors.push(InputValidationError {
+                name: input.name.clone(),
+                text: input.text.clone(),
+                message: "Value cannot be empty".to_string(),
+                is_blank: false,
+                is_empty: true,
+            });
+        } else if input.text.trim().is_empty() {
+            errors.push(InputValidationError {
+                name: input.name.clone(),
+                text: input.text.clone(),
+                message: "Value cannot be blank".to_string(),
+                is_blank: true,
+                is_empty: false,
+            });
+        }
+    }
+
+    if errors.is_empty() {
+        Ok(())
+    } else {
+        Err(errors)
+    }
 }
 
 #[cfg(test)]
@@ -390,5 +431,76 @@ mod tests {
             let restored = restore_text(&result, &map);
             assert_eq!(restored, text);
         }
+    }
+
+    // validate_user_input_values
+
+    #[test]
+    fn test_validate_user_input_values_empty_value() {
+        let user_inputs = vec![UserInputValueInput {
+            name: "name".to_string(),
+            text: "".to_string(),
+        }];
+        let result = validate_user_input_values(&user_inputs);
+        assert!(result.is_err(), "Should error if value is empty");
+    }
+
+    #[test]
+    fn test_validate_user_input_values_blank_value() {
+        let user_inputs = vec![UserInputValueInput {
+            name: "name".to_string(),
+            text: "   ".to_string(),
+        }];
+        let result = validate_user_input_values(&user_inputs);
+        assert!(result.is_err(), "Should error if value is blank");
+    }
+
+    #[test]
+    fn test_validate_user_input_values_valid_value() {
+        let user_inputs = vec![UserInputValueInput {
+            name: "name".to_string(),
+            text: "Alice".to_string(),
+        }];
+        let result = validate_user_input_values(&user_inputs);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_validate_user_input_values_multiple_placeholders_all_valid() {
+        let user_inputs = vec![
+            UserInputValueInput {
+                name: "name".to_string(),
+                text: "Bob".to_string(),
+            },
+            UserInputValueInput {
+                name: "day".to_string(),
+                text: "Monday".to_string(),
+            },
+        ];
+        let result = validate_user_input_values(&user_inputs);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_validate_user_input_values_multiple_placeholders_one_blank() {
+        let user_inputs = vec![
+            UserInputValueInput {
+                name: "name".to_string(),
+                text: "Bob".to_string(),
+            },
+            UserInputValueInput {
+                name: "day".to_string(),
+                text: "   ".to_string(),
+            },
+        ];
+        let result = validate_user_input_values(&user_inputs);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_validate_user_input_values_no_placeholders() {
+        let user_inputs = vec![];
+        let result = validate_user_input_values(&user_inputs);
+        assert!(result.is_ok());
     }
 }

@@ -1,4 +1,4 @@
-use crate::placeholders::apply_template;
+use crate::placeholders::{apply_template, validate_user_input_values};
 use crate::spellchecker::check_spelling_with_template;
 use crate::storage::{
     get_chapter_by_id, get_stories_by_user_id, get_story_with_chapters_by_id, store_chapter,
@@ -116,6 +116,23 @@ pub async fn check_template(
     let chapter = get_chapter_by_id(&input.user_id, &input.story_id, &input.chapter_id)
         .await
         .map_err(|e| AppsyncError::new("StorageReadError", e.to_string()))?;
+
+    let validation_result = validate_user_input_values(&input.placeholders);
+
+    if let Err(errors) = validation_result {
+        let mistakes = errors.iter().map(|e| MistakeExplanation {
+            placeholder: Placeholder::new(&e.name, &e.text),
+            explanation: e.message.clone(),
+        }).collect(); 
+
+        return Ok(CheckTemplatePayload::new(
+            vec![CheckTemplateError {
+                message: "Validation error".into(),
+            }],
+            mistakes,
+            None,
+        ));
+    }
 
     let payload = match chapter {
         Some(chap) => {

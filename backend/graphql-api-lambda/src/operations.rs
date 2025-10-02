@@ -194,44 +194,26 @@ pub async fn check_template(
                                         .collect::<Vec<String>>()
                                         .join(" ");
 
-                                    let next_chapter_result = generate_new_chapter(
+                                    let next_chapter = generate_new_chapter(
                                         &chapters_merged,
                                         &input.target_language,
                                         &story.story_id,
                                     )
-                                    .await;
+                                    .await
+                                    .map_err(|e| AppsyncError::new("ModelError", e.to_string()))?;
 
-                                    let next_chapter = match next_chapter_result {
-                                        Ok(chapter) => {
-                                            println!(
-                                                "Generated next chapter for story: {:?}, chapter: {:?}",
-                                                story.story_id, chapter.chapter_id
-                                            );
+                                    println!(
+                                        "Generated next chapter for story: {:?}, chapter: {:?}",
+                                        story.story_id, next_chapter.chapter_id
+                                    );
 
-                                            let store_chapter_result =
-                                                store_chapter(&input.user_id, &chapter).await;
+                                    store_chapter(&input.user_id, &next_chapter)
+                                    .await
+                                    .map_err(|e| AppsyncError::new("StorageWriteError", e.to_string()))?;
 
-                                            match store_chapter_result {
-                                                Ok(_) => {
-                                                    println!("Stored next chapter for story: {:?}, chapter: {:?}", 
-                                                        story.story_id, chapter.chapter_id);
-                                                    Some(chapter)
-                                                }
-                                                Err(e) => {
-                                                    println!("Error storing next chapter for story: {:?}, chapter: {:?}, error: {:?}", 
-                                                        story.story_id, chapter.chapter_id, e);
-                                                    None
-                                                }
-                                            }
-                                        }
-                                        Err(e) => {
-                                            println!("Error generating next chapter for story: {:?}, error: {:?}", 
-                                                story.story_id, e);
-                                            None
-                                        }
-                                    };
-
-                                    next_chapter
+                                    println!("Stored next chapter for story: {:?}, chapter: {:?}", 
+                                        story.story_id, next_chapter.chapter_id);
+                                    Some(next_chapter)
                                 }
                                 _ => None,
                             }

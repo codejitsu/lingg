@@ -75,6 +75,8 @@ import HistoryLinks from './chat/sidebar/children/HistoryLinks.component'
 import Footer from './chat/sidebar/children/Footer.component'
 import type { MistakeInterface } from '@/models/messages/Mistake.Interface'
 import { TARGET_LANGUAGES, EXPLAIN_LANGUAGES, STORY_TYPES } from '@/models/constants'
+import { StarIcon } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 
 // TODO - replace with real user ID from auth context
 const userId = 'f257727e-94ab-44ac-aa0e-c4d51a0d67ac'
@@ -522,19 +524,14 @@ function ChatContent({
                                                         <CheckCheck className={`size-4 ${isCompletedChapter ? "text-green-500" : ""}`}/>
                                                     </Button>
                                                 </MessageAction>
-                                                <MessageAction
-                                                    tooltip="Good job!"
-                                                    delayDuration={100}
+                                                <Badge
+                                                    variant="secondary"
+                                                    className="bg-blue-500 text-white dark:bg-blue-600"
                                                 >
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="rounded-full"
-                                                    >
-                                                        <ThumbsUp />
-                                                    </Button>
-                                                </MessageAction>
-                                            </MessageActions>
+                                                    <StarIcon className="text-yellow-500 fill-yellow-300" />
+                                                    42
+                                                </Badge>                                                
+                                            </MessageActions>                                            
                                         </div>
                                     ) : (
                                         <div className="group flex flex-col items-end gap-1">

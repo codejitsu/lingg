@@ -74,6 +74,7 @@ import ChapterStatusInterface from '@/models/ChapterStatus.Interface'
 import HistoryLinks from './chat/sidebar/children/HistoryLinks.component'
 import Footer from './chat/sidebar/children/Footer.component'
 import type { MistakeInterface } from '@/models/messages/Mistake.Interface'
+import { TARGET_LANGUAGES, EXPLAIN_LANGUAGES, STORY_TYPES } from '@/models/constants'
 
 // TODO - replace with real user ID from auth context
 const userId = 'f257727e-94ab-44ac-aa0e-c4d51a0d67ac'
@@ -162,95 +163,6 @@ function ChatContent({
     const [placeholders, setPlaceholders] = useState<Record<string, string>>({})
 
     const [storyId, setStoryId] = useState(currentStoryId)
-
-    const targetLanguages = [
-        {
-            value: 'Ukrainian',
-            label: 'Ukrainian',
-        },
-        {
-            value: 'Russian',
-            label: 'Russian',
-        },
-        {
-            value: 'English',
-            label: 'English',
-        },
-        {
-            value: 'Spanish',
-            label: 'Spanish',
-        },
-        {
-            value: 'French',
-            label: 'French',
-        },
-        {
-            value: 'German',
-            label: 'German',
-        },
-    ]
-
-    const explainLanguages = [
-        {
-            value: 'Ukrainian',
-            label: 'Ukrainian',
-        },
-        {
-            value: 'Russian',
-            label: 'Russian',
-        },
-        {
-            value: 'English',
-            label: 'English',
-        },
-        {
-            value: 'Spanish',
-            label: 'Spanish',
-        },
-        {
-            value: 'French',
-            label: 'French',
-        },
-        {
-            value: 'German',
-            label: 'German',
-        },
-    ]
-
-    const storyTypes = [
-        {
-            value: 'BedtimeStory',
-            label: 'Bed Time',
-        },
-        {
-            value: 'Adventure',
-            label: 'Adventure',
-        },
-        {
-            value: 'SciFi',
-            label: 'Sci-Fi',
-        },
-        {
-            value: 'Fantasy',
-            label: 'Fantasy',
-        },
-        {
-            value: 'Pirates',
-            label: 'Pirates',
-        },
-        {
-            value: 'Superheroes',
-            label: 'Superheroes',
-        },
-        {
-            value: 'Animals',
-            label: 'Animals',
-        },
-        {
-            value: 'FairyTales',
-            label: 'Fairy Tales',
-        },
-    ]
 
     const {
         data: storyData,
@@ -721,8 +633,8 @@ function ChatContent({
                                                         className="w-[250px] justify-between"
                                                     >
                                                         {valueTargetLanguage
-                                                            ? targetLanguages.find(
-                                                                  (language) =>
+                                                            ? TARGET_LANGUAGES.find(
+                                                                  (language: { value: string; label: string }) =>
                                                                       language.value ===
                                                                       valueTargetLanguage,
                                                               )?.label
@@ -739,9 +651,9 @@ function ChatContent({
                                                                 found.
                                                             </CommandEmpty>
                                                             <CommandGroup>
-                                                                {targetLanguages.map(
+                                                                {TARGET_LANGUAGES.map(
                                                                     (
-                                                                        language,
+                                                                        language: { value: string; label: string },
                                                                     ) => (
                                                                         <CommandItem
                                                                             key={
@@ -805,8 +717,8 @@ function ChatContent({
                                                         className="w-[250px] justify-between"
                                                     >
                                                         {valueExplainLanguage
-                                                            ? explainLanguages.find(
-                                                                  (language) =>
+                                                            ? EXPLAIN_LANGUAGES.find(
+                                                                  (language: { value: string; label: string }) =>
                                                                       language.value ===
                                                                       valueExplainLanguage,
                                                               )?.label
@@ -823,9 +735,9 @@ function ChatContent({
                                                                 found.
                                                             </CommandEmpty>
                                                             <CommandGroup>
-                                                                {explainLanguages.map(
+                                                                {EXPLAIN_LANGUAGES.map(
                                                                     (
-                                                                        language,
+                                                                        language: { value: string; label: string },
                                                                     ) => (
                                                                         <CommandItem
                                                                             key={
@@ -885,8 +797,8 @@ function ChatContent({
                                                         className="w-[250px] justify-between"
                                                     >
                                                         {valueStoryType
-                                                            ? storyTypes.find(
-                                                                  (story) =>
+                                                            ? STORY_TYPES.find(
+                                                                  (story: { value: string; label: string }) =>
                                                                       story.value ===
                                                                       valueStoryType,
                                                               )?.label
@@ -902,8 +814,8 @@ function ChatContent({
                                                                 No story found.
                                                             </CommandEmpty>
                                                             <CommandGroup>
-                                                                {storyTypes.map(
-                                                                    (story) => (
+                                                                {STORY_TYPES.map(
+                                                                    (story: { value: string; label: string }) => (
                                                                         <CommandItem
                                                                             key={
                                                                                 story.value

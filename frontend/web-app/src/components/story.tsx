@@ -161,6 +161,8 @@ function ChatContent({
 
     const [placeholders, setPlaceholders] = useState<Record<string, string>>({})
 
+    const [storyId, setStoryId] = useState(currentStoryId)
+
     const targetLanguages = [
         {
             value: 'Ukrainian',
@@ -391,6 +393,10 @@ function ChatContent({
                         },
                     ])
 
+                    setStoryId(data.startStory.story.storyId)
+
+                    window.history.replaceState(null, '', `/#/story/${data.startStory.story.storyId}`)
+
                     setNextAction('VerifyChapter')
                 }
 
@@ -443,7 +449,7 @@ function ChatContent({
                 const { data } = await checkTemplate({
                     variables: {
                         userId: userId,
-                        storyId: currentStoryId,
+                        storyId: storyId,
                         chapterId: chatMessages[chatMessages.length - 1].id,
                         clientRequestId: uuidv4(),
                         targetLanguage: valueTargetLanguage,
@@ -509,8 +515,8 @@ function ChatContent({
                     {
                         id: uuidv4(),
                         role: 'assistant',
-                        content: `Failed to start story: ${errorMessage}`,
-                        template: `Failed to start story: ${errorMessage}`,
+                        content: `Failed to verify chapter: ${errorMessage}`,
+                        template: `Failed to verify chapter: ${errorMessage}`,
                         placeholders: [],
                         mistakes: []
                     },

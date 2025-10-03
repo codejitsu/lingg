@@ -4,8 +4,6 @@ import HistoryLinks from './HistoryLinks.component'
 import type { StoryInterface } from '@/models/Story.Interface'
 import { SidebarProvider } from '@/components/ui/sidebar'
 
-// TODO test new story, the lable must be shown
-
 describe('HistoryLinks.component: rendering', () => {
     Object.defineProperty(window, 'matchMedia', {
         writable: true,

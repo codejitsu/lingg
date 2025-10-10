@@ -30,7 +30,6 @@ import {
     Languages,
     MessageCircleQuestionMark,
     Pencil,
-    ThumbsUp,
     Trash,
     PopcornIcon,
 } from 'lucide-react'

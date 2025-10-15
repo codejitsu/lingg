@@ -76,6 +76,7 @@ import type { MistakeInterface } from '@/models/messages/Mistake.Interface'
 import { TARGET_LANGUAGES, EXPLAIN_LANGUAGES, STORY_TYPES } from '@/models/constants'
 import { StarIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { Container } from './landing/Container'
 
 // TODO - replace with real user ID from auth context
 const userId = 'f257727e-94ab-44ac-aa0e-c4d51a0d67ac'
@@ -101,7 +102,6 @@ function ChatSidebar({
 
     return (
         <Sidebar className="h-full flex flex-col">
-            <Header title="lingg.ai" />
             <HistoryLinks
                 stories={stories}
                 newStoryId={newStoryId}
@@ -936,21 +936,25 @@ function FullChatApp() {
         setNewStoryId(story.storyId)
     }
     return (
-        <div className="h-screen flex">
-            <SidebarProvider>
-                <ChatSidebar
-                    stories={stories}
-                    newStoryId={newStoryId}
-                    currentStoryId={storyId}
-                />
-                <SidebarInset>
-                    <ChatContent
-                        onNewStory={handleNewStory}
-                        currentStoryId={storyId}
-                    />
-                </SidebarInset>
-            </SidebarProvider>
-        </div>
+            <div className="bg-white dark:bg-gray-900">
+                <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-primary-900/20">
+                    <Container>
+                        <SidebarProvider>
+                            <ChatSidebar
+                                stories={stories}
+                                newStoryId={newStoryId}
+                                currentStoryId={storyId}
+                            />
+                            <SidebarInset>
+                                <ChatContent
+                                    onNewStory={handleNewStory}
+                                    currentStoryId={storyId}
+                                />
+                            </SidebarInset>
+                        </SidebarProvider>
+                    </Container>
+                </section>
+            </div>
     )
 }
 

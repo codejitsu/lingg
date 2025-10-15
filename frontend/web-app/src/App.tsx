@@ -10,6 +10,7 @@ import { Register } from '@/routes/Register';
 import { Privacy } from '@/routes/Privacy';
 import { Terms } from '@/routes/Terms';
 import './App.css'
+import { FullChatApp } from './components/story';
 
 function App() {
     return (
@@ -23,6 +24,8 @@ function App() {
                 <Route path="/register" element={<Register />} />
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/terms" element={<Terms />} />
+                <Route path="/story/" element={<FullChatApp />} />
+                <Route path="/story/:storyId" element={<FullChatApp />} />
             </Routes>
             </main>
             <Footer />

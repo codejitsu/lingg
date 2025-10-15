@@ -101,14 +101,14 @@ function ChatSidebar({
     }, [newStoryId])
 
     return (
-        <Sidebar className="h-full flex flex-col">
+        <Sidebar className='bg-white dark:bg-gray-900'>
             <HistoryLinks
                 stories={stories}
                 newStoryId={newStoryId}
                 currentStoryId={currentStoryId}
                 hidden={hidden}
             />
-            <Footer />
+            {/* <Footer /> */}
         </Sidebar>
     )
 }
@@ -443,8 +443,11 @@ function ChatContent({
 
     return (
         <main className="flex h-[95%] w-full flex-col overflow-hidden">
-            <header className="bg-background z-10 flex h-16 w-full shrink-0 items-center gap-2 border-b px-4">
-                <div className="text-foreground">{title}</div>
+            {/* Header */
+            //text-sm font-medium text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 transition-colors
+            }
+            <header className="bg-background z-10 flex h-16 w-full shrink-0 items-center gap-2 border-b px-4 text-lg font-medium">
+                {title}
             </header>
 
             <div

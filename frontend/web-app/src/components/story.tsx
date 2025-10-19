@@ -446,7 +446,7 @@ function ChatContent({
             {/* Header */
             //text-sm font-medium text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 transition-colors
             }
-            <header className="bg-background dark:bg-gray-900 z-10 flex h-16 w-full shrink-0 items-center gap-2 border-b border-gray-200 dark:border-gray-800 px-4 text-lg font-medium text-gray-900 dark:text-gray-100">
+            <header className="bg-white dark:bg-gray-900 z-10 flex h-16 w-full shrink-0 items-center gap-2 border-b border-gray-200 dark:border-gray-800 px-4 text-lg font-medium text-gray-900 dark:text-gray-100">
                 {title}
             </header>
 
@@ -893,7 +893,7 @@ function FullChatApp() {
                                 newStoryId={newStoryId}
                                 currentStoryId={storyId}
                             />
-                            <SidebarInset className="dark bg-gray-900 text-gray-100">
+                            <SidebarInset className="bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
                                 <ChatContent
                                     onNewStory={handleNewStory}
                                     currentStoryId={storyId}

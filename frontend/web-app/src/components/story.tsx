@@ -446,7 +446,7 @@ function ChatContent({
             {/* Header */
             //text-sm font-medium text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 transition-colors
             }
-            <header className="bg-background z-10 flex h-16 w-full shrink-0 items-center gap-2 border-b px-4 text-lg font-medium">
+            <header className="bg-background dark:bg-gray-900 z-10 flex h-16 w-full shrink-0 items-center gap-2 border-b border-gray-200 dark:border-gray-800 px-4 text-lg font-medium text-gray-900 dark:text-gray-100">
                 {title}
             </header>
 
@@ -454,7 +454,7 @@ function ChatContent({
                 ref={chatContainerRef}
                 className="relative flex-1 overflow-y-auto"
             >
-                <ChatContainerRoot className="h-full">
+                <ChatContainerRoot className="h-full bg-white dark:bg-gray-900">
                     <ChatContainerContent className="space-y-0 px-5 py-12">
                         <div
                             className={`flex flex-col justify-center items-center h-[300px] text-left ${chatMessages.length > 0 ? 'hidden' : ''}`}
@@ -594,7 +594,7 @@ function ChatContent({
                 </ChatContainerRoot>
             </div>
 
-            <div className="bg-background z-10 shrink-0 px-3 pb-3 md:px-5 md:pb-5">
+            <div className="bg-background dark:bg-gray-900 z-10 shrink-0 px-3 pb-3 md:px-5 md:pb-5">
                 <div className="mx-auto max-w-3xl">
                     <div className="flex flex-col items-end gap-2 p-4">
                         <Loader
@@ -607,7 +607,7 @@ function ChatContent({
                         value={prompt}
                         onValueChange={setPrompt}
                         onSubmit={handleSubmit}
-                        className="border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-xs"
+                        className="border-input bg-popover dark:bg-gray-900 relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-xs"
                     >
                         <div className="flex flex-col">
                             <PromptInputActions className="mt-3 flex w-full items-center justify-between gap-2 px-3 pb-3">
@@ -618,75 +618,56 @@ function ChatContent({
                                             <Languages size={18} />
                                             <Popover
                                                 open={openTargetLanguage}
-                                                onOpenChange={
-                                                    setOpenTargetLanguage
-                                                }
+                                                onOpenChange={setOpenTargetLanguage}
                                             >
                                                 <PopoverTrigger asChild>
                                                     <Button
                                                         variant="outline"
                                                         role="combobox"
-                                                        aria-expanded={
-                                                            openTargetLanguage
-                                                        }
-                                                        className="w-[250px] justify-between"
+                                                        aria-expanded={openTargetLanguage}
+                                                        className="w-[250px] justify-between dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
                                                     >
                                                         {valueTargetLanguage
                                                             ? TARGET_LANGUAGES.find(
                                                                   (language: { value: string; label: string }) =>
-                                                                      language.value ===
-                                                                      valueTargetLanguage,
+                                                                      language.value === valueTargetLanguage,
                                                               )?.label
                                                             : 'Select target language...'}
                                                         <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                                     </Button>
                                                 </PopoverTrigger>
-                                                <PopoverContent className="w-[200px] p-0">
+                                                <PopoverContent className="w-[200px] p-0 dark:bg-gray-900 dark:border-gray-700">
                                                     <Command>
-                                                        <CommandInput placeholder="Language..." />
+                                                        <CommandInput placeholder="Language..." className="dark:bg-gray-900 dark:text-gray-100" />
                                                         <CommandList>
                                                             <CommandEmpty>
-                                                                No language
-                                                                found.
+                                                                No language found.
                                                             </CommandEmpty>
                                                             <CommandGroup>
                                                                 {TARGET_LANGUAGES.map(
-                                                                    (
-                                                                        language: { value: string; label: string },
-                                                                    ) => (
+                                                                    (language: { value: string; label: string }) => (
                                                                         <CommandItem
-                                                                            key={
-                                                                                language.value
-                                                                            }
-                                                                            value={
-                                                                                language.value
-                                                                            }
-                                                                            onSelect={(
-                                                                                currentValue,
-                                                                            ) => {
+                                                                            key={language.value}
+                                                                            value={language.value}
+                                                                            onSelect={(currentValue) => {
                                                                                 setValueTargetLanguage(
-                                                                                    currentValue ===
-                                                                                        valueTargetLanguage
+                                                                                    currentValue === valueTargetLanguage
                                                                                         ? ''
                                                                                         : currentValue,
                                                                                 )
-                                                                                setOpenTargetLanguage(
-                                                                                    false,
-                                                                                )
+                                                                                setOpenTargetLanguage(false)
                                                                             }}
+                                                                            className="dark:text-gray-100"
                                                                         >
                                                                             <CheckIcon
                                                                                 className={cn(
                                                                                     'mr-2 h-4 w-4',
-                                                                                    valueTargetLanguage ===
-                                                                                        language.value
+                                                                                    valueTargetLanguage === language.value
                                                                                         ? 'opacity-100'
                                                                                         : 'opacity-0',
                                                                                 )}
                                                                             />
-                                                                            {
-                                                                                language.label
-                                                                            }
+                                                                            {language.label}
                                                                         </CommandItem>
                                                                     ),
                                                                 )}
@@ -697,80 +678,59 @@ function ChatContent({
                                             </Popover>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <MessageCircleQuestionMark
-                                                size={18}
-                                            />
+                                            <MessageCircleQuestionMark size={18} />
                                             <Popover
                                                 open={openExplainLanguage}
-                                                onOpenChange={
-                                                    setOpenExplainLanguage
-                                                }
+                                                onOpenChange={setOpenExplainLanguage}
                                             >
                                                 <PopoverTrigger asChild>
                                                     <Button
                                                         variant="outline"
                                                         role="combobox"
-                                                        aria-expanded={
-                                                            openExplainLanguage
-                                                        }
-                                                        className="w-[250px] justify-between"
+                                                        aria-expanded={openExplainLanguage}
+                                                        className="w-[250px] justify-between dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
                                                     >
                                                         {valueExplainLanguage
                                                             ? EXPLAIN_LANGUAGES.find(
                                                                   (language: { value: string; label: string }) =>
-                                                                      language.value ===
-                                                                      valueExplainLanguage,
+                                                                      language.value === valueExplainLanguage,
                                                               )?.label
                                                             : 'Select explain language...'}
                                                         <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                                     </Button>
                                                 </PopoverTrigger>
-                                                <PopoverContent className="w-[200px] p-0">
+                                                <PopoverContent className="w-[200px] p-0 dark:bg-gray-900 dark:border-gray-700">
                                                     <Command>
-                                                        <CommandInput placeholder="Language..." />
+                                                        <CommandInput placeholder="Language..." className="dark:bg-gray-900 dark:text-gray-100" />
                                                         <CommandList>
                                                             <CommandEmpty>
-                                                                No language
-                                                                found.
+                                                                No language found.
                                                             </CommandEmpty>
                                                             <CommandGroup>
                                                                 {EXPLAIN_LANGUAGES.map(
-                                                                    (
-                                                                        language: { value: string; label: string },
-                                                                    ) => (
+                                                                    (language: { value: string; label: string }) => (
                                                                         <CommandItem
-                                                                            key={
-                                                                                language.value
-                                                                            }
-                                                                            value={
-                                                                                language.value
-                                                                            }
-                                                                            onSelect={(
-                                                                                currentValue,
-                                                                            ) => {
+                                                                            key={language.value}
+                                                                            value={language.value}
+                                                                            onSelect={(currentValue) => {
                                                                                 setValueExplainLanguage(
-                                                                                    currentValue ===
-                                                                                        valueExplainLanguage
+                                                                                    currentValue === valueExplainLanguage
                                                                                         ? ''
                                                                                         : currentValue,
                                                                                 )
-                                                                                setOpenExplainLanguage(
-                                                                                    false,
-                                                                                )
+                                                                                setOpenExplainLanguage(false)
                                                                             }}
+                                                                            className="dark:text-gray-100"
                                                                         >
                                                                             <CheckIcon
                                                                                 className={cn(
                                                                                     'mr-2 h-4 w-4',
-                                                                                    valueExplainLanguage ===
-                                                                                        language.value
+                                                                                    valueExplainLanguage === language.value
                                                                                         ? 'opacity-100'
                                                                                         : 'opacity-0',
                                                                                 )}
                                                                             />
-                                                                            {
-                                                                                language.label
-                                                                            }
+                                                                            {language.label}
                                                                         </CommandItem>
                                                                     ),
                                                                 )}
@@ -790,24 +750,21 @@ function ChatContent({
                                                     <Button
                                                         variant="outline"
                                                         role="combobox"
-                                                        aria-expanded={
-                                                            openStoryType
-                                                        }
-                                                        className="w-[250px] justify-between"
+                                                        aria-expanded={openStoryType}
+                                                        className="w-[250px] justify-between dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
                                                     >
                                                         {valueStoryType
                                                             ? STORY_TYPES.find(
                                                                   (story: { value: string; label: string }) =>
-                                                                      story.value ===
-                                                                      valueStoryType,
+                                                                      story.value === valueStoryType,
                                                               )?.label
                                                             : 'Select story type...'}
                                                         <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                                     </Button>
                                                 </PopoverTrigger>
-                                                <PopoverContent className="w-[200px] p-0">
+                                                <PopoverContent className="w-[200px] p-0 dark:bg-gray-900 dark:border-gray-700">
                                                     <Command>
-                                                        <CommandInput placeholder="Story..." />
+                                                        <CommandInput placeholder="Story..." className="dark:bg-gray-900 dark:text-gray-100" />
                                                         <CommandList>
                                                             <CommandEmpty>
                                                                 No story found.
@@ -816,38 +773,27 @@ function ChatContent({
                                                                 {STORY_TYPES.map(
                                                                     (story: { value: string; label: string }) => (
                                                                         <CommandItem
-                                                                            key={
-                                                                                story.value
-                                                                            }
-                                                                            value={
-                                                                                story.value
-                                                                            }
-                                                                            onSelect={(
-                                                                                currentValue,
-                                                                            ) => {
+                                                                            key={story.value}
+                                                                            value={story.value}
+                                                                            onSelect={(currentValue) => {
                                                                                 setValueStoryType(
-                                                                                    currentValue ===
-                                                                                        valueStoryType
+                                                                                    currentValue === valueStoryType
                                                                                         ? ''
                                                                                         : currentValue,
                                                                                 )
-                                                                                setOpenStoryType(
-                                                                                    false,
-                                                                                )
+                                                                                setOpenStoryType(false)
                                                                             }}
+                                                                            className="dark:text-gray-100"
                                                                         >
                                                                             <CheckIcon
                                                                                 className={cn(
                                                                                     'mr-2 h-4 w-4',
-                                                                                    valueStoryType ===
-                                                                                        story.value
+                                                                                    valueStoryType === story.value
                                                                                         ? 'opacity-100'
                                                                                         : 'opacity-0',
                                                                                 )}
                                                                             />
-                                                                            {
-                                                                                story.label
-                                                                            }
+                                                                            {story.label}
                                                                         </CommandItem>
                                                                     ),
                                                                 )}
@@ -868,25 +814,24 @@ function ChatContent({
                                         disabled={
                                             nextAction === 'StartNewStory' &&
                                             (!valueExplainLanguage.trim() ||
-                                            !valueTargetLanguage ||
-                                            !valueStoryType.trim()) ||
+                                                !valueTargetLanguage ||
+                                                !valueStoryType.trim()) ||
                                             isLoading
                                         }
                                         onClick={handleSubmit}
-                                        className="rounded-full"
+                                        className="rounded-full dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
                                     >
                                         {nextAction === '...'
                                             ? 'Start new story'
                                             : nextAction === 'StartNewStory'
-                                              ? 'Start new story'
-                                              : nextAction === 'VerifyChapter'
-                                                ? 'Verify'
-                                                : nextAction === 'FixMistakes'
-                                                  ? 'Recheck'
-                                                  : nextAction ===
-                                                      'StartNewChapter'
-                                                    ? 'New Chapter'
-                                                    : 'Error'}
+                                            ? 'Start new story'
+                                            : nextAction === 'VerifyChapter'
+                                            ? 'Verify'
+                                            : nextAction === 'FixMistakes'
+                                            ? 'Recheck'
+                                            : nextAction === 'StartNewChapter'
+                                            ? 'New Chapter'
+                                            : 'Error'}
                                         {!isLoading ? (
                                             <ArrowUp size={18} />
                                         ) : (
@@ -939,8 +884,8 @@ function FullChatApp() {
         setNewStoryId(story.storyId)
     }
     return (
-            <div className="bg-white dark:bg-gray-900">
-                <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-primary-900/20">
+            <div>
+                <section className="relative overflow-hidden bg-gradient-to-br from-white via-white to-white/20 dark:from-gray-900 dark:via-gray-900 dark:to-primary-900/20">
                     <Container>
                         <SidebarProvider>
                             <ChatSidebar
@@ -948,7 +893,7 @@ function FullChatApp() {
                                 newStoryId={newStoryId}
                                 currentStoryId={storyId}
                             />
-                            <SidebarInset>
+                            <SidebarInset className="dark bg-gray-900 text-gray-100">
                                 <ChatContent
                                     onNewStory={handleNewStory}
                                     currentStoryId={storyId}

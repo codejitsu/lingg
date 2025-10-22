@@ -461,7 +461,7 @@ function ChatContent({
                         >
                             <Alert
                                 variant="default"
-                                className="w-full max-w-md bg-white/80 text-slate-900 dark:bg-slate-800 dark:text-slate-100"
+                                className={`w-full max-w-md bg-white/80 text-slate-900 dark:bg-slate-800 dark:text-slate-100 ${storyId ? 'hidden' : ''}`}
                             >
                                 <PopcornIcon className="mx-auto mb-2 text-amber-400" />
                                 <AlertTitle className="text-left">

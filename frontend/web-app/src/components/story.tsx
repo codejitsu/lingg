@@ -42,6 +42,10 @@ import {
     ShareIcon,
     CopyIcon,
     TrashIcon,
+    TagIcon,
+    TargetIcon,
+    SparkleIcon,
+    SquirrelIcon,
 } from 'lucide-react'
 import { CheckIcon, ChevronsUpDownIcon } from 'lucide-react'
 import {
@@ -91,6 +95,7 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
@@ -134,15 +139,75 @@ function ChatSidebar({
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-52 bg-white/80 text-slate-900 dark:bg-slate-800 dark:text-slate-100">
+                        <DropdownMenuLabel>Settings overrides</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
                         <DropdownMenuGroup>
-                        <DropdownMenuItem>
-                            <MailCheckIcon />
-                            Mark as Read
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                            <ArchiveIcon />
-                            Archive
-                        </DropdownMenuItem>
+                        <DropdownMenuSub>
+                            <DropdownMenuSubTrigger className="hover:bg-gray-800 dark:hover:bg-gray-700">
+                            <SquirrelIcon className="h-4 w-4 mr-2" />
+                            Story type
+                            </DropdownMenuSubTrigger>
+                            <DropdownMenuSubContent className='bg-white/80 text-slate-900 dark:bg-slate-800 dark:text-slate-100'>
+                            <DropdownMenuRadioGroup
+                                value={''}
+                                onValueChange={(value) => { console.log(value) }}
+                            >
+                                <DropdownMenuRadioItem value="personal" className="hover:bg-gray-800 dark:hover:bg-gray-700">
+                                Personal
+                                </DropdownMenuRadioItem>
+                                <DropdownMenuRadioItem value="work" className="hover:bg-gray-800 dark:hover:bg-gray-700">
+                                Work
+                                </DropdownMenuRadioItem>
+                                <DropdownMenuRadioItem value="other" className="hover:bg-gray-800 dark:hover:bg-gray-700">
+                                Other
+                                </DropdownMenuRadioItem>
+                            </DropdownMenuRadioGroup>
+                            </DropdownMenuSubContent>
+                        </DropdownMenuSub>                                  
+                        <DropdownMenuSub>
+                            <DropdownMenuSubTrigger className="hover:bg-gray-800 dark:hover:bg-gray-700">
+                            <TargetIcon className="h-4 w-4 mr-2" />
+                            Target language
+                            </DropdownMenuSubTrigger>
+                            <DropdownMenuSubContent className='bg-white/80 text-slate-900 dark:bg-slate-800 dark:text-slate-100'>
+                            <DropdownMenuRadioGroup
+                                value={''}
+                                onValueChange={(value) => { console.log(value) }}
+                            >
+                                <DropdownMenuRadioItem value="personal" className="hover:bg-gray-800 dark:hover:bg-gray-700">
+                                Personal
+                                </DropdownMenuRadioItem>
+                                <DropdownMenuRadioItem value="work" className="hover:bg-gray-800 dark:hover:bg-gray-700">
+                                Work
+                                </DropdownMenuRadioItem>
+                                <DropdownMenuRadioItem value="other" className="hover:bg-gray-800 dark:hover:bg-gray-700">
+                                Other
+                                </DropdownMenuRadioItem>
+                            </DropdownMenuRadioGroup>
+                            </DropdownMenuSubContent>
+                        </DropdownMenuSub>                        
+                        <DropdownMenuSub>
+                            <DropdownMenuSubTrigger className="hover:bg-gray-800 dark:hover:bg-gray-700">
+                            <SparkleIcon className="h-4 w-4 mr-2" />
+                            Explanation language
+                            </DropdownMenuSubTrigger>
+                            <DropdownMenuSubContent className='bg-white/80 text-slate-900 dark:bg-slate-800 dark:text-slate-100'>
+                            <DropdownMenuRadioGroup
+                                value={''}
+                                onValueChange={(value) => { console.log(value) }}
+                            >
+                                <DropdownMenuRadioItem value="personal" className="hover:bg-gray-800 dark:hover:bg-gray-700">
+                                Personal
+                                </DropdownMenuRadioItem>
+                                <DropdownMenuRadioItem value="work" className="hover:bg-gray-800 dark:hover:bg-gray-700">
+                                Work
+                                </DropdownMenuRadioItem>
+                                <DropdownMenuRadioItem value="other" className="hover:bg-gray-800 dark:hover:bg-gray-700">
+                                Other
+                                </DropdownMenuRadioItem>
+                            </DropdownMenuRadioGroup>
+                            </DropdownMenuSubContent>
+                        </DropdownMenuSub>                        
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                     </DropdownMenu>

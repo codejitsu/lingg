@@ -71,7 +71,7 @@ function HistoryLinks({
                         {group.stories.map((story) => (
                             <SidebarMenuButton
                                 key={story.storyId}
-                                className={`text-sm font-medium text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 transition-colors ${story.storyId === currentStoryId ? 'border-l-4 rounded-none' : ''}`}
+                                className={`text-sm font-medium text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 transition-colors ${story.storyId === currentStoryId ? 'border-l-4 rounded-none border-l-primary-600 dark:border-l-primary-400' : ''}`}
                             >
                                 <a href={`/#/story/${story.storyId}`}>
                                     {story.title}

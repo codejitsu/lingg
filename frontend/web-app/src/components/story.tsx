@@ -131,10 +131,10 @@ function ChatSidebar({
         <Sidebar className='bg-white dark:bg-gray-900'>  
             <div className="flex items-center justify-between px-4 pt-4 dark:bg-gray-900/95">
                 <ButtonGroup>
-                    <Button className='bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600'>New Story</Button>
+                    <Button size="lg" className='bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600'>New Story</Button>
                     <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon" aria-label="More Options">
+                        <Button variant="outline" size="lg" aria-label="More Options">
                         <MoreHorizontalIcon />
                         </Button>
                     </DropdownMenuTrigger>

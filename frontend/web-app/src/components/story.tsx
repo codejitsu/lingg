@@ -143,7 +143,7 @@ function ChatSidebar({
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
                         <DropdownMenuSub>
-                            <DropdownMenuSubTrigger className="hover:bg-gray-800 dark:hover:bg-gray-700">
+                            <DropdownMenuSubTrigger className="hover:bg-gray-800 dark:hover:bg-gray-700 dark:data-[state=open]:bg-gray-700">
                             <SquirrelIcon className="h-4 w-4 mr-2" />
                             Story type
                             </DropdownMenuSubTrigger>
@@ -152,20 +152,20 @@ function ChatSidebar({
                                 value={''}
                                 onValueChange={(value) => { console.log(value) }}
                             >
-                                <DropdownMenuRadioItem value="personal" className="hover:bg-gray-800 dark:hover:bg-gray-700">
-                                Personal
-                                </DropdownMenuRadioItem>
-                                <DropdownMenuRadioItem value="work" className="hover:bg-gray-800 dark:hover:bg-gray-700">
-                                Work
-                                </DropdownMenuRadioItem>
-                                <DropdownMenuRadioItem value="other" className="hover:bg-gray-800 dark:hover:bg-gray-700">
-                                Other
-                                </DropdownMenuRadioItem>
+                                {STORY_TYPES.map((story: { value: string; label: string }) => (
+                                    <DropdownMenuRadioItem 
+                                        key={story.value} 
+                                        value={story.value} 
+                                        className="hover:bg-gray-800 dark:hover:bg-gray-700"
+                                    >
+                                        {story.label}
+                                    </DropdownMenuRadioItem>
+                                ))}
                             </DropdownMenuRadioGroup>
                             </DropdownMenuSubContent>
                         </DropdownMenuSub>                                  
                         <DropdownMenuSub>
-                            <DropdownMenuSubTrigger className="hover:bg-gray-800 dark:hover:bg-gray-700">
+                            <DropdownMenuSubTrigger className="hover:bg-gray-800 dark:hover:bg-gray-700 dark:data-[state=open]:bg-gray-700">
                             <TargetIcon className="h-4 w-4 mr-2" />
                             Target language
                             </DropdownMenuSubTrigger>
@@ -174,20 +174,20 @@ function ChatSidebar({
                                 value={''}
                                 onValueChange={(value) => { console.log(value) }}
                             >
-                                <DropdownMenuRadioItem value="personal" className="hover:bg-gray-800 dark:hover:bg-gray-700">
-                                Personal
-                                </DropdownMenuRadioItem>
-                                <DropdownMenuRadioItem value="work" className="hover:bg-gray-800 dark:hover:bg-gray-700">
-                                Work
-                                </DropdownMenuRadioItem>
-                                <DropdownMenuRadioItem value="other" className="hover:bg-gray-800 dark:hover:bg-gray-700">
-                                Other
-                                </DropdownMenuRadioItem>
+                                {TARGET_LANGUAGES.map((lang: { value: string; label: string }) => (
+                                    <DropdownMenuRadioItem 
+                                        key={lang.value} 
+                                        value={lang.value} 
+                                        className="hover:bg-gray-800 dark:hover:bg-gray-700"
+                                    >
+                                        {lang.label}    
+                                    </DropdownMenuRadioItem>
+                                ))}                            
                             </DropdownMenuRadioGroup>
                             </DropdownMenuSubContent>
                         </DropdownMenuSub>                        
                         <DropdownMenuSub>
-                            <DropdownMenuSubTrigger className="hover:bg-gray-800 dark:hover:bg-gray-700">
+                            <DropdownMenuSubTrigger className="hover:bg-gray-800 dark:hover:bg-gray-700 dark:data-[state=open]:bg-gray-700">
                             <SparkleIcon className="h-4 w-4 mr-2" />
                             Explanation language
                             </DropdownMenuSubTrigger>
@@ -196,15 +196,15 @@ function ChatSidebar({
                                 value={''}
                                 onValueChange={(value) => { console.log(value) }}
                             >
-                                <DropdownMenuRadioItem value="personal" className="hover:bg-gray-800 dark:hover:bg-gray-700">
-                                Personal
-                                </DropdownMenuRadioItem>
-                                <DropdownMenuRadioItem value="work" className="hover:bg-gray-800 dark:hover:bg-gray-700">
-                                Work
-                                </DropdownMenuRadioItem>
-                                <DropdownMenuRadioItem value="other" className="hover:bg-gray-800 dark:hover:bg-gray-700">
-                                Other
-                                </DropdownMenuRadioItem>
+                                {EXPLAIN_LANGUAGES.map((lang: { value: string; label: string }) => (
+                                    <DropdownMenuRadioItem 
+                                        key={lang.value} 
+                                        value={lang.value} 
+                                        className="hover:bg-gray-800 dark:hover:bg-gray-700"
+                                    >
+                                        {lang.label}
+                                    </DropdownMenuRadioItem>
+                                ))}                                
                             </DropdownMenuRadioGroup>
                             </DropdownMenuSubContent>
                         </DropdownMenuSub>                        

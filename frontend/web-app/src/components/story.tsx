@@ -32,6 +32,16 @@ import {
     Pencil,
     Trash,
     PopcornIcon,
+    MoreHorizontalIcon,
+    MailCheckIcon,
+    ArchiveIcon,
+    ChevronDownIcon,
+    VolumeOffIcon,
+    AlertTriangleIcon,
+    UserRoundXIcon,
+    ShareIcon,
+    CopyIcon,
+    TrashIcon,
 } from 'lucide-react'
 import { CheckIcon, ChevronsUpDownIcon } from 'lucide-react'
 import {
@@ -65,18 +75,30 @@ import {
     CHECK_TEMPLATE,
 } from '@/models/graphql/graphql'
 
-import Header from './chat/sidebar/children/Header.component'
 import type { FetchStoryResult } from '@/models/graphql/FetchStoryResult.Interface'
 import type { ChatMessage } from '@/models/messages/ChatMessage.Interface'
 import type { NextAction } from '@/models/messages/NextAction'
 import ChapterStatusInterface from '@/models/ChapterStatus.Interface'
 import HistoryLinks from './chat/sidebar/children/HistoryLinks.component'
-import Footer from './chat/sidebar/children/Footer.component'
 import type { MistakeInterface } from '@/models/messages/Mistake.Interface'
 import { TARGET_LANGUAGES, EXPLAIN_LANGUAGES, STORY_TYPES } from '@/models/constants'
 import { StarIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Container } from './landing/Container'
+import { ButtonGroup } from '@/components/ui/button-group'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 // TODO - replace with real user ID from auth context
 const userId = 'f257727e-94ab-44ac-aa0e-c4d51a0d67ac'
@@ -101,7 +123,31 @@ function ChatSidebar({
     }, [newStoryId])
 
     return (
-        <Sidebar className='bg-white dark:bg-gray-900'>
+        <Sidebar className='bg-white dark:bg-gray-900'>  
+            <div className="flex items-center justify-between px-4 pt-4 dark:bg-gray-900/95">
+                <ButtonGroup>
+                    <Button className='bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600'>New Story</Button>
+                    <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="icon" aria-label="More Options">
+                        <MoreHorizontalIcon />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-52 bg-white/80 text-slate-900 dark:bg-slate-800 dark:text-slate-100">
+                        <DropdownMenuGroup>
+                        <DropdownMenuItem>
+                            <MailCheckIcon />
+                            Mark as Read
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                            <ArchiveIcon />
+                            Archive
+                        </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                    </DropdownMenu>
+                </ButtonGroup>                
+            </div>
             <HistoryLinks
                 stories={stories}
                 newStoryId={newStoryId}

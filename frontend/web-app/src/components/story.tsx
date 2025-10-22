@@ -490,9 +490,9 @@ function ChatContent({
                                 >
                                     {isAssistant ? (
                                         <div className="group flex w-full flex-col gap-2">
-                                            <div className="text-secondary-foreground prose flex-1 rounded-lg bg-secondary text-left p-3">
+                                            <div className="text-secondary-foreground prose flex-1 rounded-lg bg-white/80 text-slate-900 dark:bg-slate-800 dark:text-slate-100 text-left p-3">
                                                 { isCompletedChapter ? (
-                                                    <MessageContent className="bg-muted text-primary max-w-[85%] rounded-3xl px-5 py-2.5 sm:max-w-[100%] text-justify">
+                                                    <MessageContent className="bg-white/80 text-slate-900 dark:bg-slate-800 dark:text-slate-100 text-primary max-w-[85%] rounded-3xl px-5 py-2.5 sm:max-w-[100%] text-justify">
                                                         {message.finalizedContent ? message.finalizedContent : "No content available"}
                                                     </MessageContent>
                                                 ) : (

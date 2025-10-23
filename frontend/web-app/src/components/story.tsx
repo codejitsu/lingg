@@ -33,16 +33,6 @@ import {
     Trash,
     PopcornIcon,
     MoreHorizontalIcon,
-    MailCheckIcon,
-    ArchiveIcon,
-    ChevronDownIcon,
-    VolumeOffIcon,
-    AlertTriangleIcon,
-    UserRoundXIcon,
-    ShareIcon,
-    CopyIcon,
-    TrashIcon,
-    TagIcon,
     TargetIcon,
     SparkleIcon,
     SquirrelIcon,
@@ -91,31 +81,35 @@ import { Badge } from "@/components/ui/badge"
 import { Container } from './landing/Container'
 import { ButtonGroup } from '@/components/ui/button-group'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuLabel,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
+    DropdownMenuSeparator,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import type { StartStoryResult } from '@/models/graphql/StartStoryResult.Interface'
 
 // TODO - replace with real user ID from auth context
 const userId = 'f257727e-94ab-44ac-aa0e-c4d51a0d67ac'
+const targetLanguage = 'German'
+const explainLanguage = 'Russian'
 
 function ChatSidebar({
     stories,
     newStoryId,
     currentStoryId,
+    onNewStory
 }: {
     stories: StoryInterface[]
     newStoryId?: string
     currentStoryId?: string
+    onNewStory: () => void
 }) {
     const [hidden, setHidden] = useState(false)
 
@@ -131,7 +125,7 @@ function ChatSidebar({
         <Sidebar className='bg-white dark:bg-gray-900'>  
             <div className="flex items-center justify-between px-4 pt-4 dark:bg-gray-900/95">
                 <ButtonGroup>
-                    <Button size="lg" className='bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600'>New Story</Button>
+                    <Button size="lg" className='bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600' onClick={onNewStory}>New Story</Button>
                     <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" size="lg" aria-label="More Options">
@@ -227,9 +221,13 @@ function ChatSidebar({
 function ChatContent({
     onNewStory,
     currentStoryId,
+    storyTitle,
+    isLoading,
 }: {
     onNewStory: (story: StoryInterface) => void
     currentStoryId?: string
+    storyTitle?: string
+    isLoading: boolean
 }) {
     type StartStoryResult = {
         startStory: {
@@ -255,7 +253,6 @@ function ChatContent({
     const [checkTemplate] = useMutation<CheckTemplateResult>(CHECK_TEMPLATE)
 
     const [prompt, setPrompt] = useState('')
-    const [isLoading, setIsLoading] = useState(false)
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
     const chatContainerRef = useRef<HTMLDivElement>(null)
 
@@ -267,8 +264,6 @@ function ChatContent({
 
     const [openStoryType, setOpenStoryType] = useState(false)
     const [valueStoryType, setValueStoryType] = useState('')
-
-    const [isTyping, setIsTyping] = useState(false)
 
     const [title, setTitle] = useState('Start a new story')
 
@@ -295,14 +290,12 @@ function ChatContent({
 
         if (currentStoryId) {
             setChatMessages([])
-            setIsLoading(true)
-            setIsTyping(true)
+            // setIsLoading(true)
         } else {
             setNextAction('StartNewStory')            
             setChatMessages([])
             setTitle('Start a new story')
-            setIsLoading(false)
-            setIsTyping(false)
+            // setIsLoading(false)
             return
         }
 
@@ -370,8 +363,7 @@ function ChatContent({
         }
 
         if (!storyLoading) {
-            setIsTyping(false)
-            setIsLoading(false)
+            // setIsLoading(false)
         }
     }, [storyData, storyError, storyLoading, currentStoryId])
 
@@ -387,8 +379,7 @@ function ChatContent({
             )
                 return
 
-            setIsLoading(true)
-            setIsTyping(true)
+            // setIsLoading(true)
 
             try {
                 const { data } = await startStory({
@@ -454,8 +445,7 @@ function ChatContent({
                     },
                 ])
             } finally {
-                setIsTyping(false)
-                setIsLoading(false)
+                // setIsLoading(false)
             }
         }
 
@@ -466,8 +456,7 @@ function ChatContent({
             )
                 return
 
-            setIsLoading(true)
-            setIsTyping(true)
+            // setIsLoading(true)
 
             try {
                 const { data } = await checkTemplate({
@@ -546,8 +535,7 @@ function ChatContent({
                     },
                 ])
             } finally {
-                setIsTyping(false)
-                setIsLoading(false)
+                // setIsLoading(false)
             }                
         }
     }
@@ -558,7 +546,7 @@ function ChatContent({
             //text-sm font-medium text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 transition-colors
             }
             <header className="bg-white dark:bg-gray-900 z-10 flex h-16 w-full shrink-0 items-center gap-2 border-b border-gray-200 dark:border-gray-800 px-4 text-lg font-medium text-gray-900 dark:text-gray-100">
-                {title}
+                {storyTitle}
             </header>
 
             <div
@@ -710,7 +698,7 @@ function ChatContent({
                     <div className="flex flex-col items-end gap-2 p-4">
                         <Loader
                             variant="dots"
-                            className={isTyping ? '' : 'hidden'}
+                            className={isLoading ? '' : 'hidden'}
                         />
                     </div>
                     <PromptInput
@@ -994,6 +982,83 @@ function FullChatApp() {
         setStories((prev) => [story, ...prev])
         setNewStoryId(story.storyId)
     }
+
+    const [isLoading, setIsLoading] = useState(false)
+
+    const [startStory] = useMutation<StartStoryResult>(START_STORY)
+    const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
+    const [currentStoryId, setCurrentStoryId] = useState(storyId)
+    const [storyTitle, setStoryTitle] = useState('Start a new story')
+
+    const onCreateNewStory = async () => {
+        setIsLoading(true)
+
+        try {
+            const { data } = await startStory({
+                variables: {
+                    userId,
+                    clientRequestId: uuidv4(),
+                    targetLanguage: targetLanguage,
+                    explainLanguage: explainLanguage,
+                    storyType: STORY_TYPES[Math.floor(Math.random() * STORY_TYPES.length)].value,
+                },
+            })
+
+            // Optionally, you can display the story or its first chapter as a message
+            if (data?.startStory?.story?.chapters?.[0]?.template) {
+                setChatMessages((prev) => [
+                    ...prev,
+                    {
+                        id: data.startStory.story.chapters[0].chapterId,
+                        role: 'assistant',
+                        content: data.startStory.story.chapters[0].content,
+                        template: data.startStory.story.chapters[0].template,
+                        placeholders:
+                            data.startStory.story.chapters[0].placeholders,
+                        status: data.startStory.story.chapters[0].status,
+                        mistakes: [],
+                    },
+                ])
+
+                setCurrentStoryId(data.startStory.story.storyId)
+
+                window.history.replaceState(null, '', `/#/story/${data.startStory.story.storyId}`)
+            }
+
+            // Update the title with the returned story title
+            if (data?.startStory?.story?.title) {
+                setStoryTitle(data.startStory.story.title)
+            }
+
+            // Add the new story to the top of the list
+            if (data?.startStory?.story) {
+                handleNewStory({
+                    storyId: data.startStory.story.storyId,
+                    title: data.startStory.story.title,
+                    startedAt: data.startStory.story.startedAt,
+                })
+            }
+        } catch (error: unknown) {
+            let errorMessage = 'Unknown error'
+            if (error instanceof Error) {
+                errorMessage = error.message
+            }
+            setChatMessages((prev) => [
+                ...prev,
+                {
+                    id: uuidv4(),
+                    role: 'assistant',
+                    content: `Failed to start story: ${errorMessage}`,
+                    template: `Failed to start story: ${errorMessage}`,
+                    placeholders: [],
+                    mistakes: []
+                },
+            ])
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
     return (
             <div>
                 <section className="relative overflow-hidden bg-gradient-to-br from-white via-white to-white/20 dark:from-gray-900 dark:via-gray-900 dark:to-primary-900/20">
@@ -1003,11 +1068,14 @@ function FullChatApp() {
                                 stories={stories}
                                 newStoryId={newStoryId}
                                 currentStoryId={storyId}
+                                onNewStory={onCreateNewStory}
                             />
                             <SidebarInset className="bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
                                 <ChatContent
                                     onNewStory={handleNewStory}
                                     currentStoryId={storyId}
+                                    storyTitle={storyTitle}
+                                    isLoading={isLoading}
                                 />
                             </SidebarInset>
                         </SidebarProvider>

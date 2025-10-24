@@ -219,13 +219,11 @@ function ChatSidebar({
 }
 
 function ChatContent({
-    onNewStory,
     currentStoryId,
     storyTitle,
     isLoading,
     chatMessages,
 }: {
-    onNewStory: (story: StoryInterface) => void
     currentStoryId?: string
     storyTitle?: string
     isLoading: boolean,
@@ -239,7 +237,6 @@ function ChatContent({
         }
     }
 
-    const [startStory] = useMutation<StartStoryResult>(START_STORY)
     const [checkTemplate] = useMutation<CheckTemplateResult>(CHECK_TEMPLATE)
 
     const [prompt, setPrompt] = useState('')
@@ -255,8 +252,6 @@ function ChatContent({
     const [valueStoryType, setValueStoryType] = useState('')
 
     const [placeholders, setPlaceholders] = useState<Record<string, string>>({})
-
-    const [storyId, setStoryId] = useState(currentStoryId)
 
     const {
         data: storyData,
@@ -355,86 +350,7 @@ function ChatContent({
     }, [storyData, storyError, storyLoading, currentStoryId])
 
     const handleSubmit = async () => {
-        const isStartingNewStory = nextAction === 'StartNewStory'
         const isVerifyingChapter = nextAction === 'VerifyChapter'
-
-        if (isStartingNewStory) {
-            if (
-                !valueTargetLanguage.trim() ||
-                !valueExplainLanguage.trim() ||
-                !valueStoryType.trim()
-            )
-                return
-
-            // setIsLoading(true)
-
-            try {
-                const { data } = await startStory({
-                    variables: {
-                        userId,
-                        clientRequestId: uuidv4(),
-                        targetLanguage: valueTargetLanguage,
-                        explainLanguage: valueExplainLanguage,
-                        storyType: valueStoryType,
-                    },
-                })
-
-                // Optionally, you can display the story or its first chapter as a message
-                if (data?.startStory?.story?.chapters?.[0]?.template) {
-                    // setChatMessages((prev) => [
-                    //     ...prev,
-                    //     {
-                    //         id: data.startStory.story.chapters[0].chapterId,
-                    //         role: 'assistant',
-                    //         content: data.startStory.story.chapters[0].content,
-                    //         template: data.startStory.story.chapters[0].template,
-                    //         placeholders:
-                    //             data.startStory.story.chapters[0].placeholders,
-                    //         status: data.startStory.story.chapters[0].status,
-                    //         mistakes: [],
-                    //     },
-                    // ])
-
-                    setStoryId(data.startStory.story.storyId)
-
-                    window.history.replaceState(null, '', `/#/story/${data.startStory.story.storyId}`)
-
-                    setNextAction('VerifyChapter')
-                }
-
-                // Update the title with the returned story title
-                if (data?.startStory?.story?.title) {
-                    //setTitle(data.startStory.story.title)
-                }
-
-                // Add the new story to the top of the list
-                if (data?.startStory?.story) {
-                    onNewStory({
-                        storyId: data.startStory.story.storyId,
-                        title: data.startStory.story.title,
-                        startedAt: data.startStory.story.startedAt,
-                    })
-                }
-            } catch (error: unknown) {
-                let errorMessage = 'Unknown error'
-                if (error instanceof Error) {
-                    errorMessage = error.message
-                }
-                // setChatMessages((prev) => [
-                //     ...prev,
-                //     {
-                //         id: uuidv4(),
-                //         role: 'assistant',
-                //         content: `Failed to start story: ${errorMessage}`,
-                //         template: `Failed to start story: ${errorMessage}`,
-                //         placeholders: [],
-                //         mistakes: []
-                //     },
-                // ])
-            } finally {
-                // setIsLoading(false)
-            }
-        }
 
         if (isVerifyingChapter) {
             if (
@@ -449,7 +365,7 @@ function ChatContent({
                 const { data } = await checkTemplate({
                     variables: {
                         userId: userId,
-                        storyId: storyId,
+                        storyId: currentStoryId,
                         chapterId: chatMessages[chatMessages.length - 1].id,
                         clientRequestId: uuidv4(),
                         targetLanguage: valueTargetLanguage,
@@ -547,7 +463,7 @@ function ChatContent({
                         >
                             <Alert
                                 variant="default"
-                                className={`w-full max-w-md bg-white/80 text-slate-900 dark:bg-slate-800 dark:text-slate-100 ${storyId ? 'hidden' : ''}`}
+                                className={`w-full max-w-md bg-white/80 text-slate-900 dark:bg-slate-800 dark:text-slate-100 ${currentStoryId ? 'hidden' : ''}`}
                             >
                                 <PopcornIcon className="mx-auto mb-2 text-amber-400" />
                                 <AlertTitle className="text-left">
@@ -973,9 +889,101 @@ function FullChatApp() {
     const [isLoading, setIsLoading] = useState(false)
 
     const [startStory] = useMutation<StartStoryResult>(START_STORY)
-    const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
+    const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]) // TODO rename this to chapters
     const [currentStoryId, setCurrentStoryId] = useState(storyId)
     const [storyTitle, setStoryTitle] = useState('Start a new story')
+
+    const {
+        data: storyData,
+        error: storyError,
+        loading: storyLoading,
+    } = useQuery<{ fetchStoryById: FetchStoryResult }>(FETCH_STORY_BY_ID, {
+        variables: {
+            userId,
+            storyId: currentStoryId,
+        },
+        skip: !currentStoryId,
+    })
+
+    useEffect(() => {
+        setChatMessages([])
+        
+        if (currentStoryId) {
+            setIsLoading(true)
+        } else {
+            setStoryTitle('Start a new story')
+            setIsLoading(false)
+            return
+        }
+
+        if (storyData?.fetchStoryById?.title) {
+            setStoryTitle(storyData.fetchStoryById.title)
+        }
+
+        if (storyData?.fetchStoryById?.chapters) {
+            setChatMessages(
+                storyData.fetchStoryById.chapters.map((chapter) => ({
+                    id: chapter.chapterId,
+                    role: 'assistant',
+                    content: chapter.content,
+                    finalizedContent: chapter.finalizedContent,
+                    template: chapter.template,
+                    placeholders: chapter.placeholders,
+                    status: chapter.status,
+                    mistakes: []
+                })),
+            )
+
+            if (storyData.fetchStoryById.chapters.length > 0) {
+                const lastChapter =
+                    storyData.fetchStoryById.chapters[
+                        storyData.fetchStoryById.chapters.length - 1
+                    ]
+                if (lastChapter.status === ChapterStatusInterface.Created) {
+                    // setNextAction('VerifyChapter')
+                } else if (
+                    lastChapter.status ===
+                    ChapterStatusInterface.VerifiedNoMistakes
+                ) {
+                    // setNextAction('StartNewChapter')
+                } else if (
+                    lastChapter.status ===
+                    ChapterStatusInterface.VerifiedWithMistakes
+                ) {
+                    // setNextAction('FixMistakes')
+                } else if (
+                    lastChapter.status === ChapterStatusInterface.Completed
+                ) {
+                    // setNextAction('StartNewChapter')
+                }
+            } else {
+                // setNextAction('StartNewStory')
+            }
+        }
+
+        if (storyError) {
+            let errorMessage = 'Unknown error'
+            if (storyError instanceof Error) {
+                errorMessage = storyError.message
+            }
+            // TODO mark message as error somehow
+            setChatMessages((prev) => [
+                ...prev,
+                {
+                    id: uuidv4(),
+                    role: 'assistant',
+                    content: `Failed to start story: ${errorMessage}`,
+                    template: `Failed to start story: ${errorMessage}`,
+                    placeholders: [],
+                    mistakes: []
+                },
+            ])
+        }
+
+        if (!storyLoading) {
+            setIsLoading(false)
+        }
+    }, [storyData, storyError, storyLoading, currentStoryId])
 
     const onCreateNewStory = async () => {
         setIsLoading(true)
@@ -1059,7 +1067,6 @@ function FullChatApp() {
                             />
                             <SidebarInset className="bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
                                 <ChatContent
-                                    onNewStory={handleNewStory}
                                     currentStoryId={currentStoryId}
                                     storyTitle={storyTitle}
                                     isLoading={isLoading}

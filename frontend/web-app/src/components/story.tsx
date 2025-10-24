@@ -223,24 +223,14 @@ function ChatContent({
     currentStoryId,
     storyTitle,
     isLoading,
+    chatMessages,
 }: {
     onNewStory: (story: StoryInterface) => void
     currentStoryId?: string
     storyTitle?: string
-    isLoading: boolean
+    isLoading: boolean,
+    chatMessages: ChatMessage[],
 }) {
-    type StartStoryResult = {
-        startStory: {
-            errors: { message: string }[]
-            story: {
-                storyId: string
-                title: string
-                startedAt: string
-                chapters: ChapterInterface[]
-            }
-        }
-    }
-
     type CheckTemplateResult = {
         checkTemplate: {
             errors: { message: string }[]
@@ -253,7 +243,6 @@ function ChatContent({
     const [checkTemplate] = useMutation<CheckTemplateResult>(CHECK_TEMPLATE)
 
     const [prompt, setPrompt] = useState('')
-    const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
     const chatContainerRef = useRef<HTMLDivElement>(null)
 
     const [openTargetLanguage, setOpenTargetLanguage] = useState(false)
@@ -264,8 +253,6 @@ function ChatContent({
 
     const [openStoryType, setOpenStoryType] = useState(false)
     const [valueStoryType, setValueStoryType] = useState('')
-
-    const [title, setTitle] = useState('Start a new story')
 
     const [placeholders, setPlaceholders] = useState<Record<string, string>>({})
 
@@ -289,33 +276,33 @@ function ChatContent({
         setNextAction('...')
 
         if (currentStoryId) {
-            setChatMessages([])
+            // setChatMessages([])
             // setIsLoading(true)
         } else {
             setNextAction('StartNewStory')            
-            setChatMessages([])
-            setTitle('Start a new story')
+            // setChatMessages([])
+            //setTitle('Start a new story')
             // setIsLoading(false)
             return
         }
 
         if (storyData?.fetchStoryById?.title) {
-            setTitle(storyData.fetchStoryById.title)
+            // setTitle(storyData.fetchStoryById.title)
         }
 
         if (storyData?.fetchStoryById?.chapters) {
-            setChatMessages(
-                storyData.fetchStoryById.chapters.map((chapter) => ({
-                    id: chapter.chapterId,
-                    role: 'assistant',
-                    content: chapter.content,
-                    finalizedContent: chapter.finalizedContent,
-                    template: chapter.template,
-                    placeholders: chapter.placeholders,
-                    status: chapter.status,
-                    mistakes: []
-                })),
-            )
+            // setChatMessages(
+            //     storyData.fetchStoryById.chapters.map((chapter) => ({
+            //         id: chapter.chapterId,
+            //         role: 'assistant',
+            //         content: chapter.content,
+            //         finalizedContent: chapter.finalizedContent,
+            //         template: chapter.template,
+            //         placeholders: chapter.placeholders,
+            //         status: chapter.status,
+            //         mistakes: []
+            //     })),
+            // )
 
             if (storyData.fetchStoryById.chapters.length > 0) {
                 const lastChapter =
@@ -349,17 +336,17 @@ function ChatContent({
             if (storyError instanceof Error) {
                 errorMessage = storyError.message
             }
-            setChatMessages((prev) => [
-                ...prev,
-                {
-                    id: uuidv4(),
-                    role: 'assistant',
-                    content: `Failed to start story: ${errorMessage}`,
-                    template: `Failed to start story: ${errorMessage}`,
-                    placeholders: [],
-                    mistakes: []
-                },
-            ])
+            // setChatMessages((prev) => [
+            //     ...prev,
+            //     {
+            //         id: uuidv4(),
+            //         role: 'assistant',
+            //         content: `Failed to start story: ${errorMessage}`,
+            //         template: `Failed to start story: ${errorMessage}`,
+            //         placeholders: [],
+            //         mistakes: []
+            //     },
+            // ])
         }
 
         if (!storyLoading) {
@@ -394,19 +381,19 @@ function ChatContent({
 
                 // Optionally, you can display the story or its first chapter as a message
                 if (data?.startStory?.story?.chapters?.[0]?.template) {
-                    setChatMessages((prev) => [
-                        ...prev,
-                        {
-                            id: data.startStory.story.chapters[0].chapterId,
-                            role: 'assistant',
-                            content: data.startStory.story.chapters[0].content,
-                            template: data.startStory.story.chapters[0].template,
-                            placeholders:
-                                data.startStory.story.chapters[0].placeholders,
-                            status: data.startStory.story.chapters[0].status,
-                            mistakes: [],
-                        },
-                    ])
+                    // setChatMessages((prev) => [
+                    //     ...prev,
+                    //     {
+                    //         id: data.startStory.story.chapters[0].chapterId,
+                    //         role: 'assistant',
+                    //         content: data.startStory.story.chapters[0].content,
+                    //         template: data.startStory.story.chapters[0].template,
+                    //         placeholders:
+                    //             data.startStory.story.chapters[0].placeholders,
+                    //         status: data.startStory.story.chapters[0].status,
+                    //         mistakes: [],
+                    //     },
+                    // ])
 
                     setStoryId(data.startStory.story.storyId)
 
@@ -417,7 +404,7 @@ function ChatContent({
 
                 // Update the title with the returned story title
                 if (data?.startStory?.story?.title) {
-                    setTitle(data.startStory.story.title)
+                    //setTitle(data.startStory.story.title)
                 }
 
                 // Add the new story to the top of the list
@@ -433,17 +420,17 @@ function ChatContent({
                 if (error instanceof Error) {
                     errorMessage = error.message
                 }
-                setChatMessages((prev) => [
-                    ...prev,
-                    {
-                        id: uuidv4(),
-                        role: 'assistant',
-                        content: `Failed to start story: ${errorMessage}`,
-                        template: `Failed to start story: ${errorMessage}`,
-                        placeholders: [],
-                        mistakes: []
-                    },
-                ])
+                // setChatMessages((prev) => [
+                //     ...prev,
+                //     {
+                //         id: uuidv4(),
+                //         role: 'assistant',
+                //         content: `Failed to start story: ${errorMessage}`,
+                //         template: `Failed to start story: ${errorMessage}`,
+                //         placeholders: [],
+                //         mistakes: []
+                //     },
+                // ])
             } finally {
                 // setIsLoading(false)
             }
@@ -483,29 +470,29 @@ function ChatContent({
                     )
 
                     // Update status of the latest chat message before adding a new chapter
-                    setChatMessages((prev) => {
-                        if (prev.length === 0) return prev
-                        const updated = [...prev]
-                        updated[updated.length - 1] = {
-                            ...updated[updated.length - 1],
-                            status: ChapterStatusInterface.Completed,
-                        }
-                        return updated
-                    })
+                    // setChatMessages((prev) => {
+                    //     if (prev.length === 0) return prev
+                    //     const updated = [...prev]
+                    //     updated[updated.length - 1] = {
+                    //         ...updated[updated.length - 1],
+                    //         status: ChapterStatusInterface.Completed,
+                    //     }
+                    //     return updated
+                    // })
 
-                    setChatMessages((prev) => [
-                        ...prev,
-                        {
-                            id: data?.checkTemplate?.chapter.chapterId,
-                            role: 'assistant',
-                            content: data?.checkTemplate?.chapter.content,
-                            finalizedContent: data?.checkTemplate?.chapter.finalizedContent,
-                            template: data?.checkTemplate?.chapter.template,
-                            placeholders: data?.checkTemplate?.chapter.placeholders,
-                            status: data?.checkTemplate?.chapter.status,
-                            mistakes: []
-                        },
-                    ])
+                    // setChatMessages((prev) => [
+                    //     ...prev,
+                    //     {
+                    //         id: data?.checkTemplate?.chapter.chapterId,
+                    //         role: 'assistant',
+                    //         content: data?.checkTemplate?.chapter.content,
+                    //         finalizedContent: data?.checkTemplate?.chapter.finalizedContent,
+                    //         template: data?.checkTemplate?.chapter.template,
+                    //         placeholders: data?.checkTemplate?.chapter.placeholders,
+                    //         status: data?.checkTemplate?.chapter.status,
+                    //         mistakes: []
+                    //     },
+                    // ])
 
                     setNextAction('VerifyChapter')
                 }
@@ -523,17 +510,17 @@ function ChatContent({
                 if (error instanceof Error) {
                     errorMessage = error.message
                 }
-                setChatMessages((prev) => [
-                    ...prev,
-                    {
-                        id: uuidv4(),
-                        role: 'assistant',
-                        content: `Failed to verify chapter: ${errorMessage}`,
-                        template: `Failed to verify chapter: ${errorMessage}`,
-                        placeholders: [],
-                        mistakes: []
-                    },
-                ])
+                // setChatMessages((prev) => [
+                //     ...prev,
+                //     {
+                //         id: uuidv4(),
+                //         role: 'assistant',
+                //         content: `Failed to verify chapter: ${errorMessage}`,
+                //         template: `Failed to verify chapter: ${errorMessage}`,
+                //         placeholders: [],
+                //         mistakes: []
+                //     },
+                // ])
             } finally {
                 // setIsLoading(false)
             }                
@@ -1067,15 +1054,16 @@ function FullChatApp() {
                             <ChatSidebar
                                 stories={stories}
                                 newStoryId={newStoryId}
-                                currentStoryId={storyId}
+                                currentStoryId={currentStoryId}
                                 onNewStory={onCreateNewStory}
                             />
                             <SidebarInset className="bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
                                 <ChatContent
                                     onNewStory={handleNewStory}
-                                    currentStoryId={storyId}
+                                    currentStoryId={currentStoryId}
                                     storyTitle={storyTitle}
                                     isLoading={isLoading}
+                                    chatMessages={chatMessages}
                                 />
                             </SidebarInset>
                         </SidebarProvider>

@@ -109,9 +109,13 @@ function ChatSidebar({
     stories: StoryInterface[]
     newStoryId?: string
     currentStoryId?: string
-    onNewStory: () => void
+    onNewStory: (storyType: string | null, targetLanguage: string | null, explainLanguage: string | null) => void
 }) {
     const [hidden, setHidden] = useState(false)
+
+    const [targetLanguageOverride, setTargetLanguageOverride] = useState<string | null>(targetLanguage) // TODO read this from user's profile
+    const [explainLanguageOverride, setExplainLanguageOverride] = useState<string | null>(explainLanguage) // TODO read this from user's profile
+    const [storyTypeOverride, setStoryTypeOverride] = useState<string | null>(null) // TODO read this from user's profile
 
     useEffect(() => {
         if (newStoryId) setHidden(false)
@@ -125,7 +129,13 @@ function ChatSidebar({
         <Sidebar className='bg-white dark:bg-gray-900'>  
             <div className="flex items-center justify-between px-4 pt-4 dark:bg-gray-900/95">
                 <ButtonGroup>
-                    <Button size="lg" className='bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600' onClick={onNewStory}>New Story</Button>
+                    <Button
+                        size="lg"
+                        className='bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600'
+                        onClick={() => onNewStory(storyTypeOverride, targetLanguageOverride, explainLanguageOverride)}
+                    >
+                        New Story
+                    </Button>
                     <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" size="lg" aria-label="More Options">
@@ -143,8 +153,8 @@ function ChatSidebar({
                             </DropdownMenuSubTrigger>
                             <DropdownMenuSubContent className='bg-white/80 text-slate-900 dark:bg-slate-800 dark:text-slate-100'>
                             <DropdownMenuRadioGroup
-                                value={''}
-                                onValueChange={(value) => { console.log(value) }}
+                                value={storyTypeOverride || ''}
+                                onValueChange={value => setStoryTypeOverride(value)}
                             >
                                 {STORY_TYPES.map((story: { value: string; label: string }) => (
                                     <DropdownMenuRadioItem 
@@ -165,8 +175,8 @@ function ChatSidebar({
                             </DropdownMenuSubTrigger>
                             <DropdownMenuSubContent className='bg-white/80 text-slate-900 dark:bg-slate-800 dark:text-slate-100'>
                             <DropdownMenuRadioGroup
-                                value={''}
-                                onValueChange={(value) => { console.log(value) }}
+                                value={targetLanguageOverride || ''}
+                                onValueChange={value => setTargetLanguageOverride(value)}
                             >
                                 {TARGET_LANGUAGES.map((lang: { value: string; label: string }) => (
                                     <DropdownMenuRadioItem 
@@ -187,8 +197,8 @@ function ChatSidebar({
                             </DropdownMenuSubTrigger>
                             <DropdownMenuSubContent className='bg-white/80 text-slate-900 dark:bg-slate-800 dark:text-slate-100'>
                             <DropdownMenuRadioGroup
-                                value={''}
-                                onValueChange={(value) => { console.log(value) }}
+                                value={explainLanguageOverride || ''}
+                                onValueChange={value => setExplainLanguageOverride(value)}
                             >
                                 {EXPLAIN_LANGUAGES.map((lang: { value: string; label: string }) => (
                                     <DropdownMenuRadioItem 
@@ -253,101 +263,7 @@ function ChatContent({
 
     const [placeholders, setPlaceholders] = useState<Record<string, string>>({})
 
-    const {
-        data: storyData,
-        error: storyError,
-        loading: storyLoading,
-    } = useQuery<{ fetchStoryById: FetchStoryResult }>(FETCH_STORY_BY_ID, {
-        variables: {
-            userId,
-            storyId: currentStoryId,
-        },
-        skip: !currentStoryId,
-    })
-
     const [nextAction, setNextAction] = useState<NextAction | '...'>('...')
-
-    useEffect(() => {
-        setNextAction('...')
-
-        if (currentStoryId) {
-            // setChatMessages([])
-            // setIsLoading(true)
-        } else {
-            setNextAction('StartNewStory')            
-            // setChatMessages([])
-            //setTitle('Start a new story')
-            // setIsLoading(false)
-            return
-        }
-
-        if (storyData?.fetchStoryById?.title) {
-            // setTitle(storyData.fetchStoryById.title)
-        }
-
-        if (storyData?.fetchStoryById?.chapters) {
-            // setChatMessages(
-            //     storyData.fetchStoryById.chapters.map((chapter) => ({
-            //         id: chapter.chapterId,
-            //         role: 'assistant',
-            //         content: chapter.content,
-            //         finalizedContent: chapter.finalizedContent,
-            //         template: chapter.template,
-            //         placeholders: chapter.placeholders,
-            //         status: chapter.status,
-            //         mistakes: []
-            //     })),
-            // )
-
-            if (storyData.fetchStoryById.chapters.length > 0) {
-                const lastChapter =
-                    storyData.fetchStoryById.chapters[
-                        storyData.fetchStoryById.chapters.length - 1
-                    ]
-                if (lastChapter.status === ChapterStatusInterface.Created) {
-                    setNextAction('VerifyChapter')
-                } else if (
-                    lastChapter.status ===
-                    ChapterStatusInterface.VerifiedNoMistakes
-                ) {
-                    setNextAction('StartNewChapter')
-                } else if (
-                    lastChapter.status ===
-                    ChapterStatusInterface.VerifiedWithMistakes
-                ) {
-                    setNextAction('FixMistakes')
-                } else if (
-                    lastChapter.status === ChapterStatusInterface.Completed
-                ) {
-                    setNextAction('StartNewChapter')
-                }
-            } else {
-                setNextAction('StartNewStory')
-            }
-        }
-
-        if (storyError) {
-            let errorMessage = 'Unknown error'
-            if (storyError instanceof Error) {
-                errorMessage = storyError.message
-            }
-            // setChatMessages((prev) => [
-            //     ...prev,
-            //     {
-            //         id: uuidv4(),
-            //         role: 'assistant',
-            //         content: `Failed to start story: ${errorMessage}`,
-            //         template: `Failed to start story: ${errorMessage}`,
-            //         placeholders: [],
-            //         mistakes: []
-            //     },
-            // ])
-        }
-
-        if (!storyLoading) {
-            // setIsLoading(false)
-        }
-    }, [storyData, storyError, storyLoading, currentStoryId])
 
     const handleSubmit = async () => {
         const isVerifyingChapter = nextAction === 'VerifyChapter'
@@ -983,18 +899,20 @@ function FullChatApp() {
         }
     }, [storyData, storyError, storyLoading, storyId])
 
-    const onCreateNewStory = async () => {
+    const onCreateNewStory = async (storyTypeOverride: string | null, targetLanguageOverride: string | null, explainLanguageOverride: string | null) => {
         setChatMessages([])
         setIsLoading(true)
+
+        console.log("Creating new story with:", { storyTypeOverride, targetLanguageOverride, explainLanguageOverride })
 
         try {
             const { data } = await startStory({
                 variables: {
                     userId,
                     clientRequestId: uuidv4(),
-                    targetLanguage: targetLanguage,
-                    explainLanguage: explainLanguage,
-                    storyType: STORY_TYPES[Math.floor(Math.random() * STORY_TYPES.length)].value,
+                    targetLanguage: targetLanguageOverride,
+                    explainLanguage: explainLanguageOverride,
+                    storyType: storyTypeOverride || STORY_TYPES[Math.floor(Math.random() * STORY_TYPES.length)].value,
                 },
             })
 

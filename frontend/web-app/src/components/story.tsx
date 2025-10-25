@@ -853,8 +853,7 @@ function ChatContent({
 function FullChatApp() {
     const { storyId } = useParams<{ storyId: string }>()
 
-    // Ensure the main container uses full height and flex layout
-    // Add a wrapper div with h-screen and flex
+    console.log("Current storyId:", storyId)
 
     const [stories, setStories] = useState<StoryInterface[]>([])
     const [newStoryId, setNewStoryId] = useState<string | undefined>(undefined)
@@ -890,7 +889,6 @@ function FullChatApp() {
 
     const [startStory] = useMutation<StartStoryResult>(START_STORY)
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]) // TODO rename this to chapters
-    const [currentStoryId, setCurrentStoryId] = useState(storyId)
     const [storyTitle, setStoryTitle] = useState('Start a new story')
 
     const {
@@ -900,15 +898,15 @@ function FullChatApp() {
     } = useQuery<{ fetchStoryById: FetchStoryResult }>(FETCH_STORY_BY_ID, {
         variables: {
             userId,
-            storyId: currentStoryId,
+            storyId: storyId,
         },
-        skip: !currentStoryId,
+        skip: !storyId,
     })
 
     useEffect(() => {
         setChatMessages([])
         
-        if (currentStoryId) {
+        if (storyId) {
             setIsLoading(true)
         } else {
             setStoryTitle('Start a new story')
@@ -983,9 +981,10 @@ function FullChatApp() {
         if (!storyLoading) {
             setIsLoading(false)
         }
-    }, [storyData, storyError, storyLoading, currentStoryId])
+    }, [storyData, storyError, storyLoading, storyId])
 
     const onCreateNewStory = async () => {
+        setChatMessages([])
         setIsLoading(true)
 
         try {
@@ -1015,7 +1014,7 @@ function FullChatApp() {
                     },
                 ])
 
-                setCurrentStoryId(data.startStory.story.storyId)
+                // setCurrentStoryId(data.startStory.story.storyId)
 
                 window.history.replaceState(null, '', `/#/story/${data.startStory.story.storyId}`)
             }
@@ -1062,12 +1061,12 @@ function FullChatApp() {
                             <ChatSidebar
                                 stories={stories}
                                 newStoryId={newStoryId}
-                                currentStoryId={currentStoryId}
+                                currentStoryId={storyId}
                                 onNewStory={onCreateNewStory}
                             />
                             <SidebarInset className="bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
                                 <ChatContent
-                                    currentStoryId={currentStoryId}
+                                    currentStoryId={storyId}
                                     storyTitle={storyTitle}
                                     isLoading={isLoading}
                                     chatMessages={chatMessages}

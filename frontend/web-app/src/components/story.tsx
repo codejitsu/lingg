@@ -249,10 +249,8 @@ function ChatContent({
 
     const [checkTemplate] = useMutation<CheckTemplateResult>(CHECK_TEMPLATE)
 
-    const [prompt, setPrompt] = useState('')
     const chatContainerRef = useRef<HTMLDivElement>(null)
 
-    const [openTargetLanguage, setOpenTargetLanguage] = useState(false)
     const [valueTargetLanguage, setValueTargetLanguage] = useState('')
 
     const [openExplainLanguage, setOpenExplainLanguage] = useState(false)
@@ -512,7 +510,7 @@ function ChatContent({
                 </ChatContainerRoot>
             </div>
 
-            <div className="bg-background dark:bg-gray-900 z-10 shrink-0 px-3 pb-3 md:px-5 md:pb-5">
+            <div className={`bg-background dark:bg-gray-900 z-10 shrink-0 px-3 pb-3 md:px-5 md:pb-5 ${ currentStoryId ? '' : 'hidden' }`}>
                 <div className="mx-auto max-w-3xl">
                     <div className="flex flex-col items-end gap-2 p-4">
                         <Loader
@@ -520,246 +518,28 @@ function ChatContent({
                             className={isLoading ? '' : 'hidden'}
                         />
                     </div>
-                    <PromptInput
-                        isLoading={isLoading}
-                        value={prompt}
-                        onValueChange={setPrompt}
-                        onSubmit={handleSubmit}
-                        className="border-input bg-popover dark:bg-gray-900 relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-xs"
-                    >
-                        <div className="flex flex-col">
-                            <PromptInputActions className="mt-3 flex w-full items-center justify-between gap-2 px-3 pb-3">
-                                {nextAction === 'StartNewStory' ||
-                                nextAction === '...' || nextAction === 'VerifyChapter' ? (
-                                    <div className="flex flex-col items-center gap-2">
-                                        <div className="flex items-center gap-2">
-                                            <Languages size={18} />
-                                            <Popover
-                                                open={openTargetLanguage}
-                                                onOpenChange={setOpenTargetLanguage}
-                                            >
-                                                <PopoverTrigger asChild>
-                                                    <Button
-                                                        variant="outline"
-                                                        role="combobox"
-                                                        aria-expanded={openTargetLanguage}
-                                                        className="w-[250px] justify-between dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
-                                                    >
-                                                        {valueTargetLanguage
-                                                            ? TARGET_LANGUAGES.find(
-                                                                  (language: { value: string; label: string }) =>
-                                                                      language.value === valueTargetLanguage,
-                                                              )?.label
-                                                            : 'Select target language...'}
-                                                        <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                                    </Button>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-[200px] p-0 dark:bg-gray-900 dark:border-gray-700">
-                                                    <Command>
-                                                        <CommandInput placeholder="Language..." className="dark:bg-gray-900 dark:text-gray-100" />
-                                                        <CommandList>
-                                                            <CommandEmpty>
-                                                                No language found.
-                                                            </CommandEmpty>
-                                                            <CommandGroup>
-                                                                {TARGET_LANGUAGES.map(
-                                                                    (language: { value: string; label: string }) => (
-                                                                        <CommandItem
-                                                                            key={language.value}
-                                                                            value={language.value}
-                                                                            onSelect={(currentValue) => {
-                                                                                setValueTargetLanguage(
-                                                                                    currentValue === valueTargetLanguage
-                                                                                        ? ''
-                                                                                        : currentValue,
-                                                                                )
-                                                                                setOpenTargetLanguage(false)
-                                                                            }}
-                                                                            className="dark:text-gray-100"
-                                                                        >
-                                                                            <CheckIcon
-                                                                                className={cn(
-                                                                                    'mr-2 h-4 w-4',
-                                                                                    valueTargetLanguage === language.value
-                                                                                        ? 'opacity-100'
-                                                                                        : 'opacity-0',
-                                                                                )}
-                                                                            />
-                                                                            {language.label}
-                                                                        </CommandItem>
-                                                                    ),
-                                                                )}
-                                                            </CommandGroup>
-                                                        </CommandList>
-                                                    </Command>
-                                                </PopoverContent>
-                                            </Popover>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <MessageCircleQuestionMark size={18} />
-                                            <Popover
-                                                open={openExplainLanguage}
-                                                onOpenChange={setOpenExplainLanguage}
-                                            >
-                                                <PopoverTrigger asChild>
-                                                    <Button
-                                                        variant="outline"
-                                                        role="combobox"
-                                                        aria-expanded={openExplainLanguage}
-                                                        className="w-[250px] justify-between dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
-                                                    >
-                                                        {valueExplainLanguage
-                                                            ? EXPLAIN_LANGUAGES.find(
-                                                                  (language: { value: string; label: string }) =>
-                                                                      language.value === valueExplainLanguage,
-                                                              )?.label
-                                                            : 'Select explain language...'}
-                                                        <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                                    </Button>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-[200px] p-0 dark:bg-gray-900 dark:border-gray-700">
-                                                    <Command>
-                                                        <CommandInput placeholder="Language..." className="dark:bg-gray-900 dark:text-gray-100" />
-                                                        <CommandList>
-                                                            <CommandEmpty>
-                                                                No language found.
-                                                            </CommandEmpty>
-                                                            <CommandGroup>
-                                                                {EXPLAIN_LANGUAGES.map(
-                                                                    (language: { value: string; label: string }) => (
-                                                                        <CommandItem
-                                                                            key={language.value}
-                                                                            value={language.value}
-                                                                            onSelect={(currentValue) => {
-                                                                                setValueExplainLanguage(
-                                                                                    currentValue === valueExplainLanguage
-                                                                                        ? ''
-                                                                                        : currentValue,
-                                                                                )
-                                                                                setOpenExplainLanguage(false)
-                                                                            }}
-                                                                            className="dark:text-gray-100"
-                                                                        >
-                                                                            <CheckIcon
-                                                                                className={cn(
-                                                                                    'mr-2 h-4 w-4',
-                                                                                    valueExplainLanguage === language.value
-                                                                                        ? 'opacity-100'
-                                                                                        : 'opacity-0',
-                                                                                )}
-                                                                            />
-                                                                            {language.label}
-                                                                        </CommandItem>
-                                                                    ),
-                                                                )}
-                                                            </CommandGroup>
-                                                        </CommandList>
-                                                    </Command>
-                                                </PopoverContent>
-                                            </Popover>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <BookMarked size={18} />
-                                            <Popover
-                                                open={openStoryType}
-                                                onOpenChange={setOpenStoryType}
-                                            >
-                                                <PopoverTrigger asChild>
-                                                    <Button
-                                                        variant="outline"
-                                                        role="combobox"
-                                                        aria-expanded={openStoryType}
-                                                        className="w-[250px] justify-between dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
-                                                    >
-                                                        {valueStoryType
-                                                            ? STORY_TYPES.find(
-                                                                  (story: { value: string; label: string }) =>
-                                                                      story.value === valueStoryType,
-                                                              )?.label
-                                                            : 'Select story type...'}
-                                                        <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                                    </Button>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-[200px] p-0 dark:bg-gray-900 dark:border-gray-700">
-                                                    <Command>
-                                                        <CommandInput placeholder="Story..." className="dark:bg-gray-900 dark:text-gray-100" />
-                                                        <CommandList>
-                                                            <CommandEmpty>
-                                                                No story found.
-                                                            </CommandEmpty>
-                                                            <CommandGroup>
-                                                                {STORY_TYPES.map(
-                                                                    (story: { value: string; label: string }) => (
-                                                                        <CommandItem
-                                                                            key={story.value}
-                                                                            value={story.value}
-                                                                            onSelect={(currentValue) => {
-                                                                                setValueStoryType(
-                                                                                    currentValue === valueStoryType
-                                                                                        ? ''
-                                                                                        : currentValue,
-                                                                                )
-                                                                                setOpenStoryType(false)
-                                                                            }}
-                                                                            className="dark:text-gray-100"
-                                                                        >
-                                                                            <CheckIcon
-                                                                                className={cn(
-                                                                                    'mr-2 h-4 w-4',
-                                                                                    valueStoryType === story.value
-                                                                                        ? 'opacity-100'
-                                                                                        : 'opacity-0',
-                                                                                )}
-                                                                            />
-                                                                            {story.label}
-                                                                        </CommandItem>
-                                                                    ),
-                                                                )}
-                                                            </CommandGroup>
-                                                        </CommandList>
-                                                    </Command>
-                                                </PopoverContent>
-                                            </Popover>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div></div>
-                                )}
 
-                                <div className="flex items-center gap-2">
-                                    <Button
-                                        size="lg"
-                                        disabled={
-                                            nextAction === 'StartNewStory' &&
-                                            (!valueExplainLanguage.trim() ||
-                                                !valueTargetLanguage ||
-                                                !valueStoryType.trim()) ||
-                                            isLoading
-                                        }
-                                        onClick={handleSubmit}
-                                        className="rounded-full dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
-                                    >
-                                        {nextAction === '...'
-                                            ? 'Start new story'
-                                            : nextAction === 'StartNewStory'
-                                            ? 'Start new story'
-                                            : nextAction === 'VerifyChapter'
-                                            ? 'Verify'
-                                            : nextAction === 'FixMistakes'
-                                            ? 'Recheck'
-                                            : nextAction === 'StartNewChapter'
-                                            ? 'New Chapter'
-                                            : 'Error'}
-                                        {!isLoading ? (
-                                            <ArrowUp size={18} />
-                                        ) : (
-                                            <span className="size-3 rounded-xs bg-white" />
-                                        )}
-                                    </Button>
-                                </div>
-                            </PromptInputActions>
-                        </div>
-                    </PromptInput>
+                    <div className="flex justify-center mb-4">
+                        <Button
+                            size="lg"
+                            disabled={
+                                nextAction === 'StartNewStory' &&
+                                (!valueExplainLanguage.trim() ||
+                                    !valueTargetLanguage ||
+                                    !valueStoryType.trim()) ||
+                                isLoading
+                            }
+                            onClick={handleSubmit}
+                            className='bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600'
+                        >
+                            Verify Chapter
+                            {!isLoading ? (
+                                <ArrowUp size={18} />
+                            ) : (
+                                <span className="size-3 rounded-xs bg-white" />
+                            )}
+                        </Button>
+                    </div>
                 </div>
             </div>
         </main>

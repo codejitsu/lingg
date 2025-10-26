@@ -12,6 +12,7 @@ import {
 import type { StoryInterface } from '@/models/Story.Interface'
 import type { BucketsInterface } from '@/models/history/Buckets.Interface'
 import { HistoryPoint } from '@/models/history/HistoryPoint.Interface'
+import { Star } from 'lucide-react'
 
 function HistoryLinks({
     stories,
@@ -68,7 +69,7 @@ function HistoryLinks({
                         {group.period}
                     </SidebarGroupLabel>
                     <SidebarMenu>
-                        {group.stories.map((story) => (
+                        {group.stories.slice(0, 5).map((story) => (
                             <SidebarMenuButton
                                 key={story.storyId}
                                 className={`text-sm font-medium text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 transition-colors ${story.storyId === currentStoryId ? 'border-l-4 rounded-none border-l-primary-600 dark:border-l-primary-400' : ''}`}
@@ -77,9 +78,7 @@ function HistoryLinks({
                                     {story.title}
                                 </a>
                                 {story.storyId === newStoryId && !hidden && (
-                                    <span className="ml-2 text-xs font-semibold text-green-700 bg-green-200 rounded px-2 py-0.5 animate-pulse">
-                                        New
-                                    </span>
+                                    <Star size={24} color="#22c55e" fill="#22c55e" />
                                 )}
                             </SidebarMenuButton>
                         ))}

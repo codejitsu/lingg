@@ -94,6 +94,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import type { StartStoryResult } from '@/models/graphql/StartStoryResult.Interface'
+import type { CheckTemplateResult } from '@/models/graphql/CheckTemplateResult.Interface'
 
 // TODO - replace with real user ID from auth context
 const userId = 'f257727e-94ab-44ac-aa0e-c4d51a0d67ac'
@@ -233,129 +234,17 @@ function ChatContent({
     storyTitle,
     isLoading,
     chatMessages,
+    onVerifyChapter,
+    setPlaceholders,
 }: {
     currentStoryId?: string
     storyTitle?: string
     isLoading: boolean,
     chatMessages: ChatMessage[],
+    onVerifyChapter: () => void,
+    setPlaceholders: (placeholders: Record<string, string>) => void,
 }) {
-    type CheckTemplateResult = {
-        checkTemplate: {
-            errors: { message: string }[]
-            mistakes: MistakeInterface[]
-            chapter: ChapterInterface
-        }
-    }
-
-    const [checkTemplate] = useMutation<CheckTemplateResult>(CHECK_TEMPLATE)
-
     const chatContainerRef = useRef<HTMLDivElement>(null)
-
-    const [valueTargetLanguage, setValueTargetLanguage] = useState('')
-
-    const [openExplainLanguage, setOpenExplainLanguage] = useState(false)
-    const [valueExplainLanguage, setValueExplainLanguage] = useState('')
-
-    const [openStoryType, setOpenStoryType] = useState(false)
-    const [valueStoryType, setValueStoryType] = useState('')
-
-    const [placeholders, setPlaceholders] = useState<Record<string, string>>({})
-
-    const [nextAction, setNextAction] = useState<NextAction | '...'>('...')
-
-    const handleSubmit = async () => {
-        const isVerifyingChapter = nextAction === 'VerifyChapter'
-
-        if (isVerifyingChapter) {
-            if (
-                !valueTargetLanguage.trim() ||
-                !valueExplainLanguage.trim()
-            )
-                return
-
-            // setIsLoading(true)
-
-            try {
-                const { data } = await checkTemplate({
-                    variables: {
-                        userId: userId,
-                        storyId: currentStoryId,
-                        chapterId: chatMessages[chatMessages.length - 1].id,
-                        clientRequestId: uuidv4(),
-                        targetLanguage: valueTargetLanguage,
-                        explainLanguage: valueExplainLanguage,
-                        placeholders: Object.entries(placeholders).map(
-                            ([name, text]) => ({ name, text }),
-                        ),
-                    },
-                })
-
-                if (data?.checkTemplate?.chapter) {
-                    chatMessages[chatMessages.length - 1].status = ChapterStatusInterface.Completed
-
-                    chatMessages[chatMessages.length - 1].finalizedContent = Object.entries(placeholders).reduce(
-                        (content, [name, text]) =>
-                            content.replace(`{${name}}`, text),
-                        chatMessages[chatMessages.length - 1].template || '',
-                    )
-
-                    // Update status of the latest chat message before adding a new chapter
-                    // setChatMessages((prev) => {
-                    //     if (prev.length === 0) return prev
-                    //     const updated = [...prev]
-                    //     updated[updated.length - 1] = {
-                    //         ...updated[updated.length - 1],
-                    //         status: ChapterStatusInterface.Completed,
-                    //     }
-                    //     return updated
-                    // })
-
-                    // setChatMessages((prev) => [
-                    //     ...prev,
-                    //     {
-                    //         id: data?.checkTemplate?.chapter.chapterId,
-                    //         role: 'assistant',
-                    //         content: data?.checkTemplate?.chapter.content,
-                    //         finalizedContent: data?.checkTemplate?.chapter.finalizedContent,
-                    //         template: data?.checkTemplate?.chapter.template,
-                    //         placeholders: data?.checkTemplate?.chapter.placeholders,
-                    //         status: data?.checkTemplate?.chapter.status,
-                    //         mistakes: []
-                    //     },
-                    // ])
-
-                    setNextAction('VerifyChapter')
-                }
-
-                if (data?.checkTemplate?.mistakes) {
-                    console.log(data?.checkTemplate.mistakes)
-                    chatMessages[chatMessages.length - 1].mistakes = data?.checkTemplate.mistakes
-                }
-
-                if (data?.checkTemplate?.errors) {
-                    console.log(data?.checkTemplate.errors)
-                }
-            } catch (error: unknown) {
-                let errorMessage = 'Unknown error'
-                if (error instanceof Error) {
-                    errorMessage = error.message
-                }
-                // setChatMessages((prev) => [
-                //     ...prev,
-                //     {
-                //         id: uuidv4(),
-                //         role: 'assistant',
-                //         content: `Failed to verify chapter: ${errorMessage}`,
-                //         template: `Failed to verify chapter: ${errorMessage}`,
-                //         placeholders: [],
-                //         mistakes: []
-                //     },
-                // ])
-            } finally {
-                // setIsLoading(false)
-            }                
-        }
-    }
 
     return (
         <main className="flex h-[95%] w-full flex-col overflow-hidden">
@@ -522,14 +411,8 @@ function ChatContent({
                     <div className="flex justify-center mb-4">
                         <Button
                             size="lg"
-                            disabled={
-                                nextAction === 'StartNewStory' &&
-                                (!valueExplainLanguage.trim() ||
-                                    !valueTargetLanguage ||
-                                    !valueStoryType.trim()) ||
-                                isLoading
-                            }
-                            onClick={handleSubmit}
+                            disabled={isLoading}
+                            onClick={() => onVerifyChapter()}
                             className='bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600'
                         >
                             Verify Chapter
@@ -553,6 +436,8 @@ function FullChatApp() {
 
     const [stories, setStories] = useState<StoryInterface[]>([])
     const [newStoryId, setNewStoryId] = useState<string | undefined>(undefined)
+    const [currentStoryId, setCurrentStoryId] = useState<string | undefined>(storyId)
+
     const { data } = useQuery<{ listStories: StoryInterface[] }>(
         LIST_ALL_STORIES,
         {
@@ -599,10 +484,13 @@ function FullChatApp() {
         skip: !storyId,
     })
 
+    const [checkTemplate] = useMutation<CheckTemplateResult>(CHECK_TEMPLATE)
+    const [placeholders, setPlaceholders] = useState<Record<string, string>>({})
+
     useEffect(() => {
         setChatMessages([])
         
-        if (storyId) {
+        if (currentStoryId) {
             setIsLoading(true)
         } else {
             setStoryTitle('Start a new story')
@@ -677,7 +565,7 @@ function FullChatApp() {
         if (!storyLoading) {
             setIsLoading(false)
         }
-    }, [storyData, storyError, storyLoading, storyId])
+    }, [storyData, storyError, storyLoading, currentStoryId])
 
     const onCreateNewStory = async (storyTypeOverride: string | null, targetLanguageOverride: string | null, explainLanguageOverride: string | null) => {
         setChatMessages([])
@@ -712,7 +600,8 @@ function FullChatApp() {
                     },
                 ])
 
-                // setCurrentStoryId(data.startStory.story.storyId)
+                setNewStoryId(data.startStory.story.storyId)
+                setCurrentStoryId(data.startStory.story.storyId)
 
                 window.history.replaceState(null, '', `/#/story/${data.startStory.story.storyId}`)
             }
@@ -739,7 +628,7 @@ function FullChatApp() {
                 ...prev,
                 {
                     id: uuidv4(),
-                    role: 'assistant',
+                    role: 'error',
                     content: `Failed to start story: ${errorMessage}`,
                     template: `Failed to start story: ${errorMessage}`,
                     placeholders: [],
@@ -751,6 +640,99 @@ function FullChatApp() {
         }
     }
 
+    const onVerifyChapter = async () => {
+        setIsLoading(true)
+
+        try {
+            console.log("StoryId:", currentStoryId)
+            console.log("ChapterId:", chatMessages[chatMessages.length - 1].id)
+            console.log("Placeholders:", Object.entries(placeholders).map(
+                        ([name, text]) => ({ name, text }),
+                    ))
+
+            const nonErrors = chatMessages.filter(msg => msg.role !== 'error')
+            const lastChapter = nonErrors[nonErrors.length - 1]
+
+            const { data } = await checkTemplate({
+                variables: {
+                    userId: userId,
+                    storyId: currentStoryId,
+                    chapterId: lastChapter.id,
+                    clientRequestId: uuidv4(),
+                    targetLanguage: targetLanguage, // TODO remove it, no need to pass it every time
+                    explainLanguage: explainLanguage, // TODO remove it, no need to pass it every time
+                    placeholders: Object.entries(placeholders).map(
+                        ([name, text]) => ({ name, text }),
+                    ),
+                },
+            })
+            
+            console.log("CheckTemplate data:", data)
+            
+            if (data?.checkTemplate?.chapter) {
+                lastChapter.status = ChapterStatusInterface.Completed
+
+                lastChapter.finalizedContent = Object.entries(placeholders).reduce(
+                    (content, [name, text]) =>
+                        content.replace(`{${name}}`, text),
+                    lastChapter.template || '',
+                )
+
+                // Update status of the latest chat message before adding a new chapter
+                setChatMessages((prev) => {
+                    if (prev.length === 0) return prev
+                    const updated = [...prev]
+                    updated[updated.length - 1] = {
+                        ...updated[updated.length - 1],
+                        status: ChapterStatusInterface.Completed,
+                    }
+                    return updated
+                })
+
+                setChatMessages((prev) => [
+                    ...prev,
+                    {
+                        id: data?.checkTemplate?.chapter.chapterId,
+                        role: 'assistant',
+                        content: data?.checkTemplate?.chapter.content,
+                        finalizedContent: data?.checkTemplate?.chapter.finalizedContent,
+                        template: data?.checkTemplate?.chapter.template,
+                        placeholders: data?.checkTemplate?.chapter.placeholders,
+                        status: data?.checkTemplate?.chapter.status,
+                        mistakes: []
+                    },
+                ])
+            }
+
+            if (data?.checkTemplate?.mistakes) {
+                console.log(data?.checkTemplate.mistakes)
+                chatMessages[chatMessages.length - 1].mistakes = data?.checkTemplate.mistakes
+            }
+
+            if (data?.checkTemplate?.errors) {
+                console.log(data?.checkTemplate.errors)
+            }
+        } catch (error: unknown) {
+            let errorMessage = 'Unknown error'
+            if (error instanceof Error) {
+                errorMessage = error.message
+            }
+            setChatMessages((prev) => [
+                ...prev,
+                {
+                    id: uuidv4(),
+                    role: 'error',
+                    content: `Failed to verify chapter: ${errorMessage}`,
+                    template: `Failed to verify chapter: ${errorMessage}`,
+                    placeholders: [],
+                    mistakes: []
+                },
+            ])
+        } finally {
+            setIsLoading(false)
+        }                
+    }
+
     return (
             <div>
                 <section className="relative overflow-hidden bg-gradient-to-br from-white via-white to-white/20 dark:from-gray-900 dark:via-gray-900 dark:to-primary-900/20">
@@ -759,15 +741,17 @@ function FullChatApp() {
                             <ChatSidebar
                                 stories={stories}
                                 newStoryId={newStoryId}
-                                currentStoryId={storyId}
+                                currentStoryId={currentStoryId}
                                 onNewStory={onCreateNewStory}
                             />
                             <SidebarInset className="bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
                                 <ChatContent
-                                    currentStoryId={storyId}
+                                    currentStoryId={currentStoryId}
                                     storyTitle={storyTitle}
                                     isLoading={isLoading}
                                     chatMessages={chatMessages}
+                                    onVerifyChapter={onVerifyChapter}
+                                    setPlaceholders={setPlaceholders}
                                 />
                             </SidebarInset>
                         </SidebarProvider>

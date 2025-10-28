@@ -25,6 +25,9 @@ function HistoryLinks({
     currentStoryId?: string
     hidden: boolean
 }) {
+    console.log('Current Story ID in HistoryLinks:', currentStoryId)
+    console.log('New Story ID in HistoryLinks:', newStoryId)
+
     const buckets: BucketsInterface = {
         today: { period: HistoryPoint.TODAY, stories: [] },
         yesterday: { period: HistoryPoint.YESTERDAY, stories: [] },

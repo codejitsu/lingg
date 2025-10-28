@@ -283,6 +283,8 @@ function ChatContent({
                             const isAssistant = message.role === 'assistant'
                             const isCompletedChapter = message.status === ChapterStatusInterface.Completed
 
+                            console.log("Rendering message:", message)
+
                             return (
                                 <Message
                                     key={message.id}
@@ -432,11 +434,21 @@ function ChatContent({
 function FullChatApp() {
     const { storyId } = useParams<{ storyId: string }>()
 
-    console.log("Current storyId:", storyId)
+    console.log("storyId:", storyId)
 
     const [stories, setStories] = useState<StoryInterface[]>([])
     const [newStoryId, setNewStoryId] = useState<string | undefined>(undefined)
     const [currentStoryId, setCurrentStoryId] = useState<string | undefined>(storyId)
+
+    useEffect(() => {
+        setCurrentStoryId(storyId);
+        // Clear newStoryId when switching to a different story (not the newly created one)
+        if (storyId && storyId !== newStoryId) {
+            setNewStoryId(undefined);
+        }
+    }, [storyId, newStoryId]);
+
+    console.log("currentStoryId:", currentStoryId)
 
     const { data } = useQuery<{ listStories: StoryInterface[] }>(
         LIST_ALL_STORIES,
@@ -463,7 +475,6 @@ function FullChatApp() {
     // Handler to add new story to the top
     const handleNewStory = (story: StoryInterface) => {
         setStories((prev) => [story, ...prev])
-        setNewStoryId(story.storyId)
     }
 
     const [isLoading, setIsLoading] = useState(false)
@@ -479,16 +490,19 @@ function FullChatApp() {
     } = useQuery<{ fetchStoryById: FetchStoryResult }>(FETCH_STORY_BY_ID, {
         variables: {
             userId,
-            storyId: storyId,
+            storyId: currentStoryId,
         },
-        skip: !storyId,
+        skip: !currentStoryId,
     })
 
     const [checkTemplate] = useMutation<CheckTemplateResult>(CHECK_TEMPLATE)
     const [placeholders, setPlaceholders] = useState<Record<string, string>>({})
 
     useEffect(() => {
-        setChatMessages([])
+        // Don't clear messages if this is a newly created story
+        if (currentStoryId !== newStoryId) {
+            setChatMessages([])
+        }
         
         if (currentStoryId) {
             setIsLoading(true)
@@ -565,7 +579,7 @@ function FullChatApp() {
         if (!storyLoading) {
             setIsLoading(false)
         }
-    }, [storyData, storyError, storyLoading, currentStoryId])
+    }, [storyData, storyError, storyLoading, currentStoryId, newStoryId])
 
     const onCreateNewStory = async (storyTypeOverride: string | null, targetLanguageOverride: string | null, explainLanguageOverride: string | null) => {
         setChatMessages([])

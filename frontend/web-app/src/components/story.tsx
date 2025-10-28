@@ -505,6 +505,12 @@ function FullChatApp() {
         }
         
         if (currentStoryId) {
+            const title = stories.find(story => story.storyId === currentStoryId)?.title
+
+            if (title) {
+                setStoryTitle(title)
+            }
+
             setIsLoading(true)
         } else {
             setStoryTitle('Start a new story')

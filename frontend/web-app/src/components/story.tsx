@@ -529,32 +529,6 @@ function FullChatApp() {
                     mistakes: []
                 })),
             )
-
-            if (storyData.fetchStoryById.chapters.length > 0) {
-                const lastChapter =
-                    storyData.fetchStoryById.chapters[
-                        storyData.fetchStoryById.chapters.length - 1
-                    ]
-                if (lastChapter.status === ChapterStatusInterface.Created) {
-                    // setNextAction('VerifyChapter')
-                } else if (
-                    lastChapter.status ===
-                    ChapterStatusInterface.VerifiedNoMistakes
-                ) {
-                    // setNextAction('StartNewChapter')
-                } else if (
-                    lastChapter.status ===
-                    ChapterStatusInterface.VerifiedWithMistakes
-                ) {
-                    // setNextAction('FixMistakes')
-                } else if (
-                    lastChapter.status === ChapterStatusInterface.Completed
-                ) {
-                    // setNextAction('StartNewChapter')
-                }
-            } else {
-                // setNextAction('StartNewStory')
-            }
         }
 
         if (storyError) {

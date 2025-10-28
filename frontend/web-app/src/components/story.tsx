@@ -58,7 +58,7 @@ import { useRef, useState, useEffect } from 'react'
 import { useQuery, useMutation } from '@apollo/client/react'
 import { v4 as uuidv4 } from 'uuid'
 import { MessageTemplate } from '@/components/message-template'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import type { StoryInterface } from '@/models/Story.Interface'
 import type { ChapterInterface } from '@/models/Chapter.Interface'
@@ -433,6 +433,7 @@ function ChatContent({
 
 function FullChatApp() {
     const { storyId } = useParams<{ storyId: string }>()
+    const navigate = useNavigate()
 
     console.log("storyId:", storyId)
 
@@ -617,7 +618,7 @@ function FullChatApp() {
                 setNewStoryId(data.startStory.story.storyId)
                 setCurrentStoryId(data.startStory.story.storyId)
 
-                window.history.replaceState(null, '', `/#/story/${data.startStory.story.storyId}`)
+                navigate(`/story/${data.startStory.story.storyId}`)
             }
 
             // Update the title with the returned story title

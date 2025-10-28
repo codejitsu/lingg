@@ -253,6 +253,12 @@ function ChatContent({
             }
             <header className="bg-white dark:bg-gray-900 z-10 flex h-16 w-full shrink-0 items-center gap-2 border-b border-gray-200 dark:border-gray-800 px-4 text-lg font-medium text-gray-900 dark:text-gray-100">
                 {storyTitle}
+                <div className="flex flex-col items-end gap-2 p-4">
+                    <Loader
+                        variant="dots"
+                        className={isLoading ? '' : 'hidden'}
+                    />
+                </div>                
             </header>
 
             <div
@@ -403,13 +409,6 @@ function ChatContent({
 
             <div className={`bg-background dark:bg-gray-900 z-10 shrink-0 px-3 pb-3 md:px-5 md:pb-5 ${ currentStoryId ? '' : 'hidden' }`}>
                 <div className="mx-auto max-w-3xl">
-                    <div className="flex flex-col items-end gap-2 p-4">
-                        <Loader
-                            variant="dots"
-                            className={isLoading ? '' : 'hidden'}
-                        />
-                    </div>
-
                     <div className="flex justify-center mb-4">
                         <Button
                             size="lg"
@@ -583,6 +582,7 @@ function FullChatApp() {
     }, [storyData, storyError, storyLoading, currentStoryId, newStoryId])
 
     const onCreateNewStory = async (storyTypeOverride: string | null, targetLanguageOverride: string | null, explainLanguageOverride: string | null) => {
+        setStoryTitle('Start a new story')
         setChatMessages([])
         setIsLoading(true)
 

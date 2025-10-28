@@ -559,7 +559,7 @@ function FullChatApp() {
         if (!storyLoading) {
             setIsLoading(false)
         }
-    }, [storyData, storyError, storyLoading, currentStoryId, newStoryId])
+    }, [storyData, storyError, storyLoading, currentStoryId, newStoryId, stories])
 
     const onCreateNewStory = async (storyTypeOverride: string | null, targetLanguageOverride: string | null, explainLanguageOverride: string | null) => {
         setStoryTitle('Start a new story')

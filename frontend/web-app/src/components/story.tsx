@@ -127,7 +127,7 @@ function ChatSidebar({
     }, [newStoryId])
 
     return (
-        <Sidebar className='bg-white dark:bg-gray-900'>  
+        <Sidebar className="bg-white dark:bg-gray-900">  
             <div className="flex items-center justify-between px-4 pt-4 dark:bg-gray-900/95">
                 <ButtonGroup>
                     <Button

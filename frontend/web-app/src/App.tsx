@@ -20,10 +20,10 @@ function App() {
             <main className="flex-grow">
             <Routes>
                 <Route path="/" element={<Landing />} />
-                <Route path="/#/login" element={<Login />} />
-                <Route path="/#/register" element={<Register />} />
-                <Route path="/#/privacy" element={<Privacy />} />
-                <Route path="/#/terms" element={<Terms />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/terms" element={<Terms />} />
                 <Route path="/story" element={<FullChatApp />} />
                 <Route path="/story/:storyId" element={<FullChatApp />} />
             </Routes>

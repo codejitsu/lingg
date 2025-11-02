@@ -184,6 +184,7 @@ pub async fn check_template(
                         // TODO this has to be in the explain language
                         // TODO add hint for the expected word with number of letters
                         explanation: mistake.mistake_type,
+                        // TODO it could also be part of the word - have to think about that (change message)
                         hint: format!("Expected word with {} letters", placeholder_map.get(ph.as_str()).map(|v| UnicodeSegmentation::graphemes(v.as_str(), true).count()).unwrap_or(0)),
                     })
                     .collect();

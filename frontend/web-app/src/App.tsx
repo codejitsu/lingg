@@ -1,7 +1,8 @@
-import { BrowserRouter, 
-    // HashRouter, 
+import { 
+    //BrowserRouter, 
+    HashRouter, 
     Routes, Route } from 'react-router-dom'
-// import { FullChatApp } from '@/components/story'
+import { FullChatApp } from '@/components/story'
 import { Header } from '@/components/landing/Header';
 import { Footer } from '@/components/landing/Footer';
 import { Landing } from '@/routes/Landing';
@@ -13,7 +14,7 @@ import './App.css'
 
 function App() {
     return (
-        <BrowserRouter>
+        <HashRouter>
         <div className="min-h-screen flex flex-col">
             <Header />
             <main className="flex-grow">
@@ -23,11 +24,13 @@ function App() {
                 <Route path="/register" element={<Register />} />
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/terms" element={<Terms />} />
+                <Route path="/story" element={<FullChatApp />} />
+                <Route path="/story/:storyId" element={<FullChatApp />} />
             </Routes>
             </main>
             <Footer />
         </div>
-        </BrowserRouter>        
+        </HashRouter>        
         // <HashRouter>
         //     <Routes>
         //         <Route

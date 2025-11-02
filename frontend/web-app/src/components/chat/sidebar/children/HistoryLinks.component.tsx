@@ -12,6 +12,7 @@ import {
 import type { StoryInterface } from '@/models/Story.Interface'
 import type { BucketsInterface } from '@/models/history/Buckets.Interface'
 import { HistoryPoint } from '@/models/history/HistoryPoint.Interface'
+import { Star } from 'lucide-react'
 
 function HistoryLinks({
     stories,
@@ -24,6 +25,9 @@ function HistoryLinks({
     currentStoryId?: string
     hidden: boolean
 }) {
+    console.log('Current Story ID in HistoryLinks:', currentStoryId)
+    console.log('New Story ID in HistoryLinks:', newStoryId)
+
     const buckets: BucketsInterface = {
         today: { period: HistoryPoint.TODAY, stories: [] },
         yesterday: { period: HistoryPoint.YESTERDAY, stories: [] },
@@ -61,25 +65,23 @@ function HistoryLinks({
     ].filter((bucket) => bucket.stories.length > 0)
 
     return (
-        <SidebarContent className="pt-4">
+        <SidebarContent className="pt-2 relative overflow-hidden bg-gradient-to-br from-white via-white to-white/20 dark:from-gray-900 dark:via-gray-900 dark:to-primary-900/20">
             {conversationHistory.map((group) => (
                 <SidebarGroup key={group.period}>
-                    <SidebarGroupLabel className="text-md">
+                    <SidebarGroupLabel className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                         {group.period}
                     </SidebarGroupLabel>
                     <SidebarMenu>
-                        {group.stories.map((story) => (
+                        {group.stories.slice(0, 5).map((story) => (
                             <SidebarMenuButton
                                 key={story.storyId}
-                                className={`text-muted-foreground flex items-center justify-between ${story.storyId === currentStoryId ? 'border-l-4 rounded-none' : ''}`}
+                                className={`text-sm font-medium text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 transition-colors ${story.storyId === currentStoryId ? 'border-l-4 rounded-none border-l-primary-600 dark:border-l-primary-400' : ''}`}
                             >
                                 <a href={`/#/story/${story.storyId}`}>
                                     {story.title}
                                 </a>
                                 {story.storyId === newStoryId && !hidden && (
-                                    <span className="ml-2 text-xs font-semibold text-green-700 bg-green-200 rounded px-2 py-0.5 animate-pulse">
-                                        New
-                                    </span>
+                                    <Star size={24} color="#22c55e" fill="#22c55e" />
                                 )}
                             </SidebarMenuButton>
                         ))}

@@ -4,7 +4,7 @@ import type { MistakeInterface } from './Mistake.Interface'
 
 export interface ChatMessage {
     id: string
-    role: 'user' | 'assistant' | 'system'
+    role: 'user' | 'assistant' | 'system' | 'error'
     content: string
     finalizedContent?: string
     template: string

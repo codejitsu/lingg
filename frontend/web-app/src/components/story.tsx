@@ -647,6 +647,21 @@ function FullChatApp() {
                     ))
 
             const nonErrors = chatMessages.filter(msg => msg.role !== 'error')
+            if (nonErrors.length === 0) {
+                setChatMessages((prev) => [
+                    ...prev,
+                    {
+                        id: uuidv4(),
+                        role: 'error',
+                        content: 'No valid chapter found to verify.',
+                        template: 'No valid chapter found to verify.',
+                        placeholders: [],
+                        mistakes: []
+                    },
+                ])
+                setIsLoading(false)
+                return
+            }
             const lastChapter = nonErrors[nonErrors.length - 1]
 
             const { data } = await checkTemplate({

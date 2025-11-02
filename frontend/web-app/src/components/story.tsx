@@ -475,6 +475,7 @@ function FullChatApp() {
     // Handler to add new story to the top
     const handleNewStory = (story: StoryInterface) => {
         setStories((prev) => [story, ...prev])
+        setNewStoryId(story.storyId)
     }
 
     const [isLoading, setIsLoading] = useState(false)

@@ -30,6 +30,8 @@ module "lambda" {
 module "cognito" {
   source = "../../modules/cognito"
 
+  deletion_protection = "INACTIVE"
+
   base_url      = "http://localhost:5173"
   cognito_tags = {
     Environment = lower(var.environment)

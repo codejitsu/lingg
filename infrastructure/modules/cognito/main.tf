@@ -20,7 +20,7 @@ resource "aws_cognito_user_pool" "pool" {
 
     deletion_protection = "ACTIVE"
 
-    tags = var.cognito_tags    
+    tags = var.cognito_tags
 }
 
 resource "aws_cognito_user_pool_domain" "main" {

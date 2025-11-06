@@ -12,5 +12,5 @@ variable "base_url" {
 variable "deletion_protection" {
   type        = string
   default     = "ACTIVE"
-  description = "Whether to enable deletion protection for the Cognito User Pool"
+  description = "Deletion protection status for the Cognito User Pool. Valid values are 'ACTIVE' or 'INACTIVE'"
 }

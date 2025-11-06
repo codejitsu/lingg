@@ -23,16 +23,16 @@ resource "aws_cognito_user_pool" "pool" {
     tags = var.cognito_tags
 }
 
-resource "aws_cognito_user_pool_domain" "main" {
-    domain       = "auth-${random_string.domain_suffix.result}"
-    user_pool_id = aws_cognito_user_pool.pool.id
-    managed_login_version = 2
-}
-
 resource "random_string" "domain_suffix" {
     length  = 8
     special = false
     upper   = false
+}
+
+resource "aws_cognito_user_pool_domain" "main" {
+    domain       = "auth-${random_string.domain_suffix.result}"
+    user_pool_id = aws_cognito_user_pool.pool.id
+    managed_login_version = 2
 }
 
 resource "aws_cognito_user_pool_client" "client" {

@@ -61,7 +61,6 @@ resource "aws_cognito_managed_login_branding" "client_branding" {
     use_cognito_provided_values = true
 
     depends_on = [
-        aws_cognito_user_pool_domain.main,
-        aws_cognito_user_pool_client.client
+        aws_cognito_user_pool_domain.main
     ]
 }

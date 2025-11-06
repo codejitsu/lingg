@@ -26,7 +26,6 @@ resource "aws_cognito_user_pool" "pool" {
 resource "aws_cognito_user_pool_domain" "main" {
     domain       = "auth-${random_string.domain_suffix.result}"
     user_pool_id = aws_cognito_user_pool.pool.id
-    
     managed_login_version = 2
 }
 

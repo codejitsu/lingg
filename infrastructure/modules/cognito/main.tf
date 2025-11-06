@@ -18,7 +18,7 @@ resource "aws_cognito_user_pool" "pool" {
         }
     }
 
-    deletion_protection = "ACTIVE"
+    deletion_protection = var.deletion_protection
 
     tags = var.cognito_tags
 }

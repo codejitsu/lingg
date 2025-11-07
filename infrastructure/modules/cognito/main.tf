@@ -39,7 +39,7 @@ resource "aws_cognito_user_pool_client" "client" {
     name         = "cognito-auth-client"
     user_pool_id = aws_cognito_user_pool.pool.id
 
-    generate_secret           = true
+    generate_secret           = false
     explicit_auth_flows       = ["ALLOW_USER_AUTH", "ALLOW_REFRESH_TOKEN_AUTH", "ALLOW_USER_SRP_AUTH"]
     prevent_user_existence_errors = "ENABLED"
 
@@ -50,8 +50,8 @@ resource "aws_cognito_user_pool_client" "client" {
 
     supported_identity_providers         = ["COGNITO"]
 
-    callback_urls             = ["${var.base_url}/auth/callback"]
-    logout_urls               = ["${var.base_url}/auth/logout"]
+    callback_urls             = ["${var.base_url}/index.html"]
+    logout_urls               = ["${var.base_url}/index.html"]
 }
 
 resource "aws_cognito_managed_login_branding" "client_branding" {

@@ -10,13 +10,38 @@ import { Login } from '@/routes/Login';
 import { Register } from '@/routes/Register';
 import { Privacy } from '@/routes/Privacy';
 import { Terms } from '@/routes/Terms';
+import { useAuth } from 'react-oidc-context';
+import { signoutConfig } from '@/auth/signout';
 import './App.css'
 
 function App() {
+    const auth = useAuth();
+
+    const signOut = async () => {
+        await auth.removeUser();
+
+        window.location.href = `${signoutConfig.domain}/logout?client_id=${signoutConfig.client_id}&logout_uri=${encodeURIComponent(signoutConfig.logout_uri)}`;
+    };
+
+    switch (auth.activeNavigator) {
+        case "signinSilent":
+        return <div>Signing you in...</div>;
+        case "signoutRedirect":
+        return <div>Signing you out...</div>;
+    }
+
+    if (auth.isLoading) {
+        return <div>Loading...</div>;
+    }
+
+    if (auth.error) {
+        return <div>Oops... {auth.error.message}</div>;
+    }
+
     return (
         <HashRouter>
         <div className="min-h-screen flex flex-col">
-            <Header />
+            <Header signOut={signOut}/>
             <main className="flex-grow">
             <Routes>
                 <Route path="/" element={<Landing />} />

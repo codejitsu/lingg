@@ -5,9 +5,12 @@ import { BookOpenIcon } from '@heroicons/react/24/solid';
 import { Container } from './Container';
 import { Button } from './Button';
 import { ThemeToggle } from './ThemeToggle';
+import { useAuth } from "react-oidc-context";
 
-export const Header = () => {
+export const Header = ({ signOut }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const auth = useAuth();
 
   const navigation = [
     { name: 'Features', href: '/#features' },
@@ -54,9 +57,17 @@ export const Header = () => {
 
           <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:items-center lg:space-x-4">
             <ThemeToggle />
-            <Link to="/login">
-              <Button variant="ghost">Log in</Button>
-            </Link>
+            {              
+              auth.isAuthenticated ? (
+                <Link to="/logout" onClick={() => signOut()}>
+                  <Button variant="ghost">Log out {auth.user?.profile?.email}</Button>
+                </Link>                        
+              ) : (
+                <Link to="/login" onClick={() => auth.signinRedirect()}>
+                  <Button variant="ghost">Log in</Button>
+                </Link>
+              )
+            }
             <Link to="/register">
               <Button variant="primary">Get started</Button>
             </Link>
@@ -101,11 +112,21 @@ export const Header = () => {
                     ))}
                   </div>
                   <div className="py-6 space-y-3">
-                    <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
-                      <Button variant="ghost" fullWidth>
-                        Log in
-                      </Button>
-                    </Link>
+                    {
+                      auth.isAuthenticated ? (
+                        <Link to="/logout" onClick={() => signOut()}>
+                          <Button variant="ghost" fullWidth>
+                            Log out
+                          </Button>
+                        </Link>                        
+                      ) : (
+                        <Link to="/login" onClick={() => auth.signinRedirect().then(() => setMobileMenuOpen(false))}>
+                          <Button variant="ghost" fullWidth>
+                            Log in
+                          </Button>
+                        </Link>
+                      )
+                    }
                     <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
                       <Button variant="primary" fullWidth>
                         Get started

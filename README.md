@@ -56,3 +56,7 @@ cargo lambda build --workspace --release
 
 ## testing
 - pnpm add -D vitest @testing-library/react @testing-library/jest-dom jsdom @testing-library/user-event @types/jest
+
+## Auth
+- pnpm add oidc-client-ts --save
+- pnpm add react-oidc-context --save

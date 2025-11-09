@@ -1,7 +1,7 @@
 import { 
     //BrowserRouter, 
     HashRouter, 
-    Routes, Route } from 'react-router-dom'
+    Routes, Route, Navigate } from 'react-router-dom'
 import { FullChatApp } from '@/components/story'
 import { Header } from '@/components/landing/Header';
 import { Footer } from '@/components/landing/Footer';
@@ -49,8 +49,14 @@ function App() {
                 <Route path="/register" element={<Register />} />
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/terms" element={<Terms />} />
-                <Route path="/story" element={<FullChatApp />} />
-                <Route path="/story/:storyId" element={<FullChatApp />} />
+                <Route
+                    path="/story"
+                    element={auth.isAuthenticated ? <FullChatApp /> : <Navigate to="/login" replace />}
+                />
+                <Route
+                    path="/story/:storyId"
+                    element={auth.isAuthenticated ? <FullChatApp /> : <Navigate to="/login" replace />}
+                />
             </Routes>
             </main>
             <Footer />

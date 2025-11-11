@@ -57,7 +57,7 @@ export const Header = ({ signOut }) => {
 
           <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:items-center lg:space-x-4">
             <ThemeToggle />
-            {              
+            {
               auth.isAuthenticated ? (
                 <Link to="/logout" onClick={() => signOut()}>
                   <Button variant="ghost">Log out {auth.user?.profile?.email}</Button>

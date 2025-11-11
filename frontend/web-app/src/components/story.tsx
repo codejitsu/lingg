@@ -12,11 +12,7 @@ import {
 } from '@/components/prompt-kit/message'
 import { ScrollButton } from '@/components/prompt-kit/scroll-button'
 import { Button } from '@/components/ui/button'
-import {
-    Sidebar,
-    SidebarInset,
-    SidebarProvider,
-} from '@/components/ui/sidebar'
+import { Sidebar, SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
 import {
     ArrowUp,
@@ -51,9 +47,13 @@ import type { FetchStoryResult } from '@/models/graphql/FetchStoryResult.Interfa
 import type { ChatMessage } from '@/models/messages/ChatMessage.Interface'
 import ChapterStatusInterface from '@/models/ChapterStatus.Interface'
 import HistoryLinks from './chat/sidebar/children/HistoryLinks.component'
-import { TARGET_LANGUAGES, EXPLAIN_LANGUAGES, STORY_TYPES } from '@/models/constants'
-import { StarIcon } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
+import {
+    TARGET_LANGUAGES,
+    EXPLAIN_LANGUAGES,
+    STORY_TYPES,
+} from '@/models/constants'
+import { StarIcon } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { Container } from './landing/Container'
 import { ButtonGroup } from '@/components/ui/button-group'
 import {
@@ -68,7 +68,7 @@ import {
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
     DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu'
 import type { StartStoryResult } from '@/models/graphql/StartStoryResult.Interface'
 import type { CheckTemplateResult } from '@/models/graphql/CheckTemplateResult.Interface'
 
@@ -81,18 +81,28 @@ function ChatSidebar({
     stories,
     newStoryId,
     currentStoryId,
-    onNewStory
+    onNewStory,
 }: {
     stories: StoryInterface[]
     newStoryId?: string
     currentStoryId?: string
-    onNewStory: (storyType: string | null, targetLanguage: string | null, explainLanguage: string | null) => void
+    onNewStory: (
+        storyType: string | null,
+        targetLanguage: string | null,
+        explainLanguage: string | null,
+    ) => void
 }) {
     const [hidden, setHidden] = useState(false)
 
-    const [targetLanguageOverride, setTargetLanguageOverride] = useState<string | null>(targetLanguage) // TODO read this from user's profile
-    const [explainLanguageOverride, setExplainLanguageOverride] = useState<string | null>(explainLanguage) // TODO read this from user's profile
-    const [storyTypeOverride, setStoryTypeOverride] = useState<string | null>(null) // TODO read this from user's profile
+    const [targetLanguageOverride, setTargetLanguageOverride] = useState<
+        string | null
+    >(targetLanguage) // TODO read this from user's profile
+    const [explainLanguageOverride, setExplainLanguageOverride] = useState<
+        string | null
+    >(explainLanguage) // TODO read this from user's profile
+    const [storyTypeOverride, setStoryTypeOverride] = useState<string | null>(
+        null,
+    ) // TODO read this from user's profile
 
     useEffect(() => {
         if (newStoryId) setHidden(false)
@@ -103,96 +113,136 @@ function ChatSidebar({
     }, [newStoryId])
 
     return (
-        <Sidebar className="bg-white dark:bg-gray-900">  
+        <Sidebar className="bg-white dark:bg-gray-900">
             <div className="flex items-center justify-between px-4 pt-4 dark:bg-gray-900/95">
                 <ButtonGroup>
                     <Button
                         size="lg"
-                        className='bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600'
-                        onClick={() => onNewStory(storyTypeOverride, targetLanguageOverride, explainLanguageOverride)}
+                        className="bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600"
+                        onClick={() =>
+                            onNewStory(
+                                storyTypeOverride,
+                                targetLanguageOverride,
+                                explainLanguageOverride,
+                            )
+                        }
                     >
                         New Story
                     </Button>
                     <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="lg" aria-label="More Options">
-                        <MoreHorizontalIcon />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-52 bg-white/80 text-slate-900 dark:bg-slate-800 dark:text-slate-100">
-                        <DropdownMenuLabel>Settings overrides</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuGroup>
-                        <DropdownMenuSub>
-                            <DropdownMenuSubTrigger className="hover:bg-gray-800 dark:hover:bg-gray-700 dark:data-[state=open]:bg-gray-700">
-                            <SquirrelIcon className="h-4 w-4 mr-2" />
-                            Story type
-                            </DropdownMenuSubTrigger>
-                            <DropdownMenuSubContent className='bg-white/80 text-slate-900 dark:bg-slate-800 dark:text-slate-100'>
-                            <DropdownMenuRadioGroup
-                                value={storyTypeOverride || ''}
-                                onValueChange={value => setStoryTypeOverride(value)}
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="outline"
+                                size="lg"
+                                aria-label="More Options"
                             >
-                                {STORY_TYPES.map((story: { value: string; label: string }) => (
-                                    <DropdownMenuRadioItem 
-                                        key={story.value} 
-                                        value={story.value} 
-                                        className="hover:bg-gray-800 dark:hover:bg-gray-700"
-                                    >
-                                        {story.label}
-                                    </DropdownMenuRadioItem>
-                                ))}
-                            </DropdownMenuRadioGroup>
-                            </DropdownMenuSubContent>
-                        </DropdownMenuSub>                                  
-                        <DropdownMenuSub>
-                            <DropdownMenuSubTrigger className="hover:bg-gray-800 dark:hover:bg-gray-700 dark:data-[state=open]:bg-gray-700">
-                            <TargetIcon className="h-4 w-4 mr-2" />
-                            Target language
-                            </DropdownMenuSubTrigger>
-                            <DropdownMenuSubContent className='bg-white/80 text-slate-900 dark:bg-slate-800 dark:text-slate-100'>
-                            <DropdownMenuRadioGroup
-                                value={targetLanguageOverride || ''}
-                                onValueChange={value => setTargetLanguageOverride(value)}
-                            >
-                                {TARGET_LANGUAGES.map((lang: { value: string; label: string }) => (
-                                    <DropdownMenuRadioItem 
-                                        key={lang.value} 
-                                        value={lang.value} 
-                                        className="hover:bg-gray-800 dark:hover:bg-gray-700"
-                                    >
-                                        {lang.label}    
-                                    </DropdownMenuRadioItem>
-                                ))}                            
-                            </DropdownMenuRadioGroup>
-                            </DropdownMenuSubContent>
-                        </DropdownMenuSub>                        
-                        <DropdownMenuSub>
-                            <DropdownMenuSubTrigger className="hover:bg-gray-800 dark:hover:bg-gray-700 dark:data-[state=open]:bg-gray-700">
-                            <SparkleIcon className="h-4 w-4 mr-2" />
-                            Explanation language
-                            </DropdownMenuSubTrigger>
-                            <DropdownMenuSubContent className='bg-white/80 text-slate-900 dark:bg-slate-800 dark:text-slate-100'>
-                            <DropdownMenuRadioGroup
-                                value={explainLanguageOverride || ''}
-                                onValueChange={value => setExplainLanguageOverride(value)}
-                            >
-                                {EXPLAIN_LANGUAGES.map((lang: { value: string; label: string }) => (
-                                    <DropdownMenuRadioItem 
-                                        key={lang.value} 
-                                        value={lang.value} 
-                                        className="hover:bg-gray-800 dark:hover:bg-gray-700"
-                                    >
-                                        {lang.label}
-                                    </DropdownMenuRadioItem>
-                                ))}                                
-                            </DropdownMenuRadioGroup>
-                            </DropdownMenuSubContent>
-                        </DropdownMenuSub>                        
-                        </DropdownMenuGroup>
-                    </DropdownMenuContent>
+                                <MoreHorizontalIcon />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                            align="end"
+                            className="w-52 bg-white/80 text-slate-900 dark:bg-slate-800 dark:text-slate-100"
+                        >
+                            <DropdownMenuLabel>
+                                Settings overrides
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuGroup>
+                                <DropdownMenuSub>
+                                    <DropdownMenuSubTrigger className="hover:bg-gray-800 dark:hover:bg-gray-700 dark:data-[state=open]:bg-gray-700">
+                                        <SquirrelIcon className="h-4 w-4 mr-2" />
+                                        Story type
+                                    </DropdownMenuSubTrigger>
+                                    <DropdownMenuSubContent className="bg-white/80 text-slate-900 dark:bg-slate-800 dark:text-slate-100">
+                                        <DropdownMenuRadioGroup
+                                            value={storyTypeOverride || ''}
+                                            onValueChange={(value) =>
+                                                setStoryTypeOverride(value)
+                                            }
+                                        >
+                                            {STORY_TYPES.map(
+                                                (story: {
+                                                    value: string
+                                                    label: string
+                                                }) => (
+                                                    <DropdownMenuRadioItem
+                                                        key={story.value}
+                                                        value={story.value}
+                                                        className="hover:bg-gray-800 dark:hover:bg-gray-700"
+                                                    >
+                                                        {story.label}
+                                                    </DropdownMenuRadioItem>
+                                                ),
+                                            )}
+                                        </DropdownMenuRadioGroup>
+                                    </DropdownMenuSubContent>
+                                </DropdownMenuSub>
+                                <DropdownMenuSub>
+                                    <DropdownMenuSubTrigger className="hover:bg-gray-800 dark:hover:bg-gray-700 dark:data-[state=open]:bg-gray-700">
+                                        <TargetIcon className="h-4 w-4 mr-2" />
+                                        Target language
+                                    </DropdownMenuSubTrigger>
+                                    <DropdownMenuSubContent className="bg-white/80 text-slate-900 dark:bg-slate-800 dark:text-slate-100">
+                                        <DropdownMenuRadioGroup
+                                            value={targetLanguageOverride || ''}
+                                            onValueChange={(value) =>
+                                                setTargetLanguageOverride(value)
+                                            }
+                                        >
+                                            {TARGET_LANGUAGES.map(
+                                                (lang: {
+                                                    value: string
+                                                    label: string
+                                                }) => (
+                                                    <DropdownMenuRadioItem
+                                                        key={lang.value}
+                                                        value={lang.value}
+                                                        className="hover:bg-gray-800 dark:hover:bg-gray-700"
+                                                    >
+                                                        {lang.label}
+                                                    </DropdownMenuRadioItem>
+                                                ),
+                                            )}
+                                        </DropdownMenuRadioGroup>
+                                    </DropdownMenuSubContent>
+                                </DropdownMenuSub>
+                                <DropdownMenuSub>
+                                    <DropdownMenuSubTrigger className="hover:bg-gray-800 dark:hover:bg-gray-700 dark:data-[state=open]:bg-gray-700">
+                                        <SparkleIcon className="h-4 w-4 mr-2" />
+                                        Explanation language
+                                    </DropdownMenuSubTrigger>
+                                    <DropdownMenuSubContent className="bg-white/80 text-slate-900 dark:bg-slate-800 dark:text-slate-100">
+                                        <DropdownMenuRadioGroup
+                                            value={
+                                                explainLanguageOverride || ''
+                                            }
+                                            onValueChange={(value) =>
+                                                setExplainLanguageOverride(
+                                                    value,
+                                                )
+                                            }
+                                        >
+                                            {EXPLAIN_LANGUAGES.map(
+                                                (lang: {
+                                                    value: string
+                                                    label: string
+                                                }) => (
+                                                    <DropdownMenuRadioItem
+                                                        key={lang.value}
+                                                        value={lang.value}
+                                                        className="hover:bg-gray-800 dark:hover:bg-gray-700"
+                                                    >
+                                                        {lang.label}
+                                                    </DropdownMenuRadioItem>
+                                                ),
+                                            )}
+                                        </DropdownMenuRadioGroup>
+                                    </DropdownMenuSubContent>
+                                </DropdownMenuSub>
+                            </DropdownMenuGroup>
+                        </DropdownMenuContent>
                     </DropdownMenu>
-                </ButtonGroup>                
+                </ButtonGroup>
             </div>
             <HistoryLinks
                 stories={stories}
@@ -215,17 +265,18 @@ function ChatContent({
 }: {
     currentStoryId?: string
     storyTitle?: string
-    isLoading: boolean,
-    chatMessages: ChatMessage[],
-    onVerifyChapter: () => void,
-    setPlaceholders: (placeholders: Record<string, string>) => void,
+    isLoading: boolean
+    chatMessages: ChatMessage[]
+    onVerifyChapter: () => void
+    setPlaceholders: (placeholders: Record<string, string>) => void
 }) {
     const chatContainerRef = useRef<HTMLDivElement>(null)
 
     return (
         <main className="flex h-[95%] w-full flex-col overflow-hidden">
-            {/* Header */
-            //text-sm font-medium text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 transition-colors
+            {
+                /* Header */
+                //text-sm font-medium text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 transition-colors
             }
             <header className="bg-white dark:bg-gray-900 z-10 flex h-16 w-full shrink-0 items-center gap-2 border-b border-gray-200 dark:border-gray-800 px-4 text-lg font-medium text-gray-900 dark:text-gray-100">
                 {storyTitle}
@@ -234,7 +285,7 @@ function ChatContent({
                         variant="dots"
                         className={isLoading ? '' : 'hidden'}
                     />
-                </div>                
+                </div>
             </header>
 
             <div
@@ -263,9 +314,11 @@ function ChatContent({
 
                         {chatMessages.map((message) => {
                             const isAssistant = message.role === 'assistant'
-                            const isCompletedChapter = message.status === ChapterStatusInterface.Completed
+                            const isCompletedChapter =
+                                message.status ===
+                                ChapterStatusInterface.Completed
 
-                            console.log("Rendering message:", message)
+                            console.log('Rendering message:', message)
 
                             return (
                                 <Message
@@ -280,9 +333,11 @@ function ChatContent({
                                     {isAssistant ? (
                                         <div className="group flex w-full flex-col gap-2">
                                             <div className="text-secondary-foreground prose flex-1 rounded-lg bg-white/80 text-slate-900 dark:bg-slate-800 dark:text-slate-100 text-left p-3">
-                                                { isCompletedChapter ? (
+                                                {isCompletedChapter ? (
                                                     <MessageContent className="bg-white/80 text-slate-900 dark:bg-slate-800 dark:text-slate-100 text-primary max-w-[85%] rounded-3xl px-5 py-2.5 sm:max-w-[100%] text-justify">
-                                                        {message.finalizedContent ? message.finalizedContent : "No content available"}
+                                                        {message.finalizedContent
+                                                            ? message.finalizedContent
+                                                            : 'No content available'}
                                                     </MessageContent>
                                                 ) : (
                                                     <MessageTemplate
@@ -292,17 +347,18 @@ function ChatContent({
                                                         placeholdersMap={
                                                             message.placeholders
                                                         }
-                                                        mistakes={message.mistakes}
-                                                        onChange={(values) => setPlaceholders(values)}
+                                                        mistakes={
+                                                            message.mistakes
+                                                        }
+                                                        onChange={(values) =>
+                                                            setPlaceholders(
+                                                                values,
+                                                            )
+                                                        }
                                                     />
-                                                )
-                                                }
+                                                )}
                                             </div>
-                                            <MessageActions
-                                                className=
-                                                    '-ml-2.5 self-end flex gap-0 py-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100 text-right opacity-100'
-                                                
-                                            >
+                                            <MessageActions className="-ml-2.5 self-end flex gap-0 py-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100 text-right opacity-100">
                                                 <MessageAction
                                                     tooltip="Completed"
                                                     delayDuration={100}
@@ -312,7 +368,9 @@ function ChatContent({
                                                         size="icon"
                                                         className="rounded-full"
                                                     >
-                                                        <CheckCheck className={`size-4 ${isCompletedChapter ? "text-green-500" : ""}`}/>
+                                                        <CheckCheck
+                                                            className={`size-4 ${isCompletedChapter ? 'text-green-500' : ''}`}
+                                                        />
                                                     </Button>
                                                 </MessageAction>
                                                 <Badge
@@ -321,8 +379,8 @@ function ChatContent({
                                                 >
                                                     <StarIcon className="text-yellow-500 fill-yellow-300" />
                                                     42
-                                                </Badge>                                                
-                                            </MessageActions>                                            
+                                                </Badge>
+                                            </MessageActions>
                                         </div>
                                     ) : (
                                         <div className="group flex flex-col items-end gap-1">
@@ -383,14 +441,16 @@ function ChatContent({
                 </ChatContainerRoot>
             </div>
 
-            <div className={`bg-background dark:bg-gray-900 z-10 shrink-0 px-3 pb-3 md:px-5 md:pb-5 ${ currentStoryId ? '' : 'hidden' }`}>
+            <div
+                className={`bg-background dark:bg-gray-900 z-10 shrink-0 px-3 pb-3 md:px-5 md:pb-5 ${currentStoryId ? '' : 'hidden'}`}
+            >
                 <div className="mx-auto max-w-3xl">
                     <div className="flex justify-center mb-4">
                         <Button
                             size="lg"
                             disabled={isLoading}
                             onClick={() => onVerifyChapter()}
-                            className='bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600'
+                            className="bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600"
                         >
                             Verify Chapter
                             {!isLoading ? (
@@ -410,21 +470,23 @@ function FullChatApp() {
     const { storyId } = useParams<{ storyId: string }>()
     const navigate = useNavigate()
 
-    console.log("storyId:", storyId)
+    console.log('storyId:', storyId)
 
     const [stories, setStories] = useState<StoryInterface[]>([])
     const [newStoryId, setNewStoryId] = useState<string | undefined>(undefined)
-    const [currentStoryId, setCurrentStoryId] = useState<string | undefined>(storyId)
+    const [currentStoryId, setCurrentStoryId] = useState<string | undefined>(
+        storyId,
+    )
 
     useEffect(() => {
-        setCurrentStoryId(storyId);
+        setCurrentStoryId(storyId)
         // Clear newStoryId when switching to a different story (not the newly created one)
         if (storyId && storyId !== newStoryId) {
-            setNewStoryId(undefined);
+            setNewStoryId(undefined)
         }
-    }, [storyId, newStoryId]);
+    }, [storyId, newStoryId])
 
-    console.log("currentStoryId:", currentStoryId)
+    console.log('currentStoryId:', currentStoryId)
 
     const { data } = useQuery<{ listStories: StoryInterface[] }>(
         LIST_ALL_STORIES,
@@ -480,9 +542,11 @@ function FullChatApp() {
         if (currentStoryId !== newStoryId) {
             setChatMessages([])
         }
-        
+
         if (currentStoryId) {
-            const title = stories.find(story => story.storyId === currentStoryId)?.title
+            const title = stories.find(
+                (story) => story.storyId === currentStoryId,
+            )?.title
 
             if (title) {
                 setStoryTitle(title)
@@ -509,7 +573,7 @@ function FullChatApp() {
                     template: chapter.template,
                     placeholders: chapter.placeholders,
                     status: chapter.status,
-                    mistakes: []
+                    mistakes: [],
                 })),
             )
         }
@@ -528,7 +592,7 @@ function FullChatApp() {
                     content: `Failed to start story: ${errorMessage}`,
                     template: `Failed to start story: ${errorMessage}`,
                     placeholders: [],
-                    mistakes: []
+                    mistakes: [],
                 },
             ])
         }
@@ -536,14 +600,29 @@ function FullChatApp() {
         if (!storyLoading) {
             setIsLoading(false)
         }
-    }, [storyData, storyError, storyLoading, currentStoryId, newStoryId, stories])
+    }, [
+        storyData,
+        storyError,
+        storyLoading,
+        currentStoryId,
+        newStoryId,
+        stories,
+    ])
 
-    const onCreateNewStory = async (storyTypeOverride: string | null, targetLanguageOverride: string | null, explainLanguageOverride: string | null) => {
+    const onCreateNewStory = async (
+        storyTypeOverride: string | null,
+        targetLanguageOverride: string | null,
+        explainLanguageOverride: string | null,
+    ) => {
         setStoryTitle('Start a new story')
         setChatMessages([])
         setIsLoading(true)
 
-        console.log("Creating new story with:", { storyTypeOverride, targetLanguageOverride, explainLanguageOverride })
+        console.log('Creating new story with:', {
+            storyTypeOverride,
+            targetLanguageOverride,
+            explainLanguageOverride,
+        })
 
         try {
             const { data } = await startStory({
@@ -552,7 +631,11 @@ function FullChatApp() {
                     clientRequestId: uuidv4(),
                     targetLanguage: targetLanguageOverride,
                     explainLanguage: explainLanguageOverride,
-                    storyType: storyTypeOverride || STORY_TYPES[Math.floor(Math.random() * STORY_TYPES.length)].value,
+                    storyType:
+                        storyTypeOverride ||
+                        STORY_TYPES[
+                            Math.floor(Math.random() * STORY_TYPES.length)
+                        ].value,
                 },
             })
 
@@ -604,7 +687,7 @@ function FullChatApp() {
                     content: `Failed to start story: ${errorMessage}`,
                     template: `Failed to start story: ${errorMessage}`,
                     placeholders: [],
-                    mistakes: []
+                    mistakes: [],
                 },
             ])
         } finally {
@@ -616,13 +699,17 @@ function FullChatApp() {
         setIsLoading(true)
 
         try {
-            console.log("StoryId:", currentStoryId)
-            console.log("ChapterId:", chatMessages[chatMessages.length - 1].id)
-            console.log("Placeholders:", Object.entries(placeholders).map(
-                        ([name, text]) => ({ name, text }),
-                    ))
+            console.log('StoryId:', currentStoryId)
+            console.log('ChapterId:', chatMessages[chatMessages.length - 1].id)
+            console.log(
+                'Placeholders:',
+                Object.entries(placeholders).map(([name, text]) => ({
+                    name,
+                    text,
+                })),
+            )
 
-            const nonErrors = chatMessages.filter(msg => msg.role !== 'error')
+            const nonErrors = chatMessages.filter((msg) => msg.role !== 'error')
             if (nonErrors.length === 0) {
                 setChatMessages((prev) => [
                     ...prev,
@@ -632,7 +719,7 @@ function FullChatApp() {
                         content: 'No valid chapter found to verify.',
                         template: 'No valid chapter found to verify.',
                         placeholders: [],
-                        mistakes: []
+                        mistakes: [],
                     },
                 ])
                 setIsLoading(false)
@@ -653,13 +740,15 @@ function FullChatApp() {
                     ),
                 },
             })
-            
-            console.log("CheckTemplate data:", data)
-            
+
+            console.log('CheckTemplate data:', data)
+
             if (data?.checkTemplate?.chapter) {
                 lastChapter.status = ChapterStatusInterface.Completed
 
-                lastChapter.finalizedContent = Object.entries(placeholders).reduce(
+                lastChapter.finalizedContent = Object.entries(
+                    placeholders,
+                ).reduce(
                     (content, [name, text]) =>
                         content.replace(`{${name}}`, text),
                     lastChapter.template || '',
@@ -682,18 +771,20 @@ function FullChatApp() {
                         id: data?.checkTemplate?.chapter.chapterId,
                         role: 'assistant',
                         content: data?.checkTemplate?.chapter.content,
-                        finalizedContent: data?.checkTemplate?.chapter.finalizedContent,
+                        finalizedContent:
+                            data?.checkTemplate?.chapter.finalizedContent,
                         template: data?.checkTemplate?.chapter.template,
                         placeholders: data?.checkTemplate?.chapter.placeholders,
                         status: data?.checkTemplate?.chapter.status,
-                        mistakes: []
+                        mistakes: [],
                     },
                 ])
             }
 
             if (data?.checkTemplate?.mistakes) {
                 console.log(data?.checkTemplate.mistakes)
-                chatMessages[chatMessages.length - 1].mistakes = data?.checkTemplate.mistakes
+                chatMessages[chatMessages.length - 1].mistakes =
+                    data?.checkTemplate.mistakes
             }
 
             if (data?.checkTemplate?.errors) {
@@ -712,39 +803,39 @@ function FullChatApp() {
                     content: `Failed to verify chapter: ${errorMessage}`,
                     template: `Failed to verify chapter: ${errorMessage}`,
                     placeholders: [],
-                    mistakes: []
+                    mistakes: [],
                 },
             ])
         } finally {
             setIsLoading(false)
-        }                
+        }
     }
 
     return (
-            <div>
-                <section className="relative overflow-hidden bg-gradient-to-br from-white via-white to-white/20 dark:from-gray-900 dark:via-gray-900 dark:to-primary-900/20">
-                    <Container>
-                        <SidebarProvider>
-                            <ChatSidebar
-                                stories={stories}
-                                newStoryId={newStoryId}
+        <div>
+            <section className="relative overflow-hidden bg-gradient-to-br from-white via-white to-white/20 dark:from-gray-900 dark:via-gray-900 dark:to-primary-900/20">
+                <Container>
+                    <SidebarProvider>
+                        <ChatSidebar
+                            stories={stories}
+                            newStoryId={newStoryId}
+                            currentStoryId={currentStoryId}
+                            onNewStory={onCreateNewStory}
+                        />
+                        <SidebarInset className="bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+                            <ChatContent
                                 currentStoryId={currentStoryId}
-                                onNewStory={onCreateNewStory}
+                                storyTitle={storyTitle}
+                                isLoading={isLoading}
+                                chatMessages={chatMessages}
+                                onVerifyChapter={onVerifyChapter}
+                                setPlaceholders={setPlaceholders}
                             />
-                            <SidebarInset className="bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
-                                <ChatContent
-                                    currentStoryId={currentStoryId}
-                                    storyTitle={storyTitle}
-                                    isLoading={isLoading}
-                                    chatMessages={chatMessages}
-                                    onVerifyChapter={onVerifyChapter}
-                                    setPlaceholders={setPlaceholders}
-                                />
-                            </SidebarInset>
-                        </SidebarProvider>
-                    </Container>
-                </section>
-            </div>
+                        </SidebarInset>
+                    </SidebarProvider>
+                </Container>
+            </section>
+        </div>
     )
 }
 

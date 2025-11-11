@@ -1,4 +1,4 @@
-import type { ChapterInterface } from "../Chapter.Interface"
+import type { ChapterInterface } from '../Chapter.Interface'
 
 export interface StartStoryResult {
     startStory: {

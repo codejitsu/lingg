@@ -118,7 +118,7 @@ export const Header = ({ signOut }) => {
                           <Button variant="ghost" fullWidth>
                             Log out
                           </Button>
-                        </Link>                        
+                        </Link>
                       ) : (
                         <Link to="/login" onClick={() => auth.signinRedirect().then(() => setMobileMenuOpen(false))}>
                           <Button variant="ghost" fullWidth>

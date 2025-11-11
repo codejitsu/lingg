@@ -32,7 +32,7 @@ module "cognito" {
 
   deletion_protection = "INACTIVE"
 
-  base_url      = "http://localhost:5173"
+  base_url = "http://localhost:5173"
   cognito_tags = {
     Environment = lower(var.environment)
   }
@@ -41,12 +41,12 @@ module "cognito" {
 module "appsync" {
   source = "../../modules/appsync"
 
-  aws_region            = var.region
+  aws_region = var.region
 
-  function_arn          = module.lambda.function_arn
-  function_name         = module.lambda.function_name
+  function_arn  = module.lambda.function_arn
+  function_name = module.lambda.function_name
 
-  cognito_user_pool_id  = module.cognito.user_pool_id
+  cognito_user_pool_id = module.cognito.user_pool_id
 
   appsync_tags = {
     Environment = lower(var.environment)

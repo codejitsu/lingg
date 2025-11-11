@@ -3,6 +3,7 @@ import { apolloClient } from '@/lib/apollo.ts'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { AuthProvider } from 'react-oidc-context'
+import { User } from "oidc-client-ts"
 import { authConfig } from '@/auth/auth.ts'
 
 import './index.css'
@@ -10,7 +11,7 @@ import App from './App.tsx'
 
 const authConfigWithSignin = {
     ...authConfig,
-    onSigninCallback: (user) => {
+    onSigninCallback: (_user: User | undefined) => {
         window.history.replaceState({}, document.title, window.location.pathname);
     },
 };

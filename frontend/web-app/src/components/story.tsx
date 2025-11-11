@@ -10,10 +10,6 @@ import {
     MessageActions,
     MessageContent,
 } from '@/components/prompt-kit/message'
-import {
-    PromptInput,
-    PromptInputActions,
-} from '@/components/prompt-kit/prompt-input'
 import { ScrollButton } from '@/components/prompt-kit/scroll-button'
 import { Button } from '@/components/ui/button'
 import {
@@ -24,11 +20,8 @@ import {
 import { cn } from '@/lib/utils'
 import {
     ArrowUp,
-    BookMarked,
     Copy,
     CheckCheck,
-    Languages,
-    MessageCircleQuestionMark,
     Pencil,
     Trash,
     PopcornIcon,
@@ -37,20 +30,6 @@ import {
     SparkleIcon,
     SquirrelIcon,
 } from 'lucide-react'
-import { CheckIcon, ChevronsUpDownIcon } from 'lucide-react'
-import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-    CommandList,
-} from '@/components/ui/command'
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from '@/components/ui/popover'
 
 import { Loader } from '@/components/prompt-kit/loader'
 import { useRef, useState, useEffect } from 'react'
@@ -61,7 +40,6 @@ import { MessageTemplate } from '@/components/message-template'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import type { StoryInterface } from '@/models/Story.Interface'
-import type { ChapterInterface } from '@/models/Chapter.Interface'
 import {
     LIST_ALL_STORIES,
     FETCH_STORY_BY_ID,
@@ -71,10 +49,8 @@ import {
 
 import type { FetchStoryResult } from '@/models/graphql/FetchStoryResult.Interface'
 import type { ChatMessage } from '@/models/messages/ChatMessage.Interface'
-import type { NextAction } from '@/models/messages/NextAction'
 import ChapterStatusInterface from '@/models/ChapterStatus.Interface'
 import HistoryLinks from './chat/sidebar/children/HistoryLinks.component'
-import type { MistakeInterface } from '@/models/messages/Mistake.Interface'
 import { TARGET_LANGUAGES, EXPLAIN_LANGUAGES, STORY_TYPES } from '@/models/constants'
 import { StarIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"

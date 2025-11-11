@@ -1,13 +1,13 @@
 resource "aws_appsync_graphql_api" "api" {
   name                = "lingg-api"
-  authentication_type = "API_KEY"
+  authentication_type = "AMAZON_COGNITO_USER_POOLS"
   schema              = file("../../../backend/schema.graphql")
-}
 
-resource "aws_appsync_api_key" "api_key" {
-  api_id      = aws_appsync_graphql_api.api.id
-  description = "API key for Lingg AppSync API"
-  expires     = timeadd(timestamp(), "720h") # API key valid for 30 days
+  user_pool_config {
+    aws_region      = var.aws_region
+    default_action  = "ALLOW"
+    user_pool_id    = var.cognito_user_pool_id
+  }
 }
 
 data "aws_iam_policy_document" "appsync_invoke_lambda_inline_policy" {

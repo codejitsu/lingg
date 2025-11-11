@@ -125,11 +125,11 @@ type MistakeExplanation {
 }
 
 type Mutation {
-    startStory(input: StartStoryInput!): StartStoryPayload!
-    checkTemplate(input: CheckTemplateInput!): CheckTemplatePayload!
+    startStory(input: StartStoryInput!): StartStoryPayload! @aws_cognito_user_pools
+    checkTemplate(input: CheckTemplateInput!): CheckTemplatePayload! @aws_cognito_user_pools
 }
 
 type Query {
-    listStories(userId: ID!): [Story!]!
-    fetchStoryById(userId: ID!, storyId: ID!): Story
+    listStories(userId: ID!): [Story!]! @aws_cognito_user_pools
+    fetchStoryById(userId: ID!, storyId: ID!): Story @aws_cognito_user_pools
 }

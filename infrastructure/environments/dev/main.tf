@@ -41,14 +41,18 @@ module "cognito" {
 module "appsync" {
   source = "../../modules/appsync"
 
-  function_arn  = module.lambda.function_arn
-  function_name = module.lambda.function_name
+  aws_region            = var.region
+
+  function_arn          = module.lambda.function_arn
+  function_name         = module.lambda.function_name
+
+  cognito_user_pool_id  = module.cognito.user_pool_id
+
+  appsync_tags = {
+    Environment = lower(var.environment)
+  }
 }
 
 output "appsync_api_url" {
   value = module.appsync.appsync_api_url
-}
-
-output "aws_appsync_api_key" {
-  value = nonsensitive(module.appsync.aws_appsync_api_key)
 }

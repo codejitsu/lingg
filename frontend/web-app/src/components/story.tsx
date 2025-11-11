@@ -51,7 +51,6 @@ import type { FetchStoryResult } from '@/models/graphql/FetchStoryResult.Interfa
 import type { ChatMessage } from '@/models/messages/ChatMessage.Interface'
 import ChapterStatusInterface from '@/models/ChapterStatus.Interface'
 import HistoryLinks from './chat/sidebar/children/HistoryLinks.component'
-// import type { MistakeInterface } from '@/models/messages/Mistake.Interface'
 import { TARGET_LANGUAGES, EXPLAIN_LANGUAGES, STORY_TYPES } from '@/models/constants'
 import { StarIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"

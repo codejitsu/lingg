@@ -8,6 +8,8 @@ resource "aws_appsync_graphql_api" "api" {
     default_action  = "ALLOW"
     user_pool_id    = var.cognito_user_pool_id
   }
+
+  tags_all = var.appsync_tags
 }
 
 data "aws_iam_policy_document" "appsync_invoke_lambda_inline_policy" {

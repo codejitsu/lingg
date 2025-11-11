@@ -10,7 +10,7 @@ import App from './App.tsx'
 
 const authConfigWithSignin = {
     ...authConfig,
-    onSigninCallback: (_user) => {
+    onSigninCallback: (user) => {
         window.history.replaceState({}, document.title, window.location.pathname);
     },
 };

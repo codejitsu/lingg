@@ -40,7 +40,6 @@ import { MessageTemplate } from '@/components/message-template'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import type { StoryInterface } from '@/models/Story.Interface'
-// import type { ChapterInterface } from '@/models/Chapter.Interface'
 import {
     LIST_ALL_STORIES,
     FETCH_STORY_BY_ID,

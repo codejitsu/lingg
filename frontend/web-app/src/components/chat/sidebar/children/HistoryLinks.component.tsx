@@ -81,7 +81,11 @@ function HistoryLinks({
                                     {story.title}
                                 </a>
                                 {story.storyId === newStoryId && !hidden && (
-                                    <Star size={24} color="#22c55e" fill="#22c55e" />
+                                    <Star
+                                        size={24}
+                                        color="#22c55e"
+                                        fill="#22c55e"
+                                    />
                                 )}
                             </SidebarMenuButton>
                         ))}

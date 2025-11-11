@@ -1,12 +1,12 @@
-import type { MistakeInterface } from '@/models/messages/Mistake.Interface';
+import type { MistakeInterface } from '@/models/messages/Mistake.Interface'
 import React, { useEffect, useState, type ChangeEvent } from 'react'
 
 import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card"
-import { CircleAlert, MessageCircleWarning } from 'lucide-react';
+    HoverCard,
+    HoverCardContent,
+    HoverCardTrigger,
+} from '@/components/ui/hover-card'
+import { CircleAlert, MessageCircleWarning } from 'lucide-react'
 
 interface MessageTemplateProps {
     template: string
@@ -64,11 +64,14 @@ export const MessageTemplate: React.FC<MessageTemplateProps> = ({
 
         const replacementLength = initialText.length
 
-        const mistakeForPlaceholder = mistakes.find(m => m.placeholder.name === phName) || null;
+        const mistakeForPlaceholder =
+            mistakes.find((m) => m.placeholder.name === phName) || null
 
-        let className = "inline-block border-b-3 border-double border-gray-500 focus:outline-none focus:border-pink-500"
+        let className =
+            'inline-block border-b-3 border-double border-gray-500 focus:outline-none focus:border-pink-500'
         if (mistakeForPlaceholder) {
-            className = "inline-block border-b-3 border-dotted border-red-500 focus:outline-none focus:border-red-500"
+            className =
+                'inline-block border-b-3 border-dotted border-red-500 focus:outline-none focus:border-red-500'
         }
 
         if (mistakeForPlaceholder === null) {
@@ -87,7 +90,13 @@ export const MessageTemplate: React.FC<MessageTemplateProps> = ({
             )
         } else {
             parts.push(
-                <span style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+                <span
+                    style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        whiteSpace: 'nowrap',
+                    }}
+                >
                     <input
                         key={phName + '-' + idx}
                         type="text"
@@ -100,19 +109,23 @@ export const MessageTemplate: React.FC<MessageTemplateProps> = ({
                         style={{ width: `${replacementLength}ch` }}
                     />
                     <HoverCard>
-                        <HoverCardTrigger style={{ marginRight: 4, cursor: 'pointer' }}><MessageCircleWarning className='size-3 text-red-500'/></HoverCardTrigger>
+                        <HoverCardTrigger
+                            style={{ marginRight: 4, cursor: 'pointer' }}
+                        >
+                            <MessageCircleWarning className="size-3 text-red-500" />
+                        </HoverCardTrigger>
                         <HoverCardContent>
                             <div className="flex text-left items-center">
                                 <CircleAlert className="size-4 text-gray-700 mr-2" />
-                                { mistakeForPlaceholder.explanation }
+                                {mistakeForPlaceholder.explanation}
                             </div>
                             <div className="text-muted-foreground text-xs">
-                                { mistakeForPlaceholder.hint }
-                            </div>                            
+                                {mistakeForPlaceholder.hint}
+                            </div>
                         </HoverCardContent>
-                    </HoverCard>                    
+                    </HoverCard>
                 </span>,
-            )            
+            )
         }
         lastIndex = match.index + placeholder.length
         idx++

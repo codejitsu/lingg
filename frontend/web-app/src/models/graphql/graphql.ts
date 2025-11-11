@@ -94,38 +94,48 @@ export const CHECK_TEMPLATE = gql`
         $chapterId: ID!
         $clientRequestId: ID!
         $targetLanguage: LanguageName!
-        $explainLanguage: LanguageName!        
+        $explainLanguage: LanguageName!
         $placeholders: [UserInputValueInput!]!
     ) {
-        checkTemplate(input: { userId: $userId, storyId: $storyId, chapterId: $chapterId, clientRequestId: $clientRequestId, targetLanguage: $targetLanguage, explainLanguage: $explainLanguage, placeholders: $placeholders }) {
+        checkTemplate(
+            input: {
+                userId: $userId
+                storyId: $storyId
+                chapterId: $chapterId
+                clientRequestId: $clientRequestId
+                targetLanguage: $targetLanguage
+                explainLanguage: $explainLanguage
+                placeholders: $placeholders
+            }
+        ) {
             chapter {
-                    chapterId
-                    content
-                    createdAt
-                    placeholders {
-                        name
-                        text
-                    }
-                    status
-                    storyId
-                    template
-                    userInput {
-                        name
-                        text
-                    }
-                    completedAt
+                chapterId
+                content
+                createdAt
+                placeholders {
+                    name
+                    text
                 }
-                errors {
-                    message
+                status
+                storyId
+                template
+                userInput {
+                    name
+                    text
                 }
-                mistakes {
-                    explanation
-                    hint
-                    placeholder {
-                        name
-                        text
-                    }
+                completedAt
+            }
+            errors {
+                message
+            }
+            mistakes {
+                explanation
+                hint
+                placeholder {
+                    name
+                    text
                 }
             }
         }
+    }
 `

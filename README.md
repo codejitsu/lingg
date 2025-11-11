@@ -56,3 +56,21 @@ cargo lambda build --workspace --release
 
 ## testing
 - pnpm add -D vitest @testing-library/react @testing-library/jest-dom jsdom @testing-library/user-event @types/jest
+
+## Auth
+- pnpm add oidc-client-ts --save
+- pnpm add react-oidc-context --save
+
+
+## Required Environment Variables for Authentication
+
+The frontend requires the following environment variables to be set (e.g., in a `.env` file in `web-app/`):
+
+```env
+VITE_AUTH_AUTHORITY=https://your-auth-provider.com
+VITE_AUTH_CLIENT_ID=your-client-id
+VITE_AUTH_REDIRECT_URI=http://localhost:5173/callback
+VITE_AUTH_RESPONSE_TYPE=code
+VITE_AUTH_SCOPE=openid profile email
+VITE_AUTH_DOMAIN=your-auth-domain.com
+VITE_AUTH_LOGOUT_URI=http://localhost:5173/

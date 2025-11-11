@@ -19,7 +19,7 @@ variable "cognito_user_pool_id" {
 }
 
 variable "appsync_tags" {
+  description = "Tags to apply to the AppSync resources"
   type        = map(string)
   default     = {}
-  description = "Tags to apply to the AppSync resources"
 }

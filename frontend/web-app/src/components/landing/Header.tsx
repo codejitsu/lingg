@@ -7,7 +7,7 @@ import { Button } from './Button';
 import { ThemeToggle } from './ThemeToggle';
 import { useAuth } from "react-oidc-context";
 
-export const Header = ({ signOut }) => {
+export const Header = ({ signOut }: { signOut: () => Promise<void> }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const auth = useAuth();

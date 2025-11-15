@@ -25,6 +25,7 @@ function App() {
         await auth.removeUser()
 
         apolloClient.clearStore()
+        sessionStorage.removeItem("jwt")
 
         window.location.href = `${signoutConfig.domain}/logout?client_id=${signoutConfig.client_id}&logout_uri=${encodeURIComponent(signoutConfig.logout_uri)}`
     }

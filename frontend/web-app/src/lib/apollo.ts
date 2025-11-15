@@ -1,13 +1,22 @@
 import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client'
+import { SetContextLink } from "@apollo/client/link/context";
 
-// TODO - import creds from secure config file
 const httpLink = new HttpLink({
-    //uri: creds.appsync_api_url.value,
     uri: '/graphql',
-    credentials: 'include',
 })
 
+const authLink = new SetContextLink(({ headers }) => {
+    const token = sessionStorage.getItem("jwt");
+
+    return {
+        headers: {
+            ...headers,
+            authorization: token ? `Bearer ${token}` : "",
+        },
+    };
+});
+
 export const apolloClient = new ApolloClient({
-    link: httpLink,
+    link: authLink.concat(httpLink),
     cache: new InMemoryCache(),
 })

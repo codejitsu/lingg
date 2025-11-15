@@ -71,9 +71,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import type { StartStoryResult } from '@/models/graphql/StartStoryResult.Interface'
 import type { CheckTemplateResult } from '@/models/graphql/CheckTemplateResult.Interface'
+import { useAuth } from 'react-oidc-context'
 
-// TODO - replace with real user ID from auth context
-const userId = 'f257727e-94ab-44ac-aa0e-c4d51a0d67ac'
 const targetLanguage = 'German'
 const explainLanguage = 'Russian'
 
@@ -467,6 +466,10 @@ function ChatContent({
 }
 
 function FullChatApp() {
+    const auth = useAuth()
+
+    const userId = auth?.user?.profile?.sub as string
+
     const { storyId } = useParams<{ storyId: string }>()
     const navigate = useNavigate()
 

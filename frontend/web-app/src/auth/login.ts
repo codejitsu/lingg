@@ -1,10 +1,10 @@
-import { InitiateAuthCommand } from "@aws-sdk/client-cognito-identity-provider"
+import { InitiateAuthCommand, AuthenticationResultType } from "@aws-sdk/client-cognito-identity-provider"
 import { authConfig, client } from "./auth"
 
 export const login = async (
     username: string,
     password: string,
-    loginFn: (authResult: any) => void
+    loginFn: (authResult: AuthenticationResultType) => void
 ) => {
     const command = new InitiateAuthCommand({
         AuthFlow: "USER_PASSWORD_AUTH",

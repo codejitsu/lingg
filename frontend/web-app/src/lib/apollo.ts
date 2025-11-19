@@ -17,7 +17,7 @@ const authLink = new SetContextLink(({ headers }) => {
     return {
         headers: {
             ...headers,
-            authorization: tokens ? `Bearer ${parsedTokens.idToken}` : "",
+            authorization: parsedTokens.idToken ? `Bearer ${parsedTokens.idToken}` : "",
         },
     };
 });

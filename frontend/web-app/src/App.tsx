@@ -10,7 +10,6 @@ import { Header } from '@/components/landing/Header'
 import { Footer } from '@/components/landing/Footer'
 import { Landing } from '@/routes/Landing'
 import { Login } from '@/routes/Login'
-import { Logout } from '@/routes/Logout'
 import { Register } from '@/routes/Register'
 import { Privacy } from '@/routes/Privacy'
 import { Terms } from '@/routes/Terms'
@@ -34,7 +33,6 @@ function App() {
                     <Routes>
                         <Route path="/" element={<Landing />} />
                         <Route path="/login" element={<Login />} />
-                        <Route path="/logout" element={<Logout />} />
                         <Route path="/register" element={<Register />} />
                         <Route path="/privacy" element={<Privacy />} />
                         <Route path="/terms" element={<Terms />} />

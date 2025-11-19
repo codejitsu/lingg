@@ -1,4 +1,5 @@
-import { InitiateAuthCommand, AuthenticationResultType } from "@aws-sdk/client-cognito-identity-provider"
+import { InitiateAuthCommand } from "@aws-sdk/client-cognito-identity-provider";
+import type { AuthenticationResultType } from "@aws-sdk/client-cognito-identity-provider";
 import { authConfig, client } from "./auth"
 
 export const login = async (

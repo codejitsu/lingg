@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect} from 'react'
+import type { AuthenticationResultType } from "@aws-sdk/client-cognito-identity-provider"
 
 type AuthTokens = {
     accessToken: string
@@ -11,7 +12,7 @@ type AuthContextValue = {
     isAuthenticated: boolean
     tokens: AuthTokens | null
     user: any | null
-    login: (authResult: any) => void
+    login: (authResult: AuthenticationResultType) => void
     logout: () => void
     accessToken: () => string | null
 }
@@ -53,17 +54,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     }, [])
 
-    const login = (authResult: any) => {
-        const expiresAt = Date.now() + authResult.ExpiresIn * 1000
+    const login = (authResult: AuthenticationResultType) => {
+        const expiresIn = authResult.ExpiresIn ?? 3600
+        const expiresAt = Date.now() + expiresIn * 1000
+
         const newTokens: AuthTokens = {
-            accessToken: authResult.AccessToken,
-            idToken: authResult.IdToken,
+            accessToken: authResult.AccessToken ?? '',
+            idToken: authResult.IdToken ?? '',
             refreshToken: authResult.RefreshToken,
             expiresAt
         }
+
         setTokens(newTokens)
+        
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify(newTokens))
-        const decoded = decodeJwt(authResult.IdToken)
+        const decoded = decodeJwt(authResult.IdToken ?? '')
+        
         setUser(decoded)
     }
 

@@ -12,8 +12,6 @@ const authLink = new SetContextLink(({ headers }) => {
 
     const parsedTokens: AuthTokens = JSON.parse(tokens)
 
-    console.log("Apollo Auth Tokens:", parsedTokens.accessToken)
-
     return {
         headers: {
             ...headers,

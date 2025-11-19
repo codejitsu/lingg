@@ -1,5 +1,5 @@
 import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client'
-import { SetContextLink } from "@apollo/client/link/context";
+import { SetContextLink } from '@apollo/client/link/context'
 import { STORAGE_KEY } from '@/auth/authcontext'
 import type { AuthTokens } from '@/auth/authcontext'
 
@@ -10,21 +10,27 @@ const httpLink = new HttpLink({
 const authLink = new SetContextLink(({ headers }) => {
     const tokens = window.localStorage.getItem(STORAGE_KEY) || '{}'
 
-    let parsedTokens: AuthTokens;
+    let parsedTokens: AuthTokens
     try {
-        parsedTokens = JSON.parse(tokens);
+        parsedTokens = JSON.parse(tokens)
     } catch (e) {
-        console.error("Failed to parse auth tokens from localStorage:", e, tokens);
-        parsedTokens = {} as AuthTokens;
+        console.error(
+            'Failed to parse auth tokens from localStorage:',
+            e,
+            tokens,
+        )
+        parsedTokens = {} as AuthTokens
     }
 
     return {
         headers: {
             ...headers,
-            authorization: parsedTokens.idToken ? `Bearer ${parsedTokens.idToken}` : "",
+            authorization: parsedTokens.idToken
+                ? `Bearer ${parsedTokens.idToken}`
+                : '',
         },
-    };
-});
+    }
+})
 
 export const apolloClient = new ApolloClient({
     link: authLink.concat(httpLink),

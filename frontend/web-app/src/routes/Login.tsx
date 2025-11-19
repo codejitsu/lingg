@@ -25,12 +25,14 @@ export const Login = () => {
             return
         }
 
-        login(email, password, auth.login).then(() => {
-            navigate('/story')
-        }).catch((err) => {
-            console.error('Login error:', err)
-            setError('Invalid email or password')
-        })
+        login(email, password, auth.login)
+            .then(() => {
+                navigate('/story')
+            })
+            .catch((err) => {
+                console.error('Login error:', err)
+                setError('Invalid email or password')
+            })
     }
 
     return (

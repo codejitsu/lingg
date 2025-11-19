@@ -10,7 +10,7 @@ import { useAuth } from '@/auth/authcontext'
 export const Header = ({ signOut }: { signOut: () => Promise<void> }) => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-    const auth = useAuth();
+    const auth = useAuth()
 
     const navigation = [
         { name: 'Features', href: '/#features' },
@@ -70,9 +70,7 @@ export const Header = ({ signOut }: { signOut: () => Promise<void> }) => {
                                 </Button>
                             </Link>
                         ) : (
-                            <Link
-                                to="/login"
-                            >
+                            <Link to="/login">
                                 <Button variant="ghost">Log in</Button>
                             </Link>
                         )}
@@ -141,9 +139,7 @@ export const Header = ({ signOut }: { signOut: () => Promise<void> }) => {
                                                 </Button>
                                             </Link>
                                         ) : (
-                                            <Link
-                                                to="/login"
-                                            >
+                                            <Link to="/login">
                                                 <Button
                                                     variant="ghost"
                                                     fullWidth

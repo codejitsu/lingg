@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect} from 'react'
-import type { AuthenticationResultType } from "@aws-sdk/client-cognito-identity-provider"
+import React, { createContext, useContext, useState, useEffect } from 'react'
+import type { AuthenticationResultType } from '@aws-sdk/client-cognito-identity-provider'
 
 type AuthTokens = {
     accessToken: string
@@ -36,7 +36,9 @@ function isExpired(expiresAt: number): boolean {
     return Date.now() >= expiresAt
 }
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+    children,
+}) => {
     const [tokens, setTokens] = useState<AuthTokens | null>(null)
     const [user, setUser] = useState<any | null>(null)
 
@@ -62,14 +64,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             accessToken: authResult.AccessToken ?? '',
             idToken: authResult.IdToken ?? '',
             refreshToken: authResult.RefreshToken,
-            expiresAt
+            expiresAt,
         }
 
         setTokens(newTokens)
-        
+
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify(newTokens))
         const decoded = decodeJwt(authResult.IdToken ?? '')
-        
+
         setUser(decoded)
     }
 
@@ -93,14 +95,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         login,
         logout,
-        accessToken
+        accessToken,
     }
 
-    return React.createElement(
-        AuthContext.Provider,
-        { value },
-        children
-    )
+    return React.createElement(AuthContext.Provider, { value }, children)
 }
 
 export const useAuth = (): AuthContextValue => {

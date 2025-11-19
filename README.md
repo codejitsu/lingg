@@ -60,7 +60,7 @@ cargo lambda build --workspace --release
 ## Auth
 - pnpm add oidc-client-ts --save
 - pnpm add react-oidc-context --save
-
+- pnpm add @aws-sdk/client-cognito-identity-provider
 
 ## Required Environment Variables for Authentication
 

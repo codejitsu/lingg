@@ -1,3 +1,5 @@
+import { CognitoIdentityProviderClient } from "@aws-sdk/client-cognito-identity-provider"
+
 export interface AuthConfig {
     authority: string
     client_id: string
@@ -12,4 +14,13 @@ export const authConfig: AuthConfig = {
     redirect_uri: import.meta.env.VITE_AUTH_REDIRECT_URI,
     response_type: import.meta.env.VITE_AUTH_RESPONSE_TYPE,
     scope: import.meta.env.VITE_AUTH_SCOPE,
+}
+
+export const client: CognitoIdentityProviderClient = new CognitoIdentityProviderClient({
+    region: import.meta.env.VITE_AWS_REGION || "us-east-1",
+})
+
+export const isAuthenticated = (): boolean => {
+    const token = sessionStorage.getItem("jwt")
+    return token !== null && token !== ""
 }

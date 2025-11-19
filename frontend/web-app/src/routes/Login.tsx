@@ -3,11 +3,15 @@ import { Link } from 'react-router-dom'
 import { BookOpenIcon } from '@heroicons/react/24/solid'
 import { Button } from '@/components/landing/Button'
 import { Container } from '@/components/landing/Container'
+import { login } from '@/auth/login'
+import { useAuth } from '@/auth/authcontext'
 
 export const Login = () => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
+
+    const auth = useAuth();
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
@@ -18,7 +22,12 @@ export const Login = () => {
             return
         }
 
-        console.log('Login attempt:', { email, password })
+        login(email, password, auth.login).then(() => {
+            window.location.href = '/#/story'
+        }).catch((err) => {
+            console.error('Login error:', err)
+            setError('Invalid email or password')
+        })
     }
 
     return (

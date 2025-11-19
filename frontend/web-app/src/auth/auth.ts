@@ -19,8 +19,3 @@ export const authConfig: AuthConfig = {
 export const client: CognitoIdentityProviderClient = new CognitoIdentityProviderClient({
     region: import.meta.env.VITE_AWS_REGION || "us-east-1",
 })
-
-export const isAuthenticated = (): boolean => {
-    const token = sessionStorage.getItem("jwt")
-    return token !== null && token !== ""
-}

@@ -168,14 +168,6 @@ export const Landing = () => {
                                         See pricing
                                     </Button>
                                 </a>
-                                <Link to="/story">
-                                    <Button
-                                        variant="secondary"
-                                        className="text-lg px-8 py-4"
-                                    >
-                                        Try demo
-                                    </Button>
-                                </Link>
                             </div>
                         </div>
                         <div className="relative">

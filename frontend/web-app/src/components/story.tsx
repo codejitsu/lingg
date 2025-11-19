@@ -71,7 +71,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import type { StartStoryResult } from '@/models/graphql/StartStoryResult.Interface'
 import type { CheckTemplateResult } from '@/models/graphql/CheckTemplateResult.Interface'
-import { useAuth } from 'react-oidc-context'
+import { useAuth } from '@/auth/authcontext'
 
 const targetLanguage = 'German'
 const explainLanguage = 'Russian'
@@ -468,7 +468,7 @@ function ChatContent({
 function FullChatApp() {
     const auth = useAuth()
 
-    const userId = auth?.user?.profile?.sub as string
+    const userId = auth?.user?.sub as string
 
     const { storyId } = useParams<{ storyId: string }>()
     const navigate = useNavigate()

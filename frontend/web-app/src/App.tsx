@@ -13,43 +13,16 @@ import { Login } from '@/routes/Login'
 import { Register } from '@/routes/Register'
 import { Privacy } from '@/routes/Privacy'
 import { Terms } from '@/routes/Terms'
-import { useAuth } from 'react-oidc-context'
-import { signoutConfig } from '@/auth/signout'
 import { apolloClient } from '@/lib/apollo'
+import  { useAuth } from '@/auth/authcontext'
 import './App.css'
-import { useEffect } from 'react'
 
-function App() {
+function App() {    
     const auth = useAuth()
 
     const signOut = async () => {
-        await auth.removeUser()
-
         apolloClient.clearStore()
-        sessionStorage.removeItem("jwt")
-
-        window.location.href = `${signoutConfig.domain}/logout?client_id=${signoutConfig.client_id}&logout_uri=${encodeURIComponent(signoutConfig.logout_uri)}`
-    }
-
-    useEffect(() => {
-        if (auth.isAuthenticated) {
-            sessionStorage.setItem("jwt", auth?.user?.access_token || "")
-        }
-    }, [auth.isAuthenticated, auth?.user?.access_token])
-
-    switch (auth.activeNavigator) {
-        case 'signinSilent':
-            return <div>Signing you in...</div>
-        case 'signoutRedirect':
-            return <div>Signing you out...</div>
-    }
-
-    if (auth.isLoading) {
-        return <div>Loading...</div>
-    }
-
-    if (auth.error) {
-        return <div>Oops... {auth.error.message}</div>
+        auth.logout()
     }
 
     return (

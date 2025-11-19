@@ -5,12 +5,12 @@ import { BookOpenIcon } from '@heroicons/react/24/solid'
 import { Container } from './Container'
 import { Button } from './Button'
 import { ThemeToggle } from './ThemeToggle'
-import { useAuth } from 'react-oidc-context'
+import { useAuth } from '@/auth/authcontext'
 
 export const Header = ({ signOut }: { signOut: () => Promise<void> }) => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-    const auth = useAuth()
+    const auth = useAuth();
 
     const navigation = [
         { name: 'Features', href: '/#features' },
@@ -64,15 +64,14 @@ export const Header = ({ signOut }: { signOut: () => Promise<void> }) => {
                     <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:items-center lg:space-x-4">
                         <ThemeToggle />
                         {auth.isAuthenticated ? (
-                            <Link to="/logout" onClick={() => signOut()}>
+                            <Link to="/login" onClick={() => signOut()}>
                                 <Button variant="ghost">
-                                    Log out {auth.user?.profile?.email}
+                                    Log out, {auth.user?.email}
                                 </Button>
                             </Link>
                         ) : (
                             <Link
                                 to="/login"
-                                onClick={() => auth.signinRedirect()}
                             >
                                 <Button variant="ghost">Log in</Button>
                             </Link>
@@ -131,28 +130,19 @@ export const Header = ({ signOut }: { signOut: () => Promise<void> }) => {
                                     <div className="py-6 space-y-3">
                                         {auth.isAuthenticated ? (
                                             <Link
-                                                to="/logout"
+                                                to="/login"
                                                 onClick={() => signOut()}
                                             >
                                                 <Button
                                                     variant="ghost"
                                                     fullWidth
                                                 >
-                                                    Log out
+                                                    Log out, {auth.user?.email}
                                                 </Button>
                                             </Link>
                                         ) : (
                                             <Link
                                                 to="/login"
-                                                onClick={() =>
-                                                    auth
-                                                        .signinRedirect()
-                                                        .then(() =>
-                                                            setMobileMenuOpen(
-                                                                false,
-                                                            ),
-                                                        )
-                                                }
                                             >
                                                 <Button
                                                     variant="ghost"

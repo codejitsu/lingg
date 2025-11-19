@@ -470,8 +470,6 @@ function FullChatApp() {
 
     const userId = auth?.user?.sub as string
 
-    console.log('User ID in Story component:', userId)
-
     const { storyId } = useParams<{ storyId: string }>()
     const navigate = useNavigate()
 

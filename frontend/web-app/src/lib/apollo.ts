@@ -10,7 +10,13 @@ const httpLink = new HttpLink({
 const authLink = new SetContextLink(({ headers }) => {
     const tokens = window.localStorage.getItem(STORAGE_KEY) || '{}'
 
-    const parsedTokens: AuthTokens = JSON.parse(tokens)
+    let parsedTokens: AuthTokens;
+    try {
+        parsedTokens = JSON.parse(tokens);
+    } catch (e) {
+        console.error("Failed to parse auth tokens from localStorage:", e, tokens);
+        parsedTokens = {} as AuthTokens;
+    }
 
     return {
         headers: {

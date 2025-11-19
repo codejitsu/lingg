@@ -14,10 +14,10 @@ import { Register } from '@/routes/Register'
 import { Privacy } from '@/routes/Privacy'
 import { Terms } from '@/routes/Terms'
 import { apolloClient } from '@/lib/apollo'
-import  { useAuth } from '@/auth/authcontext'
+import { useAuth } from '@/auth/authcontext'
 import './App.css'
 
-function App() {    
+function App() {
     const auth = useAuth()
 
     const signOut = async () => {

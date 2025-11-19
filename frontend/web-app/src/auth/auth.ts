@@ -1,4 +1,4 @@
-import { CognitoIdentityProviderClient } from "@aws-sdk/client-cognito-identity-provider"
+import { CognitoIdentityProviderClient } from '@aws-sdk/client-cognito-identity-provider'
 
 export interface AuthConfig {
     authority: string
@@ -16,6 +16,7 @@ export const authConfig: AuthConfig = {
     scope: import.meta.env.VITE_AUTH_SCOPE,
 }
 
-export const client: CognitoIdentityProviderClient = new CognitoIdentityProviderClient({
-    region: import.meta.env.VITE_AWS_REGION || "us-east-1",
-})
+export const client: CognitoIdentityProviderClient =
+    new CognitoIdentityProviderClient({
+        region: import.meta.env.VITE_AWS_REGION || 'us-east-1',
+    })

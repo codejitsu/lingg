@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
-import { BookOpenIcon } from '@heroicons/react/24/solid'
+import { SquareLibraryIcon } from 'lucide-react'
 import { Container } from './Container'
 import { Button } from './Button'
 import { ThemeToggle } from './ThemeToggle'
 import { useAuth } from '@/auth/authcontext'
+import { HashLink } from 'react-router-hash-link'
 
 export const Header = ({ signOut }: { signOut: () => Promise<void> }) => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -30,9 +31,9 @@ export const Header = ({ signOut }: { signOut: () => Promise<void> }) => {
                             to="/"
                             className="-m-1.5 p-1.5 flex items-center space-x-2"
                         >
-                            <BookOpenIcon className="w-8 h-8 text-primary-600 dark:text-primary-400" />
+                            <SquareLibraryIcon className="w-8 h-8 text-primary-600 dark:text-primary-400" />
                             <span className="text-xl font-bold text-gray-900 dark:text-white">
-                                Lingg.ai
+                                spelli.ai
                             </span>
                         </Link>
                     </div>
@@ -51,13 +52,13 @@ export const Header = ({ signOut }: { signOut: () => Promise<void> }) => {
 
                     <div className="hidden lg:flex lg:gap-x-8">
                         {navigation.map((item) => (
-                            <a
+                            <HashLink
                                 key={item.name}
-                                href={item.href}
+                                to={item.href}
                                 className="text-sm font-medium text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 transition-colors"
                             >
                                 {item.name}
-                            </a>
+                            </HashLink>
                         ))}
                     </div>
 

@@ -66,12 +66,17 @@ export const Header = ({ signOut }: { signOut: () => Promise<void> }) => {
                     <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:items-center lg:space-x-4">
                         <ThemeToggle />
                         {auth.isAuthenticated ? (
-                            <Link to="/login" onClick={() => signOut()}>
-                                <Button variant="ghost">
-                                    <LogOutIcon className="h-6 w-6 mr-2" aria-hidden="true" />
-                                    Log out
-                                </Button>
-                            </Link>
+                            <div className="flex items-center space-x-2">
+                                <Link to="/login" onClick={() => signOut()}>
+                                    <Button variant="ghost">
+                                        <LogOutIcon className="h-6 w-6 mr-2" aria-hidden="true" />
+                                        Log out
+                                    </Button>
+                                </Link>
+                                <Link to="/my-stories">
+                                    <Button variant="highlight">My stories</Button>
+                                </Link>                                
+                            </div>
                         ) : (
                             <div className="flex items-center space-x-2">
                                 <Link to="/login">

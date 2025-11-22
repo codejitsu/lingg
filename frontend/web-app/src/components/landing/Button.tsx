@@ -26,6 +26,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             secondary:
                 'bg-white text-primary-700 border-2 border-primary-600 hover:bg-primary-50 focus:ring-primary-500 dark:bg-gray-800 dark:text-primary-400 dark:border-primary-500 dark:hover:bg-gray-700',
             ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-500 dark:text-gray-300 dark:hover:bg-gray-800',
+            highlight:
+                'bg-fuchsia-200 text-white hover:bg-fuchsia-700 focus:ring-fuchsia-500 dark:bg-fuchsia-600 dark:hover:bg-fuchsia-600',
         }
 
         const widthStyles = fullWidth ? 'w-full' : ''

@@ -25,7 +25,6 @@ function App() {
         auth.logout()
     }
 
-    console.log('Auth state in App:', auth.isAuthenticated)
 
     // Show loading spinner while auth state is being determined
     if (auth.isLoading) {

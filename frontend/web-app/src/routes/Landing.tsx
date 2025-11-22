@@ -16,6 +16,7 @@ import { PriceCard } from '@/components/landing/PriceCard'
 import { FAQItem } from '@/components/landing/FAQItem'
 import { pricingTiers } from '@/lib/pricing'
 import heroIllustration from '@/assets/hero-illustration.svg'
+import { HashLink } from 'react-router-hash-link'
 
 export const Landing = () => {
     const [isAnnual, setIsAnnual] = useState(false)
@@ -147,7 +148,7 @@ export const Landing = () => {
                                 language alive.
                             </h1>
                             <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
-                                Lingg.ai turns language practice into
+                                spelli.ai turns language practice into
                                 collaborative stories with grammar feedback and
                                 fun challenges.
                             </p>
@@ -160,14 +161,12 @@ export const Landing = () => {
                                         Start free
                                     </Button>
                                 </Link>
-                                <a href="#pricing">
-                                    <Button
-                                        variant="secondary"
-                                        className="text-lg px-8 py-4"
-                                    >
-                                        See pricing
-                                    </Button>
-                                </a>
+                                <HashLink
+                                    to="#pricing"
+                                    className="text-lg px-8 py-4"
+                                >
+                                    See pricing
+                                </HashLink>
                             </div>
                         </div>
                         <div className="relative">

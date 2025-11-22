@@ -37,6 +37,7 @@
     "react-markdown": "^10.1.0",
     "react-oidc-context": "^3.3.0",
     "react-router-dom": "^7.9.2",
+    "react-router-hash-link": "^2.4.3",
     "remark-breaks": "^4.0.0",
     "remark-gfm": "^4.0.1",
     "shiki": "^3.13.0",

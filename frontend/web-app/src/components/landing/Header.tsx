@@ -73,15 +73,13 @@ export const Header = ({ signOut }: { signOut: () => Promise<void> }) => {
                                 </Button>
                             </Link>
                         ) : (
-                            <div>
-                                <div className="flex items-center space-x-2">
-                                    <Link to="/login">
-                                        <Button variant="ghost">Log in</Button>
-                                    </Link>
-                                    <Link to="/register">
-                                        <Button variant="primary">Get started</Button>
-                                    </Link>
-                                </div>
+                            <div className="flex items-center space-x-2">
+                                <Link to="/login">
+                                    <Button variant="ghost">Log in</Button>
+                                </Link>
+                                <Link to="/register">
+                                    <Button variant="primary">Get started</Button>
+                                </Link>
                             </div>
                         )}
                     </div>

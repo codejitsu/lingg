@@ -10,7 +10,7 @@ export const Footer = () => {
         { name: 'Pricing', href: '/#pricing' },
         { name: 'FAQ', href: '/#faq' },
         { name: 'Privacy', href: '/privacy' },
-        { name: 'Terms', href: '/terms' },        
+        { name: 'Terms', href: '/terms' },
     ]
 
     const socialLinks = [

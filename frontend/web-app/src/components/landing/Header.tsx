@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
-import { SquareLibraryIcon } from 'lucide-react'
+import { SquareLibraryIcon, LogOutIcon } from 'lucide-react'
 import { Container } from './Container'
 import { Button } from './Button'
 import { ThemeToggle } from './ThemeToggle'
@@ -15,6 +15,7 @@ export const Header = ({ signOut }: { signOut: () => Promise<void> }) => {
 
     const navigation = [
         { name: 'Features', href: '/#features' },
+        { name: 'How it works', href: '/#how-it-works' },
         { name: 'Pricing', href: '/#pricing' },
         { name: 'FAQ', href: '/#faq' },
     ]
@@ -67,17 +68,20 @@ export const Header = ({ signOut }: { signOut: () => Promise<void> }) => {
                         {auth.isAuthenticated ? (
                             <Link to="/login" onClick={() => signOut()}>
                                 <Button variant="ghost">
-                                    Log out, {auth.user?.email}
+                                    <LogOutIcon className="h-6 w-6 mr-2" aria-hidden="true" />
+                                    Log out
                                 </Button>
                             </Link>
                         ) : (
-                            <Link to="/login">
-                                <Button variant="ghost">Log in</Button>
-                            </Link>
+                            <div className="flex items-center space-x-2">
+                                <Link to="/login">
+                                    <Button variant="ghost">Log in</Button>
+                                </Link>
+                                <Link to="/register">
+                                    <Button variant="primary">Get started</Button>
+                                </Link>
+                            </div>
                         )}
-                        <Link to="/register">
-                            <Button variant="primary">Get started</Button>
-                        </Link>
                     </div>
                 </nav>
 
@@ -93,9 +97,9 @@ export const Header = ({ signOut }: { signOut: () => Promise<void> }) => {
                                     to="/"
                                     className="-m-1.5 p-1.5 flex items-center space-x-2"
                                 >
-                                    <BookOpenIcon className="w-8 h-8 text-primary-600 dark:text-primary-400" />
+                                    <SquareLibraryIcon className="w-8 h-8 text-primary-600 dark:text-primary-400" />
                                     <span className="text-xl font-bold text-gray-900 dark:text-white">
-                                        Lingg.ai
+                                        spelli.ai
                                     </span>
                                 </Link>
                                 <button
@@ -136,29 +140,31 @@ export const Header = ({ signOut }: { signOut: () => Promise<void> }) => {
                                                     variant="ghost"
                                                     fullWidth
                                                 >
-                                                    Log out, {auth.user?.email}
+                                                    Log out
                                                 </Button>
                                             </Link>
                                         ) : (
-                                            <Link to="/login">
-                                                <Button
-                                                    variant="ghost"
-                                                    fullWidth
+                                            <div className="flex items-center space-x-2">
+                                                <Link to="/login">
+                                                    <Button
+                                                        variant="ghost"
+                                                        fullWidth
+                                                    >
+                                                        Log in
+                                                    </Button>
+                                                </Link>
+                                                <Link
+                                                    to="/register"
+                                                    onClick={() =>
+                                                        setMobileMenuOpen(false)
+                                                    }
                                                 >
-                                                    Log in
-                                                </Button>
-                                            </Link>
+                                                    <Button variant="primary" fullWidth>
+                                                        Get started
+                                                    </Button>
+                                                </Link>
+                                            </div>
                                         )}
-                                        <Link
-                                            to="/register"
-                                            onClick={() =>
-                                                setMobileMenuOpen(false)
-                                            }
-                                        >
-                                            <Button variant="primary" fullWidth>
-                                                Get started
-                                            </Button>
-                                        </Link>
                                     </div>
                                 </div>
                             </div>

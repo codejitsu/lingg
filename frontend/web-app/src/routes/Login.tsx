@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { BookOpenIcon } from '@heroicons/react/24/solid'
 import { Button } from '@/components/landing/Button'
 import { Container } from '@/components/landing/Container'
 import { login } from '@/auth/login'
@@ -39,15 +38,6 @@ export const Login = () => {
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
             <Container className="max-w-md">
                 <div className="text-center">
-                    <Link
-                        to="/"
-                        className="inline-flex items-center justify-center space-x-2 mb-6"
-                    >
-                        <BookOpenIcon className="w-10 h-10 text-primary-600 dark:text-primary-400" />
-                        <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                            Lingg.ai
-                        </span>
-                    </Link>
                     <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
                         Welcome back
                     </h2>
@@ -146,7 +136,7 @@ export const Login = () => {
 
                         <div>
                             <Button type="submit" variant="primary" fullWidth>
-                                Sign in
+                                Log in
                             </Button>
                         </div>
                     </form>

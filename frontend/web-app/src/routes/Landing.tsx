@@ -240,41 +240,6 @@ export const Landing = () => {
                 </Container>
             </section>
 
-            <section className="py-20 sm:py-24 bg-gray-50 dark:bg-gray-800/50">
-                <Container>
-                    <SectionHeading
-                        eyebrow="Testimonials"
-                        title="Loved by families around the world"
-                        centered
-                    />
-                    <div className="mt-16 grid md:grid-cols-3 gap-8">
-                        {testimonials.map((testimonial, index) => (
-                            <div
-                                key={index}
-                                className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm"
-                            >
-                                <div className="flex items-center mb-4">
-                                    <div className="w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-2xl">
-                                        {testimonial.avatar}
-                                    </div>
-                                    <div className="ml-4">
-                                        <p className="font-semibold text-gray-900 dark:text-white">
-                                            {testimonial.author}
-                                        </p>
-                                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                                            {testimonial.role}
-                                        </p>
-                                    </div>
-                                </div>
-                                <p className="text-gray-600 dark:text-gray-300 italic">
-                                    "{testimonial.quote}"
-                                </p>
-                            </div>
-                        ))}
-                    </div>
-                </Container>
-            </section>
-
             <section id="faq" className="py-20 sm:py-24 scroll-mt-20">
                 <Container>
                     <SectionHeading

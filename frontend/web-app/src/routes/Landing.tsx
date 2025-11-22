@@ -56,7 +56,7 @@ export const Landing = () => {
             icon: <ShieldCheckIcon className="w-6 h-6" />,
             title: 'Safe & Private by Design',
             description:
-                'Child-safe environment with no ads, strict privacy controls, and COPPA compliance.',
+                'Child-safe environment with no ads and strict privacy controls.',
         },
     ]
 
@@ -129,75 +129,25 @@ export const Landing = () => {
         },
     ]
 
-    const logos = [
-        'TechCrunch',
-        'Forbes',
-        'Wired',
-        'The Guardian',
-        'EdTech Magazine',
-    ]
-
     return (
         <div className="bg-white dark:bg-gray-900">
             <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-primary-900/20 pt-20 pb-16 sm:pt-24 sm:pb-20">
                 <Container>
-                    <div className="grid lg:grid-cols-2 gap-12 items-center">
+                    <div className="flex flex-col items-center justify-center text-center gap-12">
                         <div>
                             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 dark:text-white mb-6">
-                                Create stories. Keep your child's native
-                                language alive.
+                                Create stories. Keep your child's native language alive.
                             </h1>
                             <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
-                                spelli.ai turns language practice into
+                                <span className="text-primary-600 dark:text-primary-400">spelli.ai</span> turns language practice into
                                 collaborative stories with grammar feedback and
                                 fun challenges.
                             </p>
-                            <div className="flex flex-col sm:flex-row gap-4">
-                                <Link to="/register">
-                                    <Button
-                                        variant="primary"
-                                        className="text-lg px-8 py-4"
-                                    >
-                                        Start free
-                                    </Button>
-                                </Link>
-                                <HashLink
-                                    to="#pricing"
-                                    className="text-lg px-8 py-4"
-                                >
-                                    See pricing
-                                </HashLink>
-                            </div>
-                        </div>
-                        <div className="relative">
-                            <img
-                                src={heroIllustration}
-                                alt="Interactive story creation interface"
-                                className="w-full h-auto rounded-2xl shadow-2xl"
-                            />
                         </div>
                     </div>
                 </Container>
             </section>
-
-            <section className="py-12 bg-gray-50 dark:bg-gray-800/50">
-                <Container>
-                    <p className="text-center text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-6">
-                        As seen in
-                    </p>
-                    <div className="flex flex-wrap justify-center items-center gap-8 sm:gap-12">
-                        {logos.map((logo) => (
-                            <div
-                                key={logo}
-                                className="text-2xl font-bold text-gray-400 dark:text-gray-600"
-                            >
-                                {logo}
-                            </div>
-                        ))}
-                    </div>
-                </Container>
-            </section>
-
+            
             <section id="features" className="py-20 sm:py-24">
                 <Container>
                     <SectionHeading
@@ -214,7 +164,7 @@ export const Landing = () => {
                 </Container>
             </section>
 
-            <section className="py-20 sm:py-24 bg-gray-50 dark:bg-gray-800/50">
+            <section id="how-it-works" className="py-20 sm:py-24 bg-gray-50 dark:bg-gray-800/50">
                 <Container>
                     <SectionHeading
                         eyebrow="How it works"

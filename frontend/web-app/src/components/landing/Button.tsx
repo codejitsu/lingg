@@ -2,7 +2,7 @@ import type { ButtonHTMLAttributes } from 'react'
 import { forwardRef } from 'react'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: 'primary' | 'secondary' | 'ghost'
+    variant?: 'primary' | 'secondary' | 'ghost' | 'highlight'
     fullWidth?: boolean
 }
 

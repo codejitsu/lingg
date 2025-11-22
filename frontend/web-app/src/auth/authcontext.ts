@@ -10,6 +10,7 @@ type AuthTokens = {
 
 type AuthContextValue = {
     isAuthenticated: boolean
+    isLoading: boolean
     tokens: AuthTokens | null
     user: any | null
     login: (authResult: AuthenticationResultType) => void
@@ -41,6 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
     const [tokens, setTokens] = useState<AuthTokens | null>(null)
     const [user, setUser] = useState<any | null>(null)
+    const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
         const storedTokens = window.localStorage.getItem(STORAGE_KEY)
@@ -54,6 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                 window.localStorage.removeItem(STORAGE_KEY)
             }
         }
+        setIsLoading(false)
     }, [])
 
     const login = (authResult: AuthenticationResultType) => {
@@ -73,6 +76,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         const decoded = decodeJwt(authResult.IdToken ?? '')
 
         setUser(decoded)
+        setIsLoading(false)
     }
 
     const logout = () => {
@@ -91,6 +95,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const value: AuthContextValue = {
         isAuthenticated: !!tokens && !isExpired(tokens.expiresAt),
+        isLoading,
         tokens,
         user,
         login,

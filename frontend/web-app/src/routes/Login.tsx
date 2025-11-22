@@ -26,7 +26,7 @@ export const Login = () => {
 
         login(email, password, auth.login)
             .then(() => {
-                navigate('/story')
+                navigate('/my-stories')
             })
             .catch((err) => {
                 console.error('Login error:', err)

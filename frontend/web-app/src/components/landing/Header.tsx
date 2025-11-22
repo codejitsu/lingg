@@ -162,7 +162,7 @@ export const Header = ({ signOut }: { signOut: () => Promise<void> }) => {
                                                     <Button variant="primary" fullWidth>
                                                         Get started
                                                     </Button>
-                                                </Link>                                            
+                                                </Link>
                                             </div>
                                         )}
                                     </div>

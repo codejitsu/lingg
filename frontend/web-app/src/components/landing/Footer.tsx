@@ -1,14 +1,16 @@
 import { Link } from 'react-router-dom'
 import { BookOpenIcon } from '@heroicons/react/24/solid'
 import { Container } from './Container'
+import { HashLink } from 'react-router-hash-link'
 
 export const Footer = () => {
     const quickLinks = [
         { name: 'Features', href: '/#features' },
+        { name: 'How it works', href: '/#how-it-works' },
         { name: 'Pricing', href: '/#pricing' },
         { name: 'FAQ', href: '/#faq' },
         { name: 'Privacy', href: '/privacy' },
-        { name: 'Terms', href: '/terms' },
+        { name: 'Terms', href: '/terms' },        
     ]
 
     const socialLinks = [
@@ -77,14 +79,14 @@ export const Footer = () => {
                                 Quick Links
                             </h3>
                             <ul className="space-y-3">
-                                {quickLinks.slice(0, 3).map((link) => (
+                                {quickLinks.slice(0, 4).map((link) => (
                                     <li key={link.name}>
-                                        <a
-                                            href={link.href}
+                                        <HashLink
+                                            to={link.href}
                                             className="text-gray-600 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition-colors"
                                         >
                                             {link.name}
-                                        </a>
+                                        </HashLink>
                                     </li>
                                 ))}
                             </ul>
@@ -95,7 +97,7 @@ export const Footer = () => {
                                 Legal
                             </h3>
                             <ul className="space-y-3">
-                                {quickLinks.slice(3).map((link) => (
+                                {quickLinks.slice(4).map((link) => (
                                     <li key={link.name}>
                                         <Link
                                             to={link.href}

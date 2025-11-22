@@ -15,7 +15,6 @@ import { FeatureCard } from '@/components/landing/FeatureCard'
 import { PriceCard } from '@/components/landing/PriceCard'
 import { FAQItem } from '@/components/landing/FAQItem'
 import { pricingTiers } from '@/lib/pricing'
-import heroIllustration from '@/assets/hero-illustration.svg'
 import { HashLink } from 'react-router-hash-link'
 
 export const Landing = () => {

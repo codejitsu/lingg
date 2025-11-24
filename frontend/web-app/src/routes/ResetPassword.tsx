@@ -172,7 +172,7 @@ export const ResetPassword = () => {
                                     placeholder="••••••••"
                                 />
                             </div>
-                        </div>                        
+                        </div>
 
                         <div>
                             <Button type="submit" variant="primary" fullWidth>

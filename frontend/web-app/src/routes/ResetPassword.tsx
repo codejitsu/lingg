@@ -176,7 +176,7 @@ export const ResetPassword = () => {
 
                         <div>
                             <Button type="submit" variant="primary" fullWidth>
-                                Reset password
+                                {codeRequested ? 'Reset password' : 'Send reset code'}
                             </Button>
                         </div>
 

@@ -183,7 +183,7 @@ export const ResetPassword = () => {
                         <div className="text-sm justify-center gap-3 flex items-center min-h-5">
                             {isLoading && (
                                 <>
-                                    <Loader variant="circular" /> Sending code...
+                                    <Loader variant="circular" /> {codeRequested ? 'Resetting password...' : 'Sending code...'}
                                 </>
                             )}
                         </div>

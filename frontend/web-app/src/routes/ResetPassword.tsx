@@ -163,7 +163,7 @@ export const ResetPassword = () => {
                                     id="passwordConfirmation"
                                     name="passwordConfirmation"
                                     type="password"
-                                    autoComplete="current-password"
+                                    autoComplete="new-password"
                                     value={passwordAgain}
                                     onChange={(e) =>
                                         setPasswordAgain(e.target.value)

@@ -11,6 +11,7 @@ import { Footer } from '@/components/landing/Footer'
 import { Landing } from '@/routes/Landing'
 import { Login } from '@/routes/Login'
 import { Register } from '@/routes/Register'
+import { ResetPassword } from '@/routes/ResetPassword'
 import { Privacy } from '@/routes/Privacy'
 import { Terms } from '@/routes/Terms'
 import { apolloClient } from '@/lib/apollo'
@@ -47,6 +48,7 @@ function App() {
                         <Route path="/" element={<Landing />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
+                        <Route path="/reset-password" element={<ResetPassword />} />
                         <Route path="/privacy" element={<Privacy />} />
                         <Route path="/terms" element={<Terms />} />
                         <Route

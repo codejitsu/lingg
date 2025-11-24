@@ -40,8 +40,13 @@ export const ResetPassword = () => {
                     setIsLoading(false)
                 })
         } else {
-            if (!code || !password || !passwordAgain || password !== passwordAgain) {
+            if (!code || !password || !passwordAgain) {
                 setError('Please fill in all fields')
+                return
+            }
+
+            if (password !== passwordAgain) {
+                setError('Passwords do not match')
                 return
             }
 
@@ -123,7 +128,7 @@ export const ResetPassword = () => {
                             </div>
                         </div>
 
-                        <div className={`${ code !== '' ? '' : 'hidden' }`}>
+                        <div className={`${ codeRequested ? '' : 'hidden' }`}>
                             <label
                                 htmlFor="password"
                                 className="block text-sm font-medium text-gray-700 dark:text-gray-300"
@@ -146,7 +151,7 @@ export const ResetPassword = () => {
                             </div>
                         </div>
 
-                        <div className={`${ code !== '' ? '' : 'hidden' }`}>
+                        <div className={`${ codeRequested ? '' : 'hidden' }`}>
                             <label
                                 htmlFor="passwordConfirmation"
                                 className="block text-sm font-medium text-gray-700 dark:text-gray-300"

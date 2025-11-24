@@ -140,7 +140,7 @@ export const ResetPassword = () => {
                                     id="password"
                                     name="password"
                                     type="password"
-                                    autoComplete="current-password"
+                                    autoComplete="new-password"
                                     value={password}
                                     onChange={(e) =>
                                         setPassword(e.target.value)

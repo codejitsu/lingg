@@ -41,7 +41,7 @@ export const Login = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 justify-center py-20 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-20 sm:px-6 lg:px-8">
             <Container className="max-w-md">
                 <div className="text-center">
                     <h2 className="text-3xl font-bold text-gray-900 dark:text-white">

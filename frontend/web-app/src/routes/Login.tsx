@@ -5,11 +5,13 @@ import { Container } from '@/components/landing/Container'
 import { login } from '@/auth/login'
 import { useAuth } from '@/auth/authcontext'
 import { useNavigate } from 'react-router-dom'
+import { Loader } from '@/components/prompt-kit/loader'
 
 export const Login = () => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
+    const [isLoading, setIsLoading] = useState(false)
 
     const auth = useAuth()
 
@@ -24,13 +26,17 @@ export const Login = () => {
             return
         }
 
+        setIsLoading(true)
+
         login(email, password, auth.login)
             .then(() => {
+                setIsLoading(false)
                 navigate('/my-stories')
             })
             .catch((err) => {
                 console.error('Login error:', err)
                 setError('Invalid email or password')
+                setIsLoading(false)
             })
     }
 
@@ -138,6 +144,14 @@ export const Login = () => {
                             <Button type="submit" variant="primary" fullWidth>
                                 Log in
                             </Button>
+                        </div>
+
+                        <div className="text-sm justify-center gap-3 flex items-center min-h-5">
+                            {isLoading && (
+                                <>
+                                    <Loader variant="circular" /> Logging in...
+                                </>
+                            )}
                         </div>
                     </form>
 

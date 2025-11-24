@@ -36,7 +36,7 @@ export const ResetPassword = () => {
                 .catch((err) => {
                     console.error('Reset password error:', err)
                     setError('Something went wrong.')
-                    setCodeRequested(true)
+                    // setCodeRequested(true) // Do not advance to code input on error
                     setIsLoading(false)
                 })
         } else {

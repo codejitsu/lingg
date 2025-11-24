@@ -121,7 +121,7 @@ export const Login = () => {
                                     className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400"
                                 >
                                     Forgot your password?
-                                </Link>                                
+                                </Link>
                             </div>
                         </div>
 

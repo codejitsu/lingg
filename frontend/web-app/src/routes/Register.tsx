@@ -5,7 +5,6 @@ import { Container } from '@/components/landing/Container'
 import { register, confirmRegistration } from '@/auth/register'
 import { Loader } from '@/components/prompt-kit/loader'
 import { useNavigate } from 'react-router-dom'
-    
 export const Register = () => {
     const navigate = useNavigate()
 

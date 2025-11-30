@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
-import { BookOpenIcon } from '@heroicons/react/24/solid'
+import { Link } from 'react-router-dom'
 import { Button } from '@/components/landing/Button'
 import { Container } from '@/components/landing/Container'
-
+import { register, confirmRegistration } from '@/auth/register'
+import { Loader } from '@/components/prompt-kit/loader'
+import { useNavigate } from 'react-router-dom'
 export const Register = () => {
-    const [searchParams] = useSearchParams()
-    const plan = searchParams.get('plan') || 'free'
+    const navigate = useNavigate()
 
     const [formData, setFormData] = useState({
         name: '',
@@ -14,7 +14,11 @@ export const Register = () => {
         password: '',
         acceptTerms: false,
     })
+
     const [errors, setErrors] = useState<Record<string, string>>({})
+    const [code, setCode] = useState('')
+    const [codeRequested, setCodeRequested] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type, checked } = e.target
@@ -24,7 +28,7 @@ export const Register = () => {
         }))
     }
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         const newErrors: Record<string, string> = {}
 
@@ -36,35 +40,76 @@ export const Register = () => {
         } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
             newErrors.email = 'Email is invalid'
         }
+
         if (!formData.password) {
             newErrors.password = 'Password is required'
         } else if (formData.password.length < 8) {
             newErrors.password = 'Password must be at least 8 characters'
         }
+
         if (!formData.acceptTerms) {
             newErrors.acceptTerms = 'You must accept the terms and conditions'
         }
 
         setErrors(newErrors)
 
-        if (Object.keys(newErrors).length === 0) {
-            console.log('Register attempt:', { ...formData, plan })
+        if (Object.keys(newErrors).length > 0) {
+            return
+        }
+
+        if (!codeRequested) {
+            setIsLoading(true)
+
+            try {
+                await register(formData.name, formData.email, formData.password)
+                .then(() => {
+                    setCodeRequested(true)
+                    setIsLoading(false)
+                })
+                .catch((error) => {
+                    console.error('Error during registration:', error)
+                    
+                    newErrors.general = 'Registration failed. Please try again.'
+                    setErrors(newErrors)
+
+                    setIsLoading(false)
+                    setCodeRequested(false)
+                })
+            } catch (error) {
+                console.error('Error during registration:', error)
+                setErrors({ general: 'Registration failed. Please try again.' })
+            } finally {
+                setIsLoading(false)
+            }            
+        } else {
+            if (!code) {
+                setErrors((prev) => ({ ...prev, code: 'Please enter the verification code' }))
+                return
+            }
+
+            setIsLoading(true)
+            
+            await confirmRegistration(formData.email, code)
+                .then(() => {
+                    setIsLoading(false)
+
+                    navigate('/login')
+                })
+                .catch((error) => {
+                    console.error('Error during confirmation:', error)
+                    
+                    newErrors.general = 'Confirmation failed. Please try again.'
+                    setErrors(newErrors)
+
+                    setIsLoading(false)
+                })
         }
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 justify-center py-12 sm:px-6 lg:px-8">
             <Container className="max-w-md">
                 <div className="text-center">
-                    <Link
-                        to="/"
-                        className="inline-flex items-center justify-center space-x-2 mb-6"
-                    >
-                        <BookOpenIcon className="w-10 h-10 text-primary-600 dark:text-primary-400" />
-                        <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                            Lingg.ai
-                        </span>
-                    </Link>
                     <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
                         Create your account
                     </h2>
@@ -74,15 +119,9 @@ export const Register = () => {
                             to="/login"
                             className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400"
                         >
-                            Sign in
+                            Log in
                         </Link>
                     </p>
-                    {plan !== 'free' && (
-                        <div className="mt-4 inline-block px-4 py-2 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-lg text-sm font-medium">
-                            Selected plan:{' '}
-                            {plan.charAt(0).toUpperCase() + plan.slice(1)}
-                        </div>
-                    )}
                 </div>
 
                 <div className="mt-8 bg-white dark:bg-gray-800 py-8 px-6 shadow-lg rounded-xl sm:px-10">
@@ -146,6 +185,26 @@ export const Register = () => {
                                         {errors.email}
                                     </p>
                                 )}
+                            </div>
+                        </div>
+                        
+                        <div className={`${codeRequested ? '' : 'hidden'}`}>
+                            <label
+                                htmlFor="code"
+                                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                            >
+                                Verification Code
+                            </label>
+                            <div className="mt-1">
+                                <input
+                                    id="code"
+                                    name="code"
+                                    type="text"
+                                    value={code}
+                                    onChange={(e) => setCode(e.target.value)}
+                                    className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
+                                    placeholder="Enter the code"
+                                />
                             </div>
                         </div>
 
@@ -219,11 +278,23 @@ export const Register = () => {
                                 {errors.acceptTerms}
                             </p>
                         )}
-
+                        {errors.general && (
+                            <p className="text-sm text-red-600 dark:text-red-400">
+                                {errors.general}
+                            </p>
+                        )}
                         <div>
                             <Button type="submit" variant="primary" fullWidth>
                                 Create account
                             </Button>
+                        </div>
+
+                        <div className="text-sm justify-center gap-3 flex items-center min-h-5">
+                            {isLoading && (
+                                <>
+                                    <Loader variant="circular" /> {codeRequested ? 'Verifying code...' : 'Sending verification code...'}
+                                </>
+                            )}
                         </div>
                     </form>
 

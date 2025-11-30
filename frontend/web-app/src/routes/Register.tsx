@@ -293,7 +293,7 @@ export const Register = () => {
                         <div className="text-sm justify-center gap-3 flex items-center min-h-5">
                             {isLoading && (
                                 <>
-                                    <Loader variant="circular" /> {codeRequested ? 'Creating account...' : 'Sending code...'}
+                                    <Loader variant="circular" /> {codeRequested ? 'Verifying code...' : 'Sending verification code...'}
                                 </>
                             )}
                         </div>

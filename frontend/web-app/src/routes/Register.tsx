@@ -189,7 +189,7 @@ export const Register = () => {
                             </div>
                         </div>
                         
-                        <div className={`${ codeRequested ? '' : 'hidden' }`}>
+                        <div className={`${codeRequested ? '' : 'hidden'}`}>
                             <label
                                 htmlFor="code"
                                 className="block text-sm font-medium text-gray-700 dark:text-gray-300"

@@ -194,7 +194,7 @@ export const Register = () => {
                                 htmlFor="code"
                                 className="block text-sm font-medium text-gray-700 dark:text-gray-300"
                             >
-                                Code
+                                Verification Code
                             </label>
                             <div className="mt-1">
                                 <input

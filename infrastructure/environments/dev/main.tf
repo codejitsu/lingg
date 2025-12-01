@@ -36,6 +36,9 @@ module "cognito" {
   cognito_tags = {
     Environment = lower(var.environment)
   }
+  
+  google_client_id     = var.google_client_id
+  google_client_secret = var.google_client_secret
 }
 
 module "appsync" {

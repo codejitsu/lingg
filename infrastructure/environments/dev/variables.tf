@@ -21,3 +21,14 @@ variable "bedrock_model_id" {
   type        = string
   default     = "us.anthropic.claude-sonnet-4-20250514-v1:0"
 }
+
+variable "google_client_id" {
+  type        = string
+  description = "Google OAuth 2.0 client ID from Google Cloud Console"
+}
+
+variable "google_client_secret" {
+  type        = string
+  description = "Google OAuth 2.0 client secret from Google Cloud Console"
+  sensitive   = true
+}

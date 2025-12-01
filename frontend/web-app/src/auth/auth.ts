@@ -6,6 +6,7 @@ export interface AuthConfig {
     redirect_uri: string
     response_type: string
     scope: string
+    domain: string
 }
 
 export const authConfig: AuthConfig = {
@@ -14,6 +15,7 @@ export const authConfig: AuthConfig = {
     redirect_uri: import.meta.env.VITE_AUTH_REDIRECT_URI,
     response_type: import.meta.env.VITE_AUTH_RESPONSE_TYPE,
     scope: import.meta.env.VITE_AUTH_SCOPE,
+    domain: import.meta.env.VITE_AUTH_DOMAIN,
 }
 
 export const client: CognitoIdentityProviderClient =

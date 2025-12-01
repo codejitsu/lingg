@@ -28,6 +28,8 @@ target
 *.tfstate
 *.tfstate.*
 *.tfplan
+*.tfvars
+*.tfvars.example
 
 # Frontend
 **/api.endpoint.json

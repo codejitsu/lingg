@@ -16,6 +16,7 @@ type AuthContextValue = {
     login: (authResult: AuthenticationResultType) => void
     logout: () => void
     accessToken: () => string | null
+    loginWithGoogle: (tokens: any) => void
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -93,6 +94,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         return null
     }
 
+    const loginWithGoogle = (tokens: any) => {
+        console.log('Logging in with Google tokens:', tokens)
+
+        const expiresIn = tokens.expires_in ?? 3600
+        const expiresAt = Date.now() + expiresIn * 1000
+
+        const newTokens: AuthTokens = {
+            accessToken: tokens.access_token ?? '',
+            idToken: tokens.id_token ?? '',
+            refreshToken: tokens.refresh_token ?? '',
+            expiresAt,
+        }
+
+        setTokens(newTokens)
+
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(newTokens))
+        const decoded = decodeJwt(tokens.id_token ?? '')
+
+        setUser(decoded)
+        setIsLoading(false)
+    }
+
     const value: AuthContextValue = {
         isAuthenticated: !!tokens && !isExpired(tokens.expiresAt),
         isLoading,
@@ -101,6 +124,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         login,
         logout,
         accessToken,
+        loginWithGoogle
     }
 
     return React.createElement(AuthContext.Provider, { value }, children)

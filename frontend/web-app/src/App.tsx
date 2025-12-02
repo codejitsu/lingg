@@ -1,5 +1,5 @@
+import { useState, useEffect } from 'react'
 import {
-    //BrowserRouter,
     HashRouter,
     Routes,
     Route,
@@ -16,16 +16,36 @@ import { Privacy } from '@/routes/Privacy'
 import { Terms } from '@/routes/Terms'
 import { apolloClient } from '@/lib/apollo'
 import { useAuth } from '@/auth/authcontext'
+import { exchangeGoogleAuthCode } from '@/auth/google'
 import './App.css'
 
 function App() {
     const auth = useAuth()
+    const [hasAttemptedGoogleAuth, setHasAttemptedGoogleAuth] = useState(false)
 
     const signOut = async () => {
         apolloClient.clearStore()
         auth.logout()
     }
 
+    useEffect(() => {
+        const googleAuth = async () => {
+            const tokens = await exchangeGoogleAuthCode()
+            if (tokens && tokens.id_token) {
+                auth.loginWithGoogle(tokens)
+            }
+        }
+
+        if (!auth.isAuthenticated && !hasAttemptedGoogleAuth) {
+            const urlParams = new URLSearchParams(window.location.search)
+            const code = urlParams.get('code')
+            
+            if (code) {
+                setHasAttemptedGoogleAuth(true)
+                googleAuth()
+            }
+        }
+    }, [auth, hasAttemptedGoogleAuth])
 
     // Show loading spinner while auth state is being determined
     if (auth.isLoading) {

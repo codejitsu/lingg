@@ -72,7 +72,7 @@ export const exchangeGoogleAuthCode = async () => {
         }
 
         const tokens = await response.json()
-        console.log('Token exchange successful:', Object.keys(tokens))
+        
         return tokens
     } catch (error) {
         console.error('Error during token exchange:', error)

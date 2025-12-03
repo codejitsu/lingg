@@ -1,5 +1,11 @@
 import { authConfig } from "./auth"
 
+/**
+ * Redirects the user to the Google OAuth authorization page via AWS Cognito.
+ * This initiates the OAuth 2.0 authorization code flow.
+ * 
+ * Side effect: Navigates the browser to the Cognito authorization endpoint.
+ */
 export const googleAuthUrl = () => {
     const domain = authConfig.domain
     const clientId = authConfig.client_id

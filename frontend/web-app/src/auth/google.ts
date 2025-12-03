@@ -15,7 +15,6 @@ export const googleAuthUrl = () => {
             `&scope=${encodeURIComponent(scope)}`
 
     console.log('Google Auth URL:', url)
-    console.log('Redirect URI being used:', redirectUri)
     
     window.location.assign(url)
 }

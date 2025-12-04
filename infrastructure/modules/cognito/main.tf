@@ -57,11 +57,13 @@ resource "aws_cognito_user_pool_client" "client" {
     name         = "cognito-auth-client"
     user_pool_id = aws_cognito_user_pool.pool.id
 
-    generate_secret           = true
+    # PKCE configuration - public client (no secret)
+    generate_secret           = false
     explicit_auth_flows       = ["ALLOW_REFRESH_TOKEN_AUTH", "ALLOW_USER_PASSWORD_AUTH"]
     prevent_user_existence_errors = "ENABLED"
 
-    allowed_oauth_flows       = ["code", "implicit"]
+    # Only authorization code flow for PKCE (removed implicit for security)
+    allowed_oauth_flows       = ["code"]
     allowed_oauth_scopes      = ["email", "openid", "profile"]
 
     allowed_oauth_flows_user_pool_client = true

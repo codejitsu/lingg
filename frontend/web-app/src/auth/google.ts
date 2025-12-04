@@ -1,26 +1,42 @@
 import { authConfig } from "./auth"
+import { 
+    generateCodeVerifier, 
+    generateCodeChallenge, 
+    generateState, 
+    storePKCEParams,
+    retrieveAndClearPKCEParams
+} from "./pkce"
 
 /**
  * Redirects the user to the Google OAuth authorization page via AWS Cognito.
- * This initiates the OAuth 2.0 authorization code flow.
+ * This initiates the OAuth 2.0 authorization code flow with PKCE.
  * 
  * Side effect: Navigates the browser to the Cognito authorization endpoint.
  */
-export const googleAuthUrl = () => {
+export const googleAuthUrl = async () => {
     const domain = authConfig.domain
     const clientId = authConfig.client_id
     const redirectUri = authConfig.redirect_uri
     const responseType = "code"
     const scope = "openid email profile"
 
+    // Generate PKCE parameters
+    const codeVerifier = generateCodeVerifier()
+    const codeChallenge = await generateCodeChallenge(codeVerifier)
+    const state = generateState()
+
+    // Store PKCE parameters for later use
+    storePKCEParams(codeVerifier, state)
+
     const url = `${domain}/oauth2/authorize?` +
             `identity_provider=Google` +
             `&redirect_uri=${encodeURIComponent(redirectUri)}` +
             `&response_type=${responseType}` +
             `&client_id=${clientId}` +
-            `&scope=${encodeURIComponent(scope)}`
-
-    console.log('Google Auth URL:', url)
+            `&scope=${encodeURIComponent(scope)}` +
+            `&code_challenge=${codeChallenge}` +
+            `&code_challenge_method=S256` +
+            `&state=${state}`
     
     window.location.assign(url)
 }
@@ -28,14 +44,25 @@ export const googleAuthUrl = () => {
 export const exchangeGoogleAuthCode = async () => {
     const urlParams = new URLSearchParams(window.location.search)
     const code = urlParams.get('code')
+    const stateParam = urlParams.get('state')
     
     if (!code) {
         return null
     }
 
+    const { codeVerifier, state } = retrieveAndClearPKCEParams()
+    
+    if (!codeVerifier) {
+        return null
+    }
+
+    if (state !== stateParam) {
+        console.error('State parameter mismatch')
+        return null
+    }
+
     const domain = authConfig.domain
     const clientId = authConfig.client_id
-    const clientSecret = authConfig.client_secret
     const redirectUri = authConfig.redirect_uri
 
     const tokenUrl = `${domain}/oauth2/token`
@@ -45,7 +72,7 @@ export const exchangeGoogleAuthCode = async () => {
     body.append('client_id', clientId)
     body.append('code', code)
     body.append('redirect_uri', redirectUri)
-    body.append('client_secret', clientSecret)
+    body.append('code_verifier', codeVerifier)
 
     try {
         const response = await fetch(tokenUrl, {
@@ -61,19 +88,8 @@ export const exchangeGoogleAuthCode = async () => {
             console.error('Token exchange failed:', {
                 status: response.status,
                 statusText: response.statusText,
-                error: errorText,
-                url: tokenUrl,
-                requestBody: body.toString()
+                error: errorText
             })
-            
-            // Try to parse error response for more details
-            try {
-                const errorJson = JSON.parse(errorText)
-                console.error('Parsed error details:', errorJson)
-            } catch {
-                console.error('Raw error response:', errorText)
-            }
-            
             return null
         }
 

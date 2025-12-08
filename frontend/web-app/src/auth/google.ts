@@ -28,15 +28,17 @@ export const googleAuthUrl = async () => {
     // Store PKCE parameters for later use
     storePKCEParams(codeVerifier, state)
 
-    const url = `${domain}/oauth2/authorize?` +
-            `identity_provider=Google` +
-            `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-            `&response_type=${responseType}` +
-            `&client_id=${clientId}` +
-            `&scope=${encodeURIComponent(scope)}` +
-            `&code_challenge=${codeChallenge}` +
-            `&code_challenge_method=S256` +
-            `&state=${state}`
+    const params = new URLSearchParams({
+        identity_provider: 'Google',
+        redirect_uri: redirectUri,
+        response_type: responseType,
+        client_id: clientId,
+        scope: scope,
+        code_challenge: codeChallenge,
+        code_challenge_method: 'S256',
+        state: state
+    });
+    const url = `${domain}/oauth2/authorize?${params.toString()}`
     
     window.location.assign(url)
 }

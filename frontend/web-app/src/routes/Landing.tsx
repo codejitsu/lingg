@@ -15,7 +15,6 @@ import { FeatureCard } from '@/components/landing/FeatureCard'
 import { PriceCard } from '@/components/landing/PriceCard'
 import { FAQItem } from '@/components/landing/FAQItem'
 import { pricingTiers } from '@/lib/pricing'
-import { HashLink } from 'react-router-hash-link'
 
 export const Landing = () => {
     const [isAnnual, setIsAnnual] = useState(false)
@@ -77,27 +76,6 @@ export const Landing = () => {
             title: 'Get Feedback & Progress',
             description:
                 'Instant grammar tips and progress tracking help children improve while having fun.',
-        },
-    ]
-
-    const testimonials = [
-        {
-            quote: "My daughter looks forward to story time every day now. She doesn't even realize she's practicing Spanish!",
-            author: 'Maria S.',
-            role: 'Parent of 7-year-old',
-            avatar: '👩',
-        },
-        {
-            quote: "As a busy parent, I love seeing my son's progress without having to quiz him. The dashboard shows me everything.",
-            author: 'James L.',
-            role: 'Parent of 9-year-old',
-            avatar: '👨',
-        },
-        {
-            quote: 'Finally, a fun way to keep our heritage language alive! My kids actually ask to use Lingg.ai.',
-            author: 'Priya K.',
-            role: 'Parent of two',
-            avatar: '👩‍💼',
         },
     ]
 

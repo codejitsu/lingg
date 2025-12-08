@@ -16,6 +16,14 @@ type AuthContextValue = {
     login: (authResult: AuthenticationResultType) => void
     logout: () => void
     accessToken: () => string | null
+    // TODO introduce a proper type for tokens:
+    // interface OAuthTokenResponse {
+    //     access_token: string
+    //     id_token: string
+    //     refresh_token?: string
+    //     expires_in: number
+    //     token_type: string
+    // }
     loginWithGoogle: (tokens: any) => void
 }
 
@@ -94,12 +102,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         return null
     }
 
+    // TODO: The loginWithGoogle function parameter has type any, 
+    // which bypasses TypeScript's type safety. Define a proper interface for the 
+    // token response structure (e.g., GoogleAuthTokens or OAuthTokenResponse) 
+    // with the expected fields: access_token, id_token, refresh_token, and expires_in.
     const loginWithGoogle = (tokens: any) => {
+        // TODO The loginWithGoogle function duplicates significant logic from the existing 
+        // login function (lines 63-81). Both functions perform similar token storage, 
+        // JWT decoding, and state updates. Consider refactoring to extract a shared helper 
+        // function (e.g., storeAuthTokens) that handles the common logic, accepting 
+        // normalized token data regardless of the authentication method. This would improve 
+        // maintainability and reduce the risk of inconsistencies between authentication flows.
+
         console.log('Logging in with Google tokens:', tokens)
 
         const expiresIn = tokens.expires_in ?? 3600
         const expiresAt = Date.now() + expiresIn * 1000
 
+        // TODO The function should validate that required tokens exist before proceeding. 
+        // If tokens.id_token or tokens.access_token are missing, the function should 
+        // throw an error or handle the case gracefully rather than storing empty strings.
         const newTokens: AuthTokens = {
             accessToken: tokens.access_token ?? '',
             idToken: tokens.id_token ?? '',

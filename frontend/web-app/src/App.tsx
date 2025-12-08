@@ -31,6 +31,17 @@ function App() {
     useEffect(() => {
         const googleAuth = async () => {
             const tokens = await exchangeGoogleAuthCode()
+            
+            // TODO handle errors appropriately:
+            // const tokens = await exchangeGoogleAuthCode()
+            // if (tokens && tokens.id_token) {
+            //     auth.loginWithGoogle(tokens)
+            // } else if (code) {
+            //     // Show error to user - authentication failed
+            //     console.error('Google authentication failed')
+            //     // Optionally redirect to login page with error message
+            // }
+
             if (tokens && tokens.id_token) {
                 auth.loginWithGoogle(tokens)
             }
@@ -44,7 +55,17 @@ function App() {
                 setHasAttemptedGoogleAuth(true)
                 googleAuth()
             }
+            // TODO After successful Google authentication, the user remains on the 
+            // callback URL with the authorization code in the query parameters. 
+            // Consider redirecting the user to a more appropriate page (e.g., /my-stories or /) 
+            // and cleaning up the URL by replacing the history state to remove the 
+            // authorization code from the browser's address bar. This improves user 
+            // experience and prevents potential issues if the user refreshes the page.
         }
+    // TODO The useEffect has auth in its dependency array, 
+    // but only uses auth.isAuthenticated and auth.loginWithGoogle. 
+    // This could cause unnecessary re-renders. Consider destructuring these 
+    // specific properties outside the effect or using a more specific dependency array.        
     }, [auth, hasAttemptedGoogleAuth])
 
     // Show loading spinner while auth state is being determined

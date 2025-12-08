@@ -68,6 +68,10 @@ export const exchangeGoogleAuthCode = async () => {
 
     const { codeVerifier, state } = retrieveAndClearPKCEParams()
     
+    // TODO Using alert() and window.alert() for error handling provides a poor 
+    // user experience and can be blocked by browsers. Consider implementing a 
+    // proper error notification system (e.g., toast notifications, error banners) 
+    // to display authentication errors to users.
     if (!codeVerifier) {
         alert("Your login session has expired. Please try logging in again.");
         await googleAuthUrl();
@@ -76,6 +80,10 @@ export const exchangeGoogleAuthCode = async () => {
 
     if (state !== stateParam) {
         console.error('State parameter mismatch')
+        // TODO Using alert() and window.alert() for error handling provides a poor 
+        // user experience and can be blocked by browsers. Consider implementing a 
+        // proper error notification system (e.g., toast notifications, error banners) 
+        // to display authentication errors to users.        
         window.alert('Security error: State parameter mismatch detected. Please try logging in again.');
         return null
     }
@@ -93,6 +101,12 @@ export const exchangeGoogleAuthCode = async () => {
     body.append('redirect_uri', redirectUri)
     body.append('code_verifier', codeVerifier)
 
+    // TODO When token exchange fails or returns null, the function silently 
+    // returns without informing the user of the failure. After logging errors 
+    // to the console, consider providing user-facing feedback 
+    // (e.g., displaying an error message) so users understand that authentication 
+    // failed and what they should do next. The current implementation leaves users 
+    // uncertain about the authentication state.
     try {
         const response = await fetch(tokenUrl, {
             method: 'POST',

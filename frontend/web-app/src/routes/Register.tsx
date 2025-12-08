@@ -318,6 +318,13 @@ export const Register = () => {
                                 className="w-full inline-flex justify-center items-center py-2.5 px-4 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                                 onClick={async () => {
                                     try {
+                                        // TODO When Google authentication fails, 
+                                        // the error is only logged to the console without 
+                                        // providing user feedback. Users won't know that 
+                                        // their authentication attempt failed. Consider 
+                                        // displaying the error to the user through the 
+                                        // existing error state management or a notification 
+                                        // system.
                                         await googleAuthUrl();
                                     } catch (error) {
                                         // Optionally handle the error, e.g. log or show a message

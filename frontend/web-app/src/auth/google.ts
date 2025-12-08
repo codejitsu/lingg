@@ -55,7 +55,9 @@ export const exchangeGoogleAuthCode = async () => {
     const { codeVerifier, state } = retrieveAndClearPKCEParams()
     
     if (!codeVerifier) {
-        return null
+        alert("Your login session has expired. Please try logging in again.");
+        await googleAuthUrl();
+        return null;
     }
 
     if (state !== stateParam) {

@@ -161,8 +161,10 @@ export const Login = () => {
                                     try {
                                         await googleAuthUrl()
                                     } catch (err) {
-                                        console.error("Google auth failed", err)
-                                        setError('Google authentication failed. Please try again.')
+                                        console.error('Google auth failed', err)
+                                        setError(
+                                            'Google authentication failed. Please try again.',
+                                        )
                                     }
                                 }}
                             >

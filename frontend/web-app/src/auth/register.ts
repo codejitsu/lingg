@@ -1,7 +1,14 @@
-import { SignUpCommand, ConfirmSignUpCommand } from '@aws-sdk/client-cognito-identity-provider'
+import {
+    SignUpCommand,
+    ConfirmSignUpCommand,
+} from '@aws-sdk/client-cognito-identity-provider'
 import { authConfig, client } from './auth'
 
-export const register = async (name: string, email: string, password: string) => {
+export const register = async (
+    name: string,
+    email: string,
+    password: string,
+) => {
     const command = new SignUpCommand({
         ClientId: authConfig.client_id,
         Username: email,
@@ -21,10 +28,7 @@ export const register = async (name: string, email: string, password: string) =>
     await client.send(command)
 }
 
-export const confirmRegistration = async (
-    username: string,
-    code: string
-) => {
+export const confirmRegistration = async (username: string, code: string) => {
     const command = new ConfirmSignUpCommand({
         ClientId: authConfig.client_id,
         Username: username,

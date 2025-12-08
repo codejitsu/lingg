@@ -10,13 +10,16 @@
  */
 export const generateCodeVerifier = (length: number = 128): string => {
     if (length < 43 || length > 128) {
-        throw new Error('Code verifier length must be between 43 and 128 characters')
+        throw new Error(
+            'Code verifier length must be between 43 and 128 characters',
+        )
     }
 
-    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~'
+    const possible =
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~'
     const values = crypto.getRandomValues(new Uint8Array(length))
     return Array.from(values)
-        .map(x => possible[x % possible.length])
+        .map((x) => possible[x % possible.length])
         .join('')
 }
 
@@ -25,7 +28,9 @@ export const generateCodeVerifier = (length: number = 128): string => {
  * @param codeVerifier The code verifier string
  * @returns Promise that resolves to the code challenge
  */
-export const generateCodeChallenge = async (codeVerifier: string): Promise<string> => {
+export const generateCodeChallenge = async (
+    codeVerifier: string,
+): Promise<string> => {
     const encoder = new TextEncoder()
     const data = encoder.encode(codeVerifier)
     const digest = await crypto.subtle.digest('SHA-256', data)
@@ -48,14 +53,17 @@ export const storePKCEParams = (codeVerifier: string, state: string): void => {
 /**
  * Retrieves and clears PKCE parameters from sessionStorage
  */
-export const retrieveAndClearPKCEParams = (): { codeVerifier: string | null; state: string | null } => {
+export const retrieveAndClearPKCEParams = (): {
+    codeVerifier: string | null
+    state: string | null
+} => {
     const codeVerifier = sessionStorage.getItem('pkce_code_verifier')
     const state = sessionStorage.getItem('oauth_state')
 
     // Clean up
     sessionStorage.removeItem('pkce_code_verifier')
     sessionStorage.removeItem('oauth_state')
-    
+
     return { codeVerifier, state }
 }
 

@@ -1,10 +1,5 @@
 import { useState, useEffect } from 'react'
-import {
-    HashRouter,
-    Routes,
-    Route,
-    Navigate,
-} from 'react-router-dom'
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { FullChatApp } from '@/components/story'
 import { Header } from '@/components/landing/Header'
 import { Footer } from '@/components/landing/Footer'
@@ -31,7 +26,7 @@ function App() {
     useEffect(() => {
         const googleAuth = async () => {
             const tokens = await exchangeGoogleAuthCode()
-            
+
             // TODO handle errors appropriately:
             // const tokens = await exchangeGoogleAuthCode()
             // if (tokens && tokens.id_token) {
@@ -50,22 +45,22 @@ function App() {
         if (!auth.isAuthenticated && !hasAttemptedGoogleAuth) {
             const urlParams = new URLSearchParams(window.location.search)
             const code = urlParams.get('code')
-            
+
             if (code) {
                 setHasAttemptedGoogleAuth(true)
                 googleAuth()
             }
-            // TODO After successful Google authentication, the user remains on the 
-            // callback URL with the authorization code in the query parameters. 
-            // Consider redirecting the user to a more appropriate page (e.g., /my-stories or /) 
-            // and cleaning up the URL by replacing the history state to remove the 
-            // authorization code from the browser's address bar. This improves user 
+            // TODO After successful Google authentication, the user remains on the
+            // callback URL with the authorization code in the query parameters.
+            // Consider redirecting the user to a more appropriate page (e.g., /my-stories or /)
+            // and cleaning up the URL by replacing the history state to remove the
+            // authorization code from the browser's address bar. This improves user
             // experience and prevents potential issues if the user refreshes the page.
         }
-    // TODO The useEffect has auth in its dependency array, 
-    // but only uses auth.isAuthenticated and auth.loginWithGoogle. 
-    // This could cause unnecessary re-renders. Consider destructuring these 
-    // specific properties outside the effect or using a more specific dependency array.        
+        // TODO The useEffect has auth in its dependency array,
+        // but only uses auth.isAuthenticated and auth.loginWithGoogle.
+        // This could cause unnecessary re-renders. Consider destructuring these
+        // specific properties outside the effect or using a more specific dependency array.
     }, [auth, hasAttemptedGoogleAuth])
 
     // Show loading spinner while auth state is being determined
@@ -89,7 +84,10 @@ function App() {
                         <Route path="/" element={<Landing />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
-                        <Route path="/reset-password" element={<ResetPassword />} />
+                        <Route
+                            path="/reset-password"
+                            element={<ResetPassword />}
+                        />
                         <Route path="/privacy" element={<Privacy />} />
                         <Route path="/terms" element={<Terms />} />
                         <Route

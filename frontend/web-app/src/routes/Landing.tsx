@@ -135,18 +135,22 @@ export const Landing = () => {
                     <div className="flex flex-col items-center justify-center text-center gap-12">
                         <div>
                             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 dark:text-white mb-6">
-                                Create stories. Keep your child's native language alive.
+                                Create stories. Keep your child's native
+                                language alive.
                             </h1>
                             <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
-                                <span className="text-primary-600 dark:text-primary-400">spelli.ai</span> turns language practice into
-                                collaborative stories with grammar feedback and
-                                fun challenges.
+                                <span className="text-primary-600 dark:text-primary-400">
+                                    spelli.ai
+                                </span>{' '}
+                                turns language practice into collaborative
+                                stories with grammar feedback and fun
+                                challenges.
                             </p>
                         </div>
                     </div>
                 </Container>
             </section>
-            
+
             <section id="features" className="py-20 sm:py-24">
                 <Container>
                     <SectionHeading
@@ -163,7 +167,10 @@ export const Landing = () => {
                 </Container>
             </section>
 
-            <section id="how-it-works" className="py-20 sm:py-24 bg-gray-50 dark:bg-gray-800/50">
+            <section
+                id="how-it-works"
+                className="py-20 sm:py-24 bg-gray-50 dark:bg-gray-800/50"
+            >
                 <Container>
                     <SectionHeading
                         eyebrow="How it works"

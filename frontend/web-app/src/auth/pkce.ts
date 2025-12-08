@@ -9,6 +9,10 @@
  * @returns A URL-safe random string
  */
 export const generateCodeVerifier = (length: number = 128): string => {
+    if (length < 43 || length > 128) {
+        throw new Error('Code verifier length must be between 43 and 128 characters')
+    }
+
     const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~'
     const values = crypto.getRandomValues(new Uint8Array(length))
     return Array.from(values)

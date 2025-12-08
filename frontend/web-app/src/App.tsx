@@ -23,48 +23,43 @@ function App() {
         auth.logout()
     }
 
+    // Extract specific auth properties to prevent unnecessary re-renders
+    const { isAuthenticated, loginWithGoogle, isLoading } = auth
+
     useEffect(() => {
+        // Only process Google auth callback once per session
+        if (isAuthenticated || hasAttemptedGoogleAuth) {
+            return
+        }
+
+        const urlParams = new URLSearchParams(window.location.search)
+        const code = urlParams.get('code')
+
+        if (!code) {
+            return
+        }
+
+        setHasAttemptedGoogleAuth(true)
+
         const googleAuth = async () => {
-            const tokens = await exchangeGoogleAuthCode()
-
-            // TODO handle errors appropriately:
-            // const tokens = await exchangeGoogleAuthCode()
-            // if (tokens && tokens.id_token) {
-            //     auth.loginWithGoogle(tokens)
-            // } else if (code) {
-            //     // Show error to user - authentication failed
-            //     console.error('Google authentication failed')
-            //     // Optionally redirect to login page with error message
-            // }
-
-            if (tokens && tokens.id_token) {
-                auth.loginWithGoogle(tokens)
+            try {
+                const tokens = await exchangeGoogleAuthCode()
+                
+                if (tokens && tokens.id_token) {
+                    loginWithGoogle(tokens)
+                } else {
+                    console.error('Google authentication failed - no tokens received')
+                }
+            } catch (error) {
+                console.error('Error during Google authentication:', error)
             }
         }
 
-        if (!auth.isAuthenticated && !hasAttemptedGoogleAuth) {
-            const urlParams = new URLSearchParams(window.location.search)
-            const code = urlParams.get('code')
-
-            if (code) {
-                setHasAttemptedGoogleAuth(true)
-                googleAuth()
-            }
-            // TODO After successful Google authentication, the user remains on the
-            // callback URL with the authorization code in the query parameters.
-            // Consider redirecting the user to a more appropriate page (e.g., /my-stories or /)
-            // and cleaning up the URL by replacing the history state to remove the
-            // authorization code from the browser's address bar. This improves user
-            // experience and prevents potential issues if the user refreshes the page.
-        }
-        // TODO The useEffect has auth in its dependency array,
-        // but only uses auth.isAuthenticated and auth.loginWithGoogle.
-        // This could cause unnecessary re-renders. Consider destructuring these
-        // specific properties outside the effect or using a more specific dependency array.
-    }, [auth, hasAttemptedGoogleAuth])
+        googleAuth()
+    }, [isAuthenticated, loginWithGoogle, hasAttemptedGoogleAuth])
 
     // Show loading spinner while auth state is being determined
-    if (auth.isLoading) {
+    if (isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
@@ -93,7 +88,7 @@ function App() {
                         <Route
                             path="/my-stories"
                             element={
-                                auth.isAuthenticated ? (
+                                isAuthenticated ? (
                                     <FullChatApp />
                                 ) : (
                                     <Navigate to="/login" replace />
@@ -103,7 +98,7 @@ function App() {
                         <Route
                             path="/story/:storyId"
                             element={
-                                auth.isAuthenticated ? (
+                                isAuthenticated ? (
                                     <FullChatApp />
                                 ) : (
                                     <Navigate to="/login" replace />

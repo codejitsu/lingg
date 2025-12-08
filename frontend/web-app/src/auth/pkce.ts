@@ -71,5 +71,5 @@ export const retrieveAndClearPKCEParams = (): {
  * Generates a random state parameter for OAuth security
  */
 export const generateState = (): string => {
-    return generateCodeVerifier(32)
+    return generateCodeVerifier()
 }

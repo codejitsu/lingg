@@ -66,6 +66,18 @@ export const exchangeGoogleAuthCode = async () => {
         return null
     }
 
+    // Clean up URL parameters immediately to prevent reprocessing
+    if (window && window.history && window.location) {
+        const url = new URL(window.location.href)
+        url.searchParams.delete('code')
+        url.searchParams.delete('state')
+        window.history.replaceState(
+            {},
+            document.title,
+            url.pathname + url.search + url.hash,
+        )
+    }
+
     const { codeVerifier, state } = retrieveAndClearPKCEParams()
 
     // TODO Using alert() and window.alert() for error handling provides a poor
@@ -73,8 +85,8 @@ export const exchangeGoogleAuthCode = async () => {
     // proper error notification system (e.g., toast notifications, error banners)
     // to display authentication errors to users.
     if (!codeVerifier) {
-        alert('Your login session has expired. Please try logging in again.')
-        await googleAuthUrl()
+        console.error('PKCE code verifier not found - possible session expiry or refresh loop')
+        // Don't redirect to prevent infinite loops - just return null
         return null
     }
 
@@ -129,18 +141,6 @@ export const exchangeGoogleAuthCode = async () => {
         }
 
         const tokens = await response.json()
-
-        // Remove sensitive OAuth parameters from the URL
-        if (window && window.history && window.location) {
-            const url = new URL(window.location.href)
-            url.searchParams.delete('code')
-            url.searchParams.delete('state')
-            window.history.replaceState(
-                {},
-                document.title,
-                url.pathname + url.search + url.hash,
-            )
-        }
         return tokens
     } catch (error) {
         console.error('Error during token exchange:', error)

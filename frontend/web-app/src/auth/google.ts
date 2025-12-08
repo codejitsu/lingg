@@ -62,6 +62,7 @@ export const exchangeGoogleAuthCode = async () => {
 
     if (state !== stateParam) {
         console.error('State parameter mismatch')
+        window.alert('Security error: State parameter mismatch detected. Please try logging in again.');
         return null
     }
 

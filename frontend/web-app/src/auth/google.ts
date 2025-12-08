@@ -43,6 +43,20 @@ export const googleAuthUrl = async () => {
     window.location.assign(url)
 }
 
+/**
+ * Exchanges the Google OAuth authorization code for tokens via AWS Cognito.
+ *
+ * This function is part of the OAuth 2.0 authorization code flow with PKCE.
+ * It retrieves the authorization code and state from the URL, validates them,
+ * and exchanges the code for tokens (ID, access, refresh) from Cognito.
+ *
+ * @returns {Promise<Object|null>} Resolves to the tokens object on success, or null on failure.
+ *
+ * Side effects:
+ * - Displays alerts to the user on error or session expiry.
+ * - Cleans up PKCE parameters from session storage.
+ * - May redirect the user to the login page if the session has expired.
+ */
 export const exchangeGoogleAuthCode = async () => {
     const urlParams = new URLSearchParams(window.location.search)
     const code = urlParams.get('code')

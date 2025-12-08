@@ -157,8 +157,13 @@ export const Login = () => {
                             <button
                                 type="button"
                                 className="w-full inline-flex justify-center items-center py-2.5 px-4 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-                                onClick={() => {
-                                    googleAuthUrl()
+                                onClick={async () => {
+                                    try {
+                                        await googleAuthUrl()
+                                    } catch (err) {
+                                        // Optionally handle error, e.g. log or show a message
+                                        console.error("Google auth failed", err)
+                                    }
                                 }}
                             >
                                 <svg

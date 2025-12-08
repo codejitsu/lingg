@@ -99,7 +99,14 @@ export const exchangeGoogleAuthCode = async () => {
         }
 
         const tokens = await response.json()
-        
+
+        // Remove sensitive OAuth parameters from the URL
+        if (window && window.history && window.location) {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('code');
+            url.searchParams.delete('state');
+            window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+        }
         return tokens
     } catch (error) {
         console.error('Error during token exchange:', error)

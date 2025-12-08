@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Button } from '@/components/landing/Button'
 import { Container } from '@/components/landing/Container'
 import { login } from '@/auth/login'
+import { googleAuthUrl } from '@/auth/google'
 import { useAuth } from '@/auth/authcontext'
 import { useNavigate } from 'react-router-dom'
 import { Loader } from '@/components/prompt-kit/loader'
@@ -156,6 +157,16 @@ export const Login = () => {
                             <button
                                 type="button"
                                 className="w-full inline-flex justify-center items-center py-2.5 px-4 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                                onClick={async () => {
+                                    try {
+                                        await googleAuthUrl()
+                                    } catch (err) {
+                                        console.error('Google auth failed', err)
+                                        setError(
+                                            'Google authentication failed. Please try again.',
+                                        )
+                                    }
+                                }}
                             >
                                 <svg
                                     className="w-5 h-5 mr-2"

@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import { Button } from '@/components/landing/Button'
 import { Container } from '@/components/landing/Container'
-import { requestPasswordReset, confirmPasswordReset } from '@/auth/resetpassword'
+import {
+    requestPasswordReset,
+    confirmPasswordReset,
+} from '@/auth/resetpassword'
 import { Loader } from '@/components/prompt-kit/loader'
 import { useNavigate } from 'react-router-dom'
 
@@ -108,7 +111,7 @@ export const ResetPassword = () => {
                             </div>
                         </div>
 
-                        <div className={`${ codeRequested ? '' : 'hidden' }`}>
+                        <div className={`${codeRequested ? '' : 'hidden'}`}>
                             <label
                                 htmlFor="code"
                                 className="block text-sm font-medium text-gray-700 dark:text-gray-300"
@@ -128,7 +131,7 @@ export const ResetPassword = () => {
                             </div>
                         </div>
 
-                        <div className={`${ codeRequested ? '' : 'hidden' }`}>
+                        <div className={`${codeRequested ? '' : 'hidden'}`}>
                             <label
                                 htmlFor="password"
                                 className="block text-sm font-medium text-gray-700 dark:text-gray-300"
@@ -151,7 +154,7 @@ export const ResetPassword = () => {
                             </div>
                         </div>
 
-                        <div className={`${ codeRequested ? '' : 'hidden' }`}>
+                        <div className={`${codeRequested ? '' : 'hidden'}`}>
                             <label
                                 htmlFor="passwordConfirmation"
                                 className="block text-sm font-medium text-gray-700 dark:text-gray-300"
@@ -176,14 +179,19 @@ export const ResetPassword = () => {
 
                         <div>
                             <Button type="submit" variant="primary" fullWidth>
-                                {codeRequested ? 'Reset password' : 'Send reset code'}
+                                {codeRequested
+                                    ? 'Reset password'
+                                    : 'Send reset code'}
                             </Button>
                         </div>
 
                         <div className="text-sm justify-center gap-3 flex items-center min-h-5">
                             {isLoading && (
                                 <>
-                                    <Loader variant="circular" /> {codeRequested ? 'Resetting password...' : 'Sending code...'}
+                                    <Loader variant="circular" />{' '}
+                                    {codeRequested
+                                        ? 'Resetting password...'
+                                        : 'Sending code...'}
                                 </>
                             )}
                         </div>

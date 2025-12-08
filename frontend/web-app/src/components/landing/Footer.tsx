@@ -72,7 +72,8 @@ export const Footer = () => {
 
                     <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-800">
                         <p className="text-center text-gray-600 dark:text-gray-400 text-sm">
-                            © {new Date().getFullYear()} spelli.ai. All rights reserved.
+                            © {new Date().getFullYear()} spelli.ai. All rights
+                            reserved.
                         </p>
                     </div>
                 </div>

@@ -69,13 +69,18 @@ export const Header = ({ signOut }: { signOut: () => Promise<void> }) => {
                             <div className="flex items-center space-x-2">
                                 <Link to="/login" onClick={() => signOut()}>
                                     <Button variant="ghost">
-                                        <LogOutIcon className="h-6 w-6 mr-2" aria-hidden="true" />
+                                        <LogOutIcon
+                                            className="h-6 w-6 mr-2"
+                                            aria-hidden="true"
+                                        />
                                         Log out
                                     </Button>
                                 </Link>
                                 <Link to="/my-stories">
-                                    <Button variant="highlight">My stories</Button>
-                                </Link>                                
+                                    <Button variant="highlight">
+                                        My stories
+                                    </Button>
+                                </Link>
                             </div>
                         ) : (
                             <div className="flex items-center space-x-2">
@@ -83,7 +88,9 @@ export const Header = ({ signOut }: { signOut: () => Promise<void> }) => {
                                     <Button variant="ghost">Log in</Button>
                                 </Link>
                                 <Link to="/register">
-                                    <Button variant="primary">Get started</Button>
+                                    <Button variant="primary">
+                                        Get started
+                                    </Button>
                                 </Link>
                             </div>
                         )}
@@ -164,7 +171,10 @@ export const Header = ({ signOut }: { signOut: () => Promise<void> }) => {
                                                         setMobileMenuOpen(false)
                                                     }
                                                 >
-                                                    <Button variant="primary" fullWidth>
+                                                    <Button
+                                                        variant="primary"
+                                                        fullWidth
+                                                    >
                                                         Get started
                                                     </Button>
                                                 </Link>

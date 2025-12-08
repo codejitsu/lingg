@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom'
 import { Button } from '@/components/landing/Button'
 import { Container } from '@/components/landing/Container'
 import { register, confirmRegistration } from '@/auth/register'
+import { googleAuthUrl } from '@/auth/google'
 import { Loader } from '@/components/prompt-kit/loader'
 import { useNavigate } from 'react-router-dom'
+
 export const Register = () => {
     const navigate = useNavigate()
 
@@ -62,33 +64,37 @@ export const Register = () => {
 
             try {
                 await register(formData.name, formData.email, formData.password)
-                .then(() => {
-                    setCodeRequested(true)
-                    setIsLoading(false)
-                })
-                .catch((error) => {
-                    console.error('Error during registration:', error)
-                    
-                    newErrors.general = 'Registration failed. Please try again.'
-                    setErrors(newErrors)
+                    .then(() => {
+                        setCodeRequested(true)
+                        setIsLoading(false)
+                    })
+                    .catch((error) => {
+                        console.error('Error during registration:', error)
 
-                    setIsLoading(false)
-                    setCodeRequested(false)
-                })
+                        newErrors.general =
+                            'Registration failed. Please try again.'
+                        setErrors(newErrors)
+
+                        setIsLoading(false)
+                        setCodeRequested(false)
+                    })
             } catch (error) {
                 console.error('Error during registration:', error)
                 setErrors({ general: 'Registration failed. Please try again.' })
             } finally {
                 setIsLoading(false)
-            }            
+            }
         } else {
             if (!code) {
-                setErrors((prev) => ({ ...prev, code: 'Please enter the verification code' }))
+                setErrors((prev) => ({
+                    ...prev,
+                    code: 'Please enter the verification code',
+                }))
                 return
             }
 
             setIsLoading(true)
-            
+
             await confirmRegistration(formData.email, code)
                 .then(() => {
                     setIsLoading(false)
@@ -97,7 +103,7 @@ export const Register = () => {
                 })
                 .catch((error) => {
                     console.error('Error during confirmation:', error)
-                    
+
                     newErrors.general = 'Confirmation failed. Please try again.'
                     setErrors(newErrors)
 
@@ -187,7 +193,7 @@ export const Register = () => {
                                 )}
                             </div>
                         </div>
-                        
+
                         <div className={`${codeRequested ? '' : 'hidden'}`}>
                             <label
                                 htmlFor="code"
@@ -292,7 +298,10 @@ export const Register = () => {
                         <div className="text-sm justify-center gap-3 flex items-center min-h-5">
                             {isLoading && (
                                 <>
-                                    <Loader variant="circular" /> {codeRequested ? 'Verifying code...' : 'Sending verification code...'}
+                                    <Loader variant="circular" />{' '}
+                                    {codeRequested
+                                        ? 'Verifying code...'
+                                        : 'Sending verification code...'}
                                 </>
                             )}
                         </div>
@@ -314,6 +323,24 @@ export const Register = () => {
                             <button
                                 type="button"
                                 className="w-full inline-flex justify-center items-center py-2.5 px-4 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                                onClick={async () => {
+                                    try {
+                                        // TODO When Google authentication fails,
+                                        // the error is only logged to the console without
+                                        // providing user feedback. Users won't know that
+                                        // their authentication attempt failed. Consider
+                                        // displaying the error to the user through the
+                                        // existing error state management or a notification
+                                        // system.
+                                        await googleAuthUrl()
+                                    } catch (error) {
+                                        // Optionally handle the error, e.g. log or show a message
+                                        console.error(
+                                            'Google authentication failed:',
+                                            error,
+                                        )
+                                    }
+                                }}
                             >
                                 <svg
                                     className="w-5 h-5 mr-2"

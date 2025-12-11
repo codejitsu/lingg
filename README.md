@@ -27,6 +27,7 @@ cargo lambda build --workspace --release
 
 ## Possible issues
 - set -x OPENSSL_DIR (brew --prefix openssl)
+- ulimit -n 4096
 
 # Infrastructure
 

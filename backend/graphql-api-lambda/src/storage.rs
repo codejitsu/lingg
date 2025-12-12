@@ -1,5 +1,5 @@
 use crate::{
-    dynamodb, Chapter, ChapterStatus, LanguageName, Story, StoryType, UserInputValueInput,
+    Chapter, ChapterStatus, LanguageName, Story, StoryType, UserInputValueInput, dynamodb, models::User
 };
 
 use aws_sdk_dynamodb::types::{AttributeValue, TransactWriteItem, Update};
@@ -21,7 +21,6 @@ impl From<&str> for StorageError {
     }
 }
 
-pub struct UserId(pub ID);
 pub struct StoryId(pub ID);
 pub struct ChapterId(pub ID);
 pub struct ClientRequestId(pub ID);
@@ -59,7 +58,7 @@ fn string_to_story_type(story_type: &str) -> Option<StoryType> {
     }
 }
 
-pub async fn get_stories_by_user_id(user_id: &ID) -> Result<Vec<Story>, StorageError> {
+pub async fn get_stories_by_user_id(user_id: &User) -> Result<Vec<Story>, StorageError> {
     let client = dynamodb();
     let table_name = table_name();
 
@@ -102,7 +101,6 @@ pub async fn get_stories_by_user_id(user_id: &ID) -> Result<Vec<Story>, StorageE
                         stories.insert(
                             story_id.to_string(),
                             Story {
-                                user_id: user_id.clone(),
                                 story_id: ID::try_from(story_id.to_string()).unwrap(),
                                 target_language: string_to_language_name(target_language)
                                     .unwrap_or(LanguageName::English),
@@ -145,7 +143,7 @@ pub async fn get_stories_by_user_id(user_id: &ID) -> Result<Vec<Story>, StorageE
 }
 
 pub async fn get_story_with_chapters_by_id(
-    user_id: &UserId,
+    user_id: &User,
     story_id: &StoryId,
 ) -> Result<Option<Story>, StorageError> {
     let client = dynamodb();
@@ -157,7 +155,7 @@ pub async fn get_story_with_chapters_by_id(
         .key_condition_expression("PK = :pk AND begins_with(SK, :sk_prefix)")
         .expression_attribute_values(
             ":pk",
-            AttributeValue::S(format!("USER#{}", user_id.0.to_string())),
+            AttributeValue::S(format!("USER#{}", user_id.to_string())),
         )
         .expression_attribute_values(
             ":sk_prefix",
@@ -183,7 +181,7 @@ pub async fn get_story_with_chapters_by_id(
 
                     if *sk == meta_sk {
                         // This is the story metadata
-                        let user_id = item.get("user_id").and_then(|v| v.as_s().ok()).unwrap();
+                        // TODO address all unwrap calls here
                         let title = item.get("title").and_then(|v| v.as_s().ok()).unwrap();
                         let target_language = item
                             .get("target_language")
@@ -199,7 +197,6 @@ pub async fn get_story_with_chapters_by_id(
                             item.get("started_at").and_then(|v| v.as_s().ok()).unwrap();
 
                         story_meta_opt = Some(Story {
-                            user_id: ID::try_from(user_id.to_string()).unwrap(),
                             story_id: ID::try_from(story_id.0.to_string()).unwrap(),
                             target_language: string_to_language_name(target_language)
                                 .unwrap_or(LanguageName::English),
@@ -241,7 +238,7 @@ pub async fn get_story_with_chapters_by_id(
 // PK = USER#<user_id>
 // SK = STORY#<story_id>#CHAP#<chapter_id>
 pub async fn get_chapter_by_id(
-    user_id: &ID,
+    user_id: &User,
     story_id: &ID,
     chapter_id: &ID,
 ) -> Result<Option<Chapter>, StorageError> {
@@ -294,7 +291,7 @@ pub async fn get_chapter_by_id(
 // SK = STORY#<story_id>#CHAP#<chapter_id>
 pub async fn store_story(
     story: Story,
-    user_id: ID,
+    user_id: &User,
     client_request_id: ID,
     chapter_index: usize,
 ) -> Result<Story, StorageError> {
@@ -457,7 +454,7 @@ pub async fn store_story(
 // PK = USER#<user_id>
 // SK = STORY#<story_id>#CHAP#<chapter_id>
 pub async fn store_user_input_for_chapter(
-    user_id: &UserId,
+    user_id: &User,
     story_id: &StoryId,
     chapter_id: &ChapterId,
     _client_request_id: &ClientRequestId,
@@ -477,7 +474,7 @@ pub async fn store_user_input_for_chapter(
         .table_name(&table_name)
         .key(
             "PK",
-            AttributeValue::S(format!("USER#{}", user_id.0.to_string())),
+            AttributeValue::S(format!("USER#{}", user_id.to_string())),
         )
         .key("SK", AttributeValue::S(sk))
         .update_expression("SET user_input = :user_input, chapter_status = :chapter_status, completed_at = :completed_at")
@@ -517,7 +514,7 @@ pub async fn store_user_input_for_chapter(
     }
 }
 
-pub async fn store_chapter(user_id: &ID, chapter: &Chapter) -> Result<(), StorageError> {
+pub async fn store_chapter(user_id: &User, chapter: &Chapter) -> Result<(), StorageError> {
     let client = dynamodb();
     let table_name = table_name();
 
@@ -532,7 +529,7 @@ pub async fn store_chapter(user_id: &ID, chapter: &Chapter) -> Result<(), Storag
     let put = client
         .put_item()
         .table_name(&table_name)
-        .item("PK", AttributeValue::S(format!("USER#{}", user_id)))
+        .item("PK", AttributeValue::S(format!("USER#{}", user_id.to_string())))
         .item("SK", AttributeValue::S(sk))
         .item(
             "chapter_status",

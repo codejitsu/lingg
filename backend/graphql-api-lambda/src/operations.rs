@@ -1,15 +1,16 @@
 use std::collections::HashMap;
 
+use crate::models::User;
 use crate::placeholders::{apply_template, validate_user_input_values};
 use crate::spellchecker::check_spelling_with_template;
 use crate::storage::{
     get_chapter_by_id, get_stories_by_user_id, get_story_with_chapters_by_id, store_chapter,
-    store_story, store_user_input_for_chapter, ChapterId, ClientRequestId, StoryId, UserId,
+    store_story, store_user_input_for_chapter, ChapterId, ClientRequestId, StoryId,
 };
 
 use crate::ai::{build_story_id, generate_new_chapter, generate_new_story};
 
-use lambda_appsync::{appsync_operation, AppsyncError, AppsyncEvent, ID};
+use lambda_appsync::{appsync_operation, AppsyncError, AppsyncEvent, AppsyncIdentity, ID};
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::{
@@ -21,9 +22,9 @@ use uuid::Uuid;
 
 #[appsync_operation(query(listStories), with_appsync_event)]
 pub async fn list_stories(
-    user_id: ID,
-    _event: &AppsyncEvent<Operation>,
+    event: &AppsyncEvent<Operation>,
 ) -> Result<Vec<Story>, AppsyncError> {
+    let user_id = extract_user_id(&event)?;
     let stories = get_stories_by_user_id(&user_id)
         .await
         .map_err(|e| AppsyncError::new("StorageReadError", e.to_string()))?;
@@ -32,14 +33,15 @@ pub async fn list_stories(
 
 #[appsync_operation(query(fetchStoryById), with_appsync_event)]
 pub async fn fetch_story_by_id(
-    user_id: ID,
     story_id: ID,
-    _event: &AppsyncEvent<Operation>,
+    event: &AppsyncEvent<Operation>,
 ) -> Result<Option<Story>, AppsyncError> {
+    let user_id = extract_user_id(&event)?;
+
     Uuid::parse_str(&story_id.to_string())
         .map_err(|e| AppsyncError::new("InvalidStoryID", e.to_string()))?;
 
-    let story = get_story_with_chapters_by_id(&UserId(user_id), &StoryId(story_id))
+    let story = get_story_with_chapters_by_id(&user_id, &StoryId(story_id))
         .await
         .map_err(|e| AppsyncError::new("StorageReadError", e.to_string()))?;
     Ok(story)
@@ -48,11 +50,13 @@ pub async fn fetch_story_by_id(
 #[appsync_operation(mutation(startStory), with_appsync_event)]
 pub async fn start_story(
     input: StartStoryInput,
-    _event: &AppsyncEvent<Operation>,
+    event: &AppsyncEvent<Operation>,
 ) -> Result<StartStoryPayload, AppsyncError> {
-    let story_id = build_story_id(&input.user_id, &input.client_request_id);
+    let user_id = extract_user_id(&event)?;
+
+    let story_id = build_story_id(&user_id, &input.client_request_id);
     let existing_story = get_story_with_chapters_by_id(
-        &UserId(input.user_id),
+        &user_id,
         &StoryId(story_id.to_string().try_into().unwrap()),
     )
     .await;
@@ -61,7 +65,7 @@ pub async fn start_story(
         Ok(Some(story)) => {
             println!(
                 "Story already exists, returning existing story: {:?} for user: {:?}",
-                story.story_id, input.user_id
+                story.story_id, user_id.to_string()
             );
             return Ok(StartStoryPayload {
                 errors: vec![],
@@ -71,21 +75,21 @@ pub async fn start_story(
         Ok(None) => {
             println!(
                 "No existing story found, creating new story for user: {:?}",
-                input.user_id
+                user_id.to_string()
             );
 
-            let story = generate_new_story(&input).await;
+            let story = generate_new_story(&user_id, &input).await;
 
             match story {
                 Ok(story) => {
                     let save_story_result =
-                        store_story(story, input.user_id, input.client_request_id, 0).await;
+                        store_story(story, &user_id, input.client_request_id, 0).await;
 
                     match save_story_result {
                         Ok(saved_story) => {
                             println!(
                                 "Story saved successfully: {:?} for user {:?}",
-                                saved_story.story_id, input.user_id
+                                saved_story.story_id, user_id.to_string()
                             );
 
                             Ok(StartStoryPayload {
@@ -94,7 +98,7 @@ pub async fn start_story(
                             })
                         }
                         Err(e) => {
-                            println!("Error saving story: {:?} for user {:?}", e, input.user_id);
+                            println!("Error saving story: {:?} for user {:?}", e, user_id.to_string());
 
                             Err(AppsyncError::new("StorageWriteError", e.to_string()))
                         }
@@ -112,11 +116,13 @@ pub async fn start_story(
 #[appsync_operation(mutation(checkTemplate), with_appsync_event)]
 pub async fn check_template(
     input: CheckTemplateInput,
-    _event: &AppsyncEvent<Operation>,
+    event: &AppsyncEvent<Operation>,
 ) -> Result<CheckTemplatePayload, AppsyncError> {
+    let user_id = extract_user_id(&event)?;
+
     // check if there is a result for this request Id already - if so return it
 
-    let chapter = get_chapter_by_id(&input.user_id, &input.story_id, &input.chapter_id)
+    let chapter = get_chapter_by_id(&user_id, &input.story_id, &input.chapter_id)
         .await
         .map_err(|e| AppsyncError::new("StorageReadError", e.to_string()))?;
 
@@ -192,7 +198,7 @@ pub async fn check_template(
                 let next_chapter: Option<Chapter> = if mistakes.is_empty() {
                     // TODO think about partial failiure handling here (transaction or saga pattern)
                     let input_stored = store_user_input_for_chapter(
-                        &UserId(input.user_id),
+                        &user_id,
                         &StoryId(input.story_id),
                         &ChapterId(input.chapter_id),
                         &ClientRequestId(input.client_request_id),
@@ -203,10 +209,10 @@ pub async fn check_template(
                     match input_stored {
                         Ok(_) => {
                             println!("Stored final placeholders for chapter: {:?} of story: {:?} for user: {:?}", 
-                                input.chapter_id, input.story_id, input.user_id);
+                                input.chapter_id, input.story_id, user_id);
 
                             let story = get_story_with_chapters_by_id(
-                                &UserId(input.user_id),
+                                &user_id,
                                 &StoryId(input.story_id),
                             )
                             .await
@@ -237,7 +243,7 @@ pub async fn check_template(
                                         story.story_id, next_chapter.chapter_id
                                     );
 
-                                    store_chapter(&input.user_id, &next_chapter).await.map_err(
+                                    store_chapter(&user_id, &next_chapter).await.map_err(
                                         |e| AppsyncError::new("StorageWriteError", e.to_string()),
                                     )?;
 
@@ -252,7 +258,7 @@ pub async fn check_template(
                         }
                         Err(e) => {
                             println!("Error storing final placeholders for chapter: {:?} of story: {:?} for user: {:?}, error: {:?}", 
-                                input.chapter_id, input.story_id, input.user_id, e);
+                                input.chapter_id, input.story_id, user_id, e);
                             None
                         }
                     }
@@ -266,7 +272,7 @@ pub async fn check_template(
         _ => {
             println!(
                 "No existing chapter found for story: {:?}, chapter: {:?}, for user: {:?}",
-                input.story_id, input.chapter_id, input.user_id
+                input.story_id, input.chapter_id, user_id
             );
 
             CheckTemplatePayload::new(
@@ -280,4 +286,12 @@ pub async fn check_template(
     };
 
     Ok(payload)
+}
+
+// Cannot use ID here because of Google auth specific ID format.
+fn extract_user_id(event: &AppsyncEvent<Operation>) -> Result<User, AppsyncError> {
+    match &event.identity {
+        AppsyncIdentity::Cognito(appsync_identity_cognito) => Ok(User::new(&appsync_identity_cognito.sub)),
+        _ => Err(AppsyncError::new("Unauthorized", "Invalid identity")),
+    }
 }

@@ -5,6 +5,7 @@ use aws_config::timeout::TimeoutConfig;
 use aws_sdk_bedrockruntime::error::SdkError;
 use aws_sdk_bedrockruntime::operation::converse::{ConverseError, ConverseOutput};
 
+use crate::models::User;
 use crate::{Chapter, ChapterStatus, LanguageName, Placeholder, StartStoryInput, Story};
 
 use lambda_appsync::{serde_json, ID};
@@ -40,8 +41,8 @@ impl From<&ConverseError> for BedrockConverseError {
     }
 }
 
-pub fn build_story_id(user_id: &ID, client_request_id: &ID) -> Uuid {
-    let namespace = Uuid::new_v5(&Uuid::NAMESPACE_OID, user_id.as_bytes());
+pub fn build_story_id(user_id: &User, client_request_id: &ID) -> Uuid {
+    let namespace = Uuid::new_v5(&Uuid::NAMESPACE_OID, user_id.to_string().as_bytes());
     Uuid::new_v5(&namespace, client_request_id.as_bytes())
 }
 
@@ -61,6 +62,7 @@ fn get_converse_output_text(output: ConverseOutput) -> Result<String, BedrockCon
 }
 
 fn process_model_output(
+    user_id: &User,
     output: ConverseOutput,
     input: &StartStoryInput,
 ) -> Result<Story, SdkError<ConverseError>> {
@@ -79,7 +81,7 @@ fn process_model_output(
         "My Story".to_string()
     };
 
-    let story_id = build_story_id(&input.user_id, &input.client_request_id);
+    let story_id = build_story_id(&user_id, &input.client_request_id);
     let chapter_id = Uuid::now_v7();
 
     let (template, placeholder_map) = replace_parts_of_words(&text, 0.3);
@@ -106,7 +108,6 @@ fn process_model_output(
     };
 
     let story = Story {
-        user_id: ID::try_from(input.user_id.to_string()).unwrap(),
         story_id: ID::try_from(story_id.to_string()).unwrap(),
         target_language: input.target_language,
         explain_language: input.explain_language,
@@ -142,7 +143,7 @@ fn get_model_id() -> String {
     model_id
 }
 
-pub async fn generate_new_story(input: &StartStoryInput) -> Result<Story, BedrockConverseError> {
+pub async fn generate_new_story(user_id: &User, input: &StartStoryInput) -> Result<Story, BedrockConverseError> {
     let message = format!(
         "Create a story in {}. The story should be about {}. The length of the story should be around 100 words.
         Don't use any swear words or adult content.
@@ -168,7 +169,7 @@ pub async fn generate_new_story(input: &StartStoryInput) -> Result<Story, Bedroc
         )
         .send()
         .await
-        .and_then(|output| process_model_output(output, &input))
+        .and_then(|output| process_model_output(user_id, output, &input))
         .map_err(|e| BedrockConverseError(e.to_string()))?;
 
     Ok(story)

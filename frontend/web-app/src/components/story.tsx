@@ -71,7 +71,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import type { StartStoryResult } from '@/models/graphql/StartStoryResult.Interface'
 import type { CheckTemplateResult } from '@/models/graphql/CheckTemplateResult.Interface'
-import { useAuth } from '@/auth/authcontext'
 
 const targetLanguage = 'German'
 const explainLanguage = 'Russian'
@@ -466,10 +465,6 @@ function ChatContent({
 }
 
 function FullChatApp() {
-    const auth = useAuth()
-
-    const userId = auth?.user?.sub as string
-
     const { storyId } = useParams<{ storyId: string }>()
     const navigate = useNavigate()
 
@@ -493,11 +488,6 @@ function FullChatApp() {
 
     const { data } = useQuery<{ listStories: StoryInterface[] }>(
         LIST_ALL_STORIES,
-        {
-            variables: {
-                userId,
-            },
-        },
     )
 
     // On initial load, set stories from server
@@ -531,7 +521,6 @@ function FullChatApp() {
         loading: storyLoading,
     } = useQuery<{ fetchStoryById: FetchStoryResult }>(FETCH_STORY_BY_ID, {
         variables: {
-            userId,
             storyId: currentStoryId,
         },
         skip: !currentStoryId,
@@ -630,7 +619,6 @@ function FullChatApp() {
         try {
             const { data } = await startStory({
                 variables: {
-                    userId,
                     clientRequestId: uuidv4(),
                     targetLanguage: targetLanguageOverride,
                     explainLanguage: explainLanguageOverride,
@@ -732,7 +720,6 @@ function FullChatApp() {
 
             const { data } = await checkTemplate({
                 variables: {
-                    userId: userId,
                     storyId: currentStoryId,
                     chapterId: lastChapter.id,
                     clientRequestId: uuidv4(),

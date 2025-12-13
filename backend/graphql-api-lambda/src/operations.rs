@@ -21,9 +21,7 @@ use crate::{
 use uuid::Uuid;
 
 #[appsync_operation(query(listStories), with_appsync_event)]
-pub async fn list_stories(
-    event: &AppsyncEvent<Operation>,
-) -> Result<Vec<Story>, AppsyncError> {
+pub async fn list_stories(event: &AppsyncEvent<Operation>) -> Result<Vec<Story>, AppsyncError> {
     let user_id = extract_user_id(&event)?;
     let stories = get_stories_by_user_id(&user_id)
         .await
@@ -55,17 +53,16 @@ pub async fn start_story(
     let user_id = extract_user_id(&event)?;
 
     let story_id = build_story_id(&user_id, &input.client_request_id);
-    let existing_story = get_story_with_chapters_by_id(
-        &user_id,
-        &StoryId(story_id.to_string().try_into().unwrap()),
-    )
-    .await;
+    let existing_story =
+        get_story_with_chapters_by_id(&user_id, &StoryId(story_id.to_string().try_into().unwrap()))
+            .await;
 
     match existing_story {
         Ok(Some(story)) => {
             println!(
                 "Story already exists, returning existing story: {:?} for user: {:?}",
-                story.story_id, user_id.to_string()
+                story.story_id,
+                user_id.to_string()
             );
             return Ok(StartStoryPayload {
                 errors: vec![],
@@ -89,7 +86,8 @@ pub async fn start_story(
                         Ok(saved_story) => {
                             println!(
                                 "Story saved successfully: {:?} for user {:?}",
-                                saved_story.story_id, user_id.to_string()
+                                saved_story.story_id,
+                                user_id.to_string()
                             );
 
                             Ok(StartStoryPayload {
@@ -98,7 +96,11 @@ pub async fn start_story(
                             })
                         }
                         Err(e) => {
-                            println!("Error saving story: {:?} for user {:?}", e, user_id.to_string());
+                            println!(
+                                "Error saving story: {:?} for user {:?}",
+                                e,
+                                user_id.to_string()
+                            );
 
                             Err(AppsyncError::new("StorageWriteError", e.to_string()))
                         }
@@ -129,11 +131,14 @@ pub async fn check_template(
     let validation_result = validate_user_input_values(&input.placeholders);
 
     if let Err(errors) = validation_result {
-        let mistakes = errors.iter().map(|e| MistakeExplanation {
-            placeholder: Placeholder::new(&e.name, &e.text),
-            explanation: e.message.clone(),
-            hint: "".to_string(), // TODO add hint field to validation error
-        }).collect(); 
+        let mistakes = errors
+            .iter()
+            .map(|e| MistakeExplanation {
+                placeholder: Placeholder::new(&e.name, &e.text),
+                explanation: e.message.clone(),
+                hint: "".to_string(), // TODO add hint field to validation error
+            })
+            .collect();
 
         return Ok(CheckTemplatePayload::new(
             vec![CheckTemplateError {
@@ -191,7 +196,13 @@ pub async fn check_template(
                         // TODO add hint for the expected word with number of letters
                         explanation: mistake.mistake_type,
                         // TODO it could also be part of the word - have to think about that (change message)
-                        hint: format!("Expected word with {} letters", placeholder_map.get(ph.as_str()).map(|v| UnicodeSegmentation::graphemes(v.as_str(), true).count()).unwrap_or(0)),
+                        hint: format!(
+                            "Expected word with {} letters",
+                            placeholder_map
+                                .get(ph.as_str())
+                                .map(|v| UnicodeSegmentation::graphemes(v.as_str(), true).count())
+                                .unwrap_or(0)
+                        ),
                     })
                     .collect();
 
@@ -211,12 +222,10 @@ pub async fn check_template(
                             println!("Stored final placeholders for chapter: {:?} of story: {:?} for user: {:?}", 
                                 input.chapter_id, input.story_id, user_id);
 
-                            let story = get_story_with_chapters_by_id(
-                                &user_id,
-                                &StoryId(input.story_id),
-                            )
-                            .await
-                            .unwrap_or(None);
+                            let story =
+                                get_story_with_chapters_by_id(&user_id, &StoryId(input.story_id))
+                                    .await
+                                    .unwrap_or(None);
 
                             match story {
                                 Some(story) => {
@@ -243,9 +252,9 @@ pub async fn check_template(
                                         story.story_id, next_chapter.chapter_id
                                     );
 
-                                    store_chapter(&user_id, &next_chapter).await.map_err(
-                                        |e| AppsyncError::new("StorageWriteError", e.to_string()),
-                                    )?;
+                                    store_chapter(&user_id, &next_chapter).await.map_err(|e| {
+                                        AppsyncError::new("StorageWriteError", e.to_string())
+                                    })?;
 
                                     println!(
                                         "Stored next chapter for story: {:?}, chapter: {:?}",
@@ -291,7 +300,9 @@ pub async fn check_template(
 // Cannot use ID here because of Google auth specific ID format.
 fn extract_user_id(event: &AppsyncEvent<Operation>) -> Result<UserId, AppsyncError> {
     match &event.identity {
-        AppsyncIdentity::Cognito(appsync_identity_cognito) => Ok(UserId::new(&appsync_identity_cognito.sub)),
+        AppsyncIdentity::Cognito(appsync_identity_cognito) => {
+            Ok(UserId::new(&appsync_identity_cognito.sub))
+        }
         _ => Err(AppsyncError::new("Unauthorized", "Invalid identity")),
     }
 }

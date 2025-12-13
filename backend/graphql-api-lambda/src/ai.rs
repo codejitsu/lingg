@@ -143,7 +143,10 @@ fn get_model_id() -> String {
     model_id
 }
 
-pub async fn generate_new_story(user_id: &UserId, input: &StartStoryInput) -> Result<Story, BedrockConverseError> {
+pub async fn generate_new_story(
+    user_id: &UserId,
+    input: &StartStoryInput,
+) -> Result<Story, BedrockConverseError> {
     let message = format!(
         "Create a story in {}. The story should be about {}. The length of the story should be around 100 words.
         Don't use any swear words or adult content.

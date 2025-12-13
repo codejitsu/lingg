@@ -1,5 +1,6 @@
 use crate::{
-    Chapter, ChapterStatus, LanguageName, Story, StoryType, UserInputValueInput, dynamodb, models::UserId
+    dynamodb, models::UserId, Chapter, ChapterStatus, LanguageName, Story, StoryType,
+    UserInputValueInput,
 };
 
 use aws_sdk_dynamodb::types::{AttributeValue, TransactWriteItem, Update};
@@ -529,7 +530,10 @@ pub async fn store_chapter(user_id: &UserId, chapter: &Chapter) -> Result<(), St
     let put = client
         .put_item()
         .table_name(&table_name)
-        .item("PK", AttributeValue::S(format!("USER#{}", user_id.to_string())))
+        .item(
+            "PK",
+            AttributeValue::S(format!("USER#{}", user_id.to_string())),
+        )
         .item("SK", AttributeValue::S(sk))
         .item(
             "chapter_status",

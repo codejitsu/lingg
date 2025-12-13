@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::models::User;
+use crate::models::UserId;
 use crate::placeholders::{apply_template, validate_user_input_values};
 use crate::spellchecker::check_spelling_with_template;
 use crate::storage::{
@@ -289,9 +289,9 @@ pub async fn check_template(
 }
 
 // Cannot use ID here because of Google auth specific ID format.
-fn extract_user_id(event: &AppsyncEvent<Operation>) -> Result<User, AppsyncError> {
+fn extract_user_id(event: &AppsyncEvent<Operation>) -> Result<UserId, AppsyncError> {
     match &event.identity {
-        AppsyncIdentity::Cognito(appsync_identity_cognito) => Ok(User::new(&appsync_identity_cognito.sub)),
+        AppsyncIdentity::Cognito(appsync_identity_cognito) => Ok(UserId::new(&appsync_identity_cognito.sub)),
         _ => Err(AppsyncError::new("Unauthorized", "Invalid identity")),
     }
 }

@@ -1,5 +1,5 @@
 use crate::{
-    Chapter, ChapterStatus, LanguageName, Story, StoryType, UserInputValueInput, dynamodb, models::User
+    Chapter, ChapterStatus, LanguageName, Story, StoryType, UserInputValueInput, dynamodb, models::UserId
 };
 
 use aws_sdk_dynamodb::types::{AttributeValue, TransactWriteItem, Update};
@@ -58,7 +58,7 @@ fn string_to_story_type(story_type: &str) -> Option<StoryType> {
     }
 }
 
-pub async fn get_stories_by_user_id(user_id: &User) -> Result<Vec<Story>, StorageError> {
+pub async fn get_stories_by_user_id(user_id: &UserId) -> Result<Vec<Story>, StorageError> {
     let client = dynamodb();
     let table_name = table_name();
 
@@ -143,7 +143,7 @@ pub async fn get_stories_by_user_id(user_id: &User) -> Result<Vec<Story>, Storag
 }
 
 pub async fn get_story_with_chapters_by_id(
-    user_id: &User,
+    user_id: &UserId,
     story_id: &StoryId,
 ) -> Result<Option<Story>, StorageError> {
     let client = dynamodb();
@@ -238,7 +238,7 @@ pub async fn get_story_with_chapters_by_id(
 // PK = USER#<user_id>
 // SK = STORY#<story_id>#CHAP#<chapter_id>
 pub async fn get_chapter_by_id(
-    user_id: &User,
+    user_id: &UserId,
     story_id: &ID,
     chapter_id: &ID,
 ) -> Result<Option<Chapter>, StorageError> {
@@ -291,7 +291,7 @@ pub async fn get_chapter_by_id(
 // SK = STORY#<story_id>#CHAP#<chapter_id>
 pub async fn store_story(
     story: Story,
-    user_id: &User,
+    user_id: &UserId,
     client_request_id: ID,
     chapter_index: usize,
 ) -> Result<Story, StorageError> {
@@ -454,7 +454,7 @@ pub async fn store_story(
 // PK = USER#<user_id>
 // SK = STORY#<story_id>#CHAP#<chapter_id>
 pub async fn store_user_input_for_chapter(
-    user_id: &User,
+    user_id: &UserId,
     story_id: &StoryId,
     chapter_id: &ChapterId,
     _client_request_id: &ClientRequestId,
@@ -514,7 +514,7 @@ pub async fn store_user_input_for_chapter(
     }
 }
 
-pub async fn store_chapter(user_id: &User, chapter: &Chapter) -> Result<(), StorageError> {
+pub async fn store_chapter(user_id: &UserId, chapter: &Chapter) -> Result<(), StorageError> {
     let client = dynamodb();
     let table_name = table_name();
 

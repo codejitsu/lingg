@@ -5,7 +5,7 @@ use aws_config::timeout::TimeoutConfig;
 use aws_sdk_bedrockruntime::error::SdkError;
 use aws_sdk_bedrockruntime::operation::converse::{ConverseError, ConverseOutput};
 
-use crate::models::User;
+use crate::models::UserId;
 use crate::{Chapter, ChapterStatus, LanguageName, Placeholder, StartStoryInput, Story};
 
 use lambda_appsync::{serde_json, ID};
@@ -41,7 +41,7 @@ impl From<&ConverseError> for BedrockConverseError {
     }
 }
 
-pub fn build_story_id(user_id: &User, client_request_id: &ID) -> Uuid {
+pub fn build_story_id(user_id: &UserId, client_request_id: &ID) -> Uuid {
     let namespace = Uuid::new_v5(&Uuid::NAMESPACE_OID, user_id.to_string().as_bytes());
     Uuid::new_v5(&namespace, client_request_id.as_bytes())
 }
@@ -62,7 +62,7 @@ fn get_converse_output_text(output: ConverseOutput) -> Result<String, BedrockCon
 }
 
 fn process_model_output(
-    user_id: &User,
+    user_id: &UserId,
     output: ConverseOutput,
     input: &StartStoryInput,
 ) -> Result<Story, SdkError<ConverseError>> {
@@ -143,7 +143,7 @@ fn get_model_id() -> String {
     model_id
 }
 
-pub async fn generate_new_story(user_id: &User, input: &StartStoryInput) -> Result<Story, BedrockConverseError> {
+pub async fn generate_new_story(user_id: &UserId, input: &StartStoryInput) -> Result<Story, BedrockConverseError> {
     let message = format!(
         "Create a story in {}. The story should be about {}. The length of the story should be around 100 words.
         Don't use any swear words or adult content.

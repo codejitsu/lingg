@@ -90,8 +90,6 @@ input UserInputValueInput {
 
 input CheckTemplateInput {
     clientRequestId: ID!
-    targetLanguage: LanguageName!
-    explainLanguage: LanguageName!    
     storyId: ID!
     chapterId: ID!
     placeholders: [UserInputValueInput!]!

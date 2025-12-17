@@ -88,8 +88,6 @@ export const CHECK_TEMPLATE = gql`
         $storyId: ID!
         $chapterId: ID!
         $clientRequestId: ID!
-        $targetLanguage: LanguageName!
-        $explainLanguage: LanguageName!
         $placeholders: [UserInputValueInput!]!
     ) {
         checkTemplate(
@@ -97,8 +95,6 @@ export const CHECK_TEMPLATE = gql`
                 storyId: $storyId
                 chapterId: $chapterId
                 clientRequestId: $clientRequestId
-                targetLanguage: $targetLanguage
-                explainLanguage: $explainLanguage
                 placeholders: $placeholders
             }
         ) {

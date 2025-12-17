@@ -75,9 +75,9 @@ function HistoryLinks({
                         {group.stories.slice(0, 5).map((story) => (
                             <SidebarMenuButton
                                 key={story.storyId}
-                                className={`text-sm font-medium text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 transition-colors ${story.storyId === currentStoryId ? 'border-l-4 rounded-none border-l-primary-600 dark:border-l-primary-400' : ''}`}
+                                className={`text-sm font-medium text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 transition-colors min-h-fit ${story.storyId === currentStoryId ? 'border-l-4 rounded-none border-l-primary-600 dark:border-l-primary-400' : ''}`}
                             >
-                                <a href={`/#/story/${story.storyId}`}>
+                                <a href={`/#/story/${story.storyId}`} className="flex-1 truncate">
                                     {story.title}
                                 </a>
                                 {story.storyId === newStoryId && !hidden && (
@@ -85,6 +85,7 @@ function HistoryLinks({
                                         size={24}
                                         color="#22c55e"
                                         fill="#22c55e"
+                                        className="flex-shrink-0"
                                     />
                                 )}
                             </SidebarMenuButton>

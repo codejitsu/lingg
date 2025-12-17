@@ -23,14 +23,6 @@ enum StoryType {
     FairyTales
 }
 
-type User {
-    userId: ID!
-    username: String!
-    email: String!
-    createdAt: AWSDateTime!
-    stories: [Story!]
-}
-
 type Placeholder {
     name: String!
     text: String!
@@ -63,7 +55,6 @@ type Chapter {
 
 type Story {
     storyId: ID!
-    userId: ID!
     targetLanguage: LanguageName!
     explainLanguage: LanguageName!
     storyType: StoryType!
@@ -75,7 +66,6 @@ type Story {
 # start story
 
 input StartStoryInput {
-    userId: ID!
     clientRequestId: ID!
     targetLanguage: LanguageName!
     explainLanguage: LanguageName!
@@ -99,7 +89,6 @@ input UserInputValueInput {
 }
 
 input CheckTemplateInput {
-    userId: ID!
     clientRequestId: ID!
     targetLanguage: LanguageName!
     explainLanguage: LanguageName!    
@@ -130,6 +119,6 @@ type Mutation {
 }
 
 type Query {
-    listStories(userId: ID!): [Story!]! @aws_cognito_user_pools
-    fetchStoryById(userId: ID!, storyId: ID!): Story @aws_cognito_user_pools
+    listStories: [Story!]! @aws_cognito_user_pools
+    fetchStoryById(storyId: ID!): Story @aws_cognito_user_pools
 }

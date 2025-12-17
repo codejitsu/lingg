@@ -2,8 +2,8 @@ import { gql } from '@apollo/client'
 
 // GraphQL query to list all stories for a user
 export const LIST_ALL_STORIES = gql`
-    query ListAllStories($userId: ID!) {
-        listStories(userId: $userId) {
+    query ListAllStories {
+        listStories {
             startedAt
             storyId
             title
@@ -13,15 +13,14 @@ export const LIST_ALL_STORIES = gql`
 
 // GraphQL query to fetch a story by ID
 export const FETCH_STORY_BY_ID = gql`
-    query FetchStoryById($userId: ID!, $storyId: ID!) {
-        fetchStoryById(userId: $userId, storyId: $storyId) {
+    query FetchStoryById($storyId: ID!) {
+        fetchStoryById(storyId: $storyId) {
             explainLanguage
             startedAt
             storyId
             storyType
             targetLanguage
             title
-            userId
             chapters {
                 chapterId
                 status
@@ -43,7 +42,6 @@ export const FETCH_STORY_BY_ID = gql`
 // GraphQL mutation to start a new story
 export const START_STORY = gql`
     mutation StartStory(
-        $userId: ID!
         $clientRequestId: ID!
         $targetLanguage: LanguageName!
         $explainLanguage: LanguageName!
@@ -51,7 +49,6 @@ export const START_STORY = gql`
     ) {
         startStory(
             input: {
-                userId: $userId
                 clientRequestId: $clientRequestId
                 targetLanguage: $targetLanguage
                 explainLanguage: $explainLanguage
@@ -68,7 +65,6 @@ export const START_STORY = gql`
                 storyType
                 targetLanguage
                 title
-                userId
                 chapters {
                     chapterId
                     status
@@ -89,7 +85,6 @@ export const START_STORY = gql`
 // GraphQL mutation to apply values to a template and check its validity
 export const CHECK_TEMPLATE = gql`
     mutation CheckTemplate(
-        $userId: ID!
         $storyId: ID!
         $chapterId: ID!
         $clientRequestId: ID!
@@ -99,7 +94,6 @@ export const CHECK_TEMPLATE = gql`
     ) {
         checkTemplate(
             input: {
-                userId: $userId
                 storyId: $storyId
                 chapterId: $chapterId
                 clientRequestId: $clientRequestId

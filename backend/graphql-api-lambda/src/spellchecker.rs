@@ -685,7 +685,7 @@ mod tests {
         assert!(response.contains_key("ph-5"));
         assert!(response.contains_key("ph-6"));
         assert!(response.contains_key("ph-7"));
-        // assert!(response.contains_key("ph-8"));     
+        // assert!(response.contains_key("ph-8"));
         // assert!(response.contains_key("ph-9"));
         assert!(response.contains_key("ph-10"));
         assert!(response.contains_key("ph-11"));
@@ -696,7 +696,7 @@ mod tests {
         assert!(response.contains_key("ph-16"));
         // assert_eq!(response.get("ph-1").unwrap().mistake_type, "misspelling");
         // assert_eq!(response.get("ph-2").unwrap().mistake_type, "misspelling");
-    }    
+    }
 
     // TODO Emma bemerkte merkwürdig Symbole an den Felsen, während Max einen versteckten Pfad in den Dschungel fand.
     // merkwürdig -> merkwürdige

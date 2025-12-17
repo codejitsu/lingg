@@ -59,3 +59,23 @@ module "appsync" {
 output "appsync_api_url" {
   value = module.appsync.appsync_api_url
 }
+
+output "cognito_auth_url" {
+  value = module.cognito.auth_url
+}
+
+output "cognito_client_id" {
+  value = module.cognito.user_pool_client_id
+}
+
+output "cognito_redirect_urls" {
+  value = module.cognito.redirect_urls
+}
+
+output "cognito_logout_urls" {
+  value = module.cognito.logout_urls
+}
+
+output "cognito_user_pool_domain_url" {
+  value = module.cognito.user_pool_domain_url
+}

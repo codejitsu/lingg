@@ -1,5 +1,6 @@
 mod ai;
 mod model_helpers;
+mod models;
 mod operations;
 mod placeholders;
 mod spellchecker;

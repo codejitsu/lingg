@@ -163,11 +163,29 @@ pub async fn check_template(
                 let template_applied =
                     apply_template(&chap.template, &input.placeholder_as_inputs());
 
+                let story_opt =
+                    get_story_with_chapters_by_id(&user_id, &StoryId(input.story_id))
+                        .await
+                        .map_err(|e| AppsyncError::new("StorageReadError", e.to_string()))?;
+
+                let story = match story_opt {
+                    Some(s) => s,
+                    None => {
+                        return Ok(CheckTemplatePayload::new(
+                            vec![CheckTemplateError {
+                                message: "Story not found".to_string(),
+                            }],
+                            vec![],
+                            None,
+                        ));
+                    }
+                };
+
                 // check spelling with default checker first
                 let spelling_errors = check_spelling_with_template(
                     &chap.template,
                     &template_applied,
-                    &input.target_language,
+                    &story.target_language,
                 )
                 .await
                 .map_err(|e| AppsyncError::new("SpellCheckError", e.to_string()))?;
@@ -222,48 +240,38 @@ pub async fn check_template(
                             println!("Stored final placeholders for chapter: {:?} of story: {:?} for user: {:?}", 
                                 input.chapter_id, input.story_id, user_id);
 
-                            let story =
-                                get_story_with_chapters_by_id(&user_id, &StoryId(input.story_id))
-                                    .await
-                                    .unwrap_or(None);
+                            // iterate over all chapters and apply the user input placeholders to each chapter content
+                            // then merge all chapter contents into one string
 
-                            match story {
-                                Some(story) => {
-                                    // iterate over all chapters and apply the user input placeholders to each chapter content
-                                    // then merge all chapter contents into one string
+                            let chapters_merged: String = story
+                                .chapters
+                                .iter()
+                                .map(|c| apply_template(&c.template, &c.user_input))
+                                .collect::<Vec<String>>()
+                                .join(" ");
 
-                                    let chapters_merged: String = story
-                                        .chapters
-                                        .iter()
-                                        .map(|c| apply_template(&c.template, &c.user_input))
-                                        .collect::<Vec<String>>()
-                                        .join(" ");
+                            let next_chapter = generate_new_chapter(
+                                &chapters_merged,
+                                &story.target_language,
+                                &story.story_id,
+                            )
+                            .await
+                            .map_err(|e| AppsyncError::new("ModelError", e.to_string()))?;
 
-                                    let next_chapter = generate_new_chapter(
-                                        &chapters_merged,
-                                        &input.target_language,
-                                        &story.story_id,
-                                    )
-                                    .await
-                                    .map_err(|e| AppsyncError::new("ModelError", e.to_string()))?;
+                            println!(
+                                "Generated next chapter for story: {:?}, chapter: {:?}",
+                                story.story_id, next_chapter.chapter_id
+                            );
 
-                                    println!(
-                                        "Generated next chapter for story: {:?}, chapter: {:?}",
-                                        story.story_id, next_chapter.chapter_id
-                                    );
+                            store_chapter(&user_id, &next_chapter).await.map_err(|e| {
+                                AppsyncError::new("StorageWriteError", e.to_string())
+                            })?;
 
-                                    store_chapter(&user_id, &next_chapter).await.map_err(|e| {
-                                        AppsyncError::new("StorageWriteError", e.to_string())
-                                    })?;
-
-                                    println!(
-                                        "Stored next chapter for story: {:?}, chapter: {:?}",
-                                        story.story_id, next_chapter.chapter_id
-                                    );
-                                    Some(next_chapter)
-                                }
-                                _ => None,
-                            }
+                            println!(
+                                "Stored next chapter for story: {:?}, chapter: {:?}",
+                                story.story_id, next_chapter.chapter_id
+                            );
+                            Some(next_chapter)
                         }
                         Err(e) => {
                             println!("Error storing final placeholders for chapter: {:?} of story: {:?} for user: {:?}, error: {:?}", 

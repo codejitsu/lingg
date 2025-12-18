@@ -1,3 +1,5 @@
+use lambda_appsync::ID;
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct UserId {
     pub id: String,
@@ -14,6 +16,10 @@ impl core::fmt::Display for UserId {
         write!(f, "{}", self.id)
     }
 }
+
+pub struct StoryId(pub ID);
+pub struct ChapterId(pub ID);
+pub struct ClientRequestId(pub ID);
 
 #[cfg(test)]
 mod tests {

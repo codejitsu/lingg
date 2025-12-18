@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 
-use crate::models::UserId;
+use crate::models::{UserId, StoryId, ChapterId, ClientRequestId};
 use crate::placeholders::{apply_template, validate_user_input_values};
 use crate::spellchecker::check_spelling_with_template;
 use crate::storage::{
     get_chapter_by_id, get_stories_by_user_id, get_story_with_chapters_by_id, store_chapter,
-    store_story, store_user_input_for_chapter, ChapterId, ClientRequestId, StoryId,
+    store_story, store_user_input_for_chapter,
 };
 
 use crate::ai::{build_story_id, generate_new_chapter, generate_new_story};

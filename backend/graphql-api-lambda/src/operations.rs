@@ -157,26 +157,14 @@ pub async fn check_template(
             input.story_id, input.chapter_id, user_id
         );
 
-        return Ok(CheckTemplatePayload::new(
-            vec![CheckTemplateError {
-                message: "Chapter not found".to_string(),
-            }],
-            vec![],
-            None,
-        ))
+        return Ok(chapter_error("Chapter not found"));
     }
 
     let chap = chapter.unwrap(); // safe unwrap after checking is_none above
 
     // 3. check if chapter is already completed
     if chap.status == ChapterStatus::Completed {
-        return Ok(CheckTemplatePayload::new(
-            vec![CheckTemplateError {
-                message: "Chapter already completed".to_string(),
-            }],
-            vec![],
-            None,
-        ))
+        return Ok(chapter_error("Chapter already completed"));
     }
 
     // 4. apply template with user input values
@@ -193,13 +181,7 @@ pub async fn check_template(
             "No existing story found for story id: {:?} and user id: {:?}", input.story_id, user_id
         );
                 
-        return Ok(CheckTemplatePayload::new(
-            vec![CheckTemplateError {
-                message: "Story not found".to_string(),
-            }],
-            vec![],
-            None,
-        ));
+        return Ok(chapter_error("Story not found"));
     }
 
     let story = story_opt.unwrap(); // safe unwrap after checking is_none above
@@ -318,4 +300,12 @@ fn extract_user_id(event: &AppsyncEvent<Operation>) -> Result<UserId, AppsyncErr
         }
         _ => Err(AppsyncError::new("Unauthorized", "Invalid identity")),
     }
+}
+
+fn chapter_error(message: &str) -> CheckTemplatePayload {
+    CheckTemplatePayload::new(
+        vec![CheckTemplateError { message: message.to_string() }],
+        vec![],
+        None,
+    )
 }

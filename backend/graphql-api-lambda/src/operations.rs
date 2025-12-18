@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::models::{UserId, StoryId};
+use crate::models::{StoryId, UserId};
 use crate::placeholders::{apply_template, validate_user_input_values};
 use crate::spellchecker::check_spelling_with_template;
 use crate::storage::{
@@ -53,9 +53,11 @@ pub async fn start_story(
     let user_id = extract_user_id(&event)?;
 
     let story_id = build_story_id(&user_id, &input.client_request_id);
-    let existing_story =
-        get_story_with_chapters_by_id(&user_id, &StoryId(story_id.to_string().try_into().unwrap_or_default()))
-            .await;
+    let existing_story = get_story_with_chapters_by_id(
+        &user_id,
+        &StoryId(story_id.to_string().try_into().unwrap_or_default()),
+    )
+    .await;
 
     match existing_story {
         Ok(Some(story)) => {
@@ -168,32 +170,28 @@ pub async fn check_template(
     }
 
     // 4. apply template with user input values
-    let template_applied =
-        apply_template(&chap.template, &input.placeholder_as_inputs());
+    let template_applied = apply_template(&chap.template, &input.placeholder_as_inputs());
 
-    let story_opt =
-        get_story_with_chapters_by_id(&user_id, &StoryId(input.story_id))
-            .await
-            .map_err(|e| AppsyncError::new("StorageReadError", e.to_string()))?;
+    let story_opt = get_story_with_chapters_by_id(&user_id, &StoryId(input.story_id))
+        .await
+        .map_err(|e| AppsyncError::new("StorageReadError", e.to_string()))?;
 
     if story_opt.is_none() {
         println!(
-            "No existing story found for story id: {:?} and user id: {:?}", input.story_id, user_id
+            "No existing story found for story id: {:?} and user id: {:?}",
+            input.story_id, user_id
         );
-                
+
         return Ok(chapter_error("Story not found"));
     }
 
     let story = story_opt.unwrap(); // safe unwrap after checking is_none above
 
     // 5. check spelling with default checker first
-    let spelling_errors = check_spelling_with_template(
-        &chap.template,
-        &template_applied,
-        &story.target_language,
-    )
-    .await
-    .map_err(|e| AppsyncError::new("SpellCheckError", e.to_string()))?;
+    let spelling_errors =
+        check_spelling_with_template(&chap.template, &template_applied, &story.target_language)
+            .await
+            .map_err(|e| AppsyncError::new("SpellCheckError", e.to_string()))?;
 
     // TODO check if the text does make sense in the target language with a model call
 
@@ -243,8 +241,10 @@ pub async fn check_template(
 
         match input_stored {
             Ok(_) => {
-                println!("Stored final placeholders for chapter: {:?} of story: {:?} for user: {:?}", 
-                    input.chapter_id, input.story_id, user_id);
+                println!(
+                    "Stored final placeholders for chapter: {:?} of story: {:?} for user: {:?}",
+                    input.chapter_id, input.story_id, user_id
+                );
 
                 // iterate over all chapters and apply the user input placeholders to each chapter content
                 // then merge all chapter contents into one string
@@ -256,22 +256,19 @@ pub async fn check_template(
                     .collect::<Vec<String>>()
                     .join(" ");
 
-                let next_chapter = generate_new_chapter(
-                    &chapters_merged,
-                    &story.target_language,
-                    &story.story_id,
-                )
-                .await
-                .map_err(|e| AppsyncError::new("ModelError", e.to_string()))?;
+                let next_chapter =
+                    generate_new_chapter(&chapters_merged, &story.target_language, &story.story_id)
+                        .await
+                        .map_err(|e| AppsyncError::new("ModelError", e.to_string()))?;
 
                 println!(
                     "Generated next chapter for story: {:?}, chapter: {:?}",
                     story.story_id, next_chapter.chapter_id
                 );
 
-                store_chapter(&user_id, &next_chapter).await.map_err(|e| {
-                    AppsyncError::new("StorageWriteError", e.to_string())
-                })?;
+                store_chapter(&user_id, &next_chapter)
+                    .await
+                    .map_err(|e| AppsyncError::new("StorageWriteError", e.to_string()))?;
 
                 println!(
                     "Stored next chapter for story: {:?}, chapter: {:?}",
@@ -304,7 +301,9 @@ fn extract_user_id(event: &AppsyncEvent<Operation>) -> Result<UserId, AppsyncErr
 
 fn chapter_error(message: &str) -> CheckTemplatePayload {
     CheckTemplatePayload::new(
-        vec![CheckTemplateError { message: message.to_string() }],
+        vec![CheckTemplateError {
+            message: message.to_string(),
+        }],
         vec![],
         None,
     )

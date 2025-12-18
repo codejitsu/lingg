@@ -1,6 +1,7 @@
 use crate::{
-    dynamodb, models::UserId, Chapter, ChapterStatus, LanguageName, Story, StoryType,
-    UserInputValueInput,
+    dynamodb,
+    models::{ChapterId, ClientRequestId, StoryId, UserId},
+    Chapter, ChapterStatus, LanguageName, Story, StoryType, UserInputValueInput,
 };
 
 use aws_sdk_dynamodb::types::{AttributeValue, TransactWriteItem, Update};
@@ -21,10 +22,6 @@ impl From<&str> for StorageError {
         StorageError(value.to_string())
     }
 }
-
-pub struct StoryId(pub ID);
-pub struct ChapterId(pub ID);
-pub struct ClientRequestId(pub ID);
 
 fn table_name() -> String {
     let table_name = std::env::var("BACKEND_TABLE_NAME")

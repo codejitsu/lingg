@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::models::{UserId, StoryId, ChapterId, ClientRequestId};
+use crate::models::{UserId, StoryId};
 use crate::placeholders::{apply_template, validate_user_input_values};
 use crate::spellchecker::check_spelling_with_template;
 use crate::storage::{
@@ -39,7 +39,7 @@ pub async fn fetch_story_by_id(
     Uuid::parse_str(&story_id.to_string())
         .map_err(|e| AppsyncError::new("InvalidStoryID", e.to_string()))?;
 
-    let story = get_story_with_chapters_by_id(&user_id, &StoryId(story_id))
+    let story = get_story_with_chapters_by_id(&user_id, &story_id.into())
         .await
         .map_err(|e| AppsyncError::new("StorageReadError", e.to_string()))?;
     Ok(story)
@@ -54,7 +54,7 @@ pub async fn start_story(
 
     let story_id = build_story_id(&user_id, &input.client_request_id);
     let existing_story =
-        get_story_with_chapters_by_id(&user_id, &StoryId(story_id.to_string().try_into().unwrap()))
+        get_story_with_chapters_by_id(&user_id, &StoryId(story_id.to_string().try_into().unwrap_or_default()))
             .await;
 
     match existing_story {
@@ -252,9 +252,9 @@ pub async fn check_template(
         // TODO think about partial failure handling here (transaction or saga pattern)
         let input_stored = store_user_input_for_chapter(
             &user_id,
-            &StoryId(input.story_id), // TODO use into pattern
-            &ChapterId(input.chapter_id), // TODO use into pattern
-            &ClientRequestId(input.client_request_id), // TODO use into pattern
+            &input.story_id.into(),
+            &input.chapter_id.into(),
+            &input.client_request_id.into(),
             &input.placeholders,
         )
         .await;
@@ -314,7 +314,7 @@ pub async fn check_template(
 fn extract_user_id(event: &AppsyncEvent<Operation>) -> Result<UserId, AppsyncError> {
     match &event.identity {
         AppsyncIdentity::Cognito(appsync_identity_cognito) => {
-            Ok(UserId::new(&appsync_identity_cognito.sub))
+            Ok(appsync_identity_cognito.sub.clone().into())
         }
         _ => Err(AppsyncError::new("Unauthorized", "Invalid identity")),
     }

@@ -11,6 +11,12 @@ impl UserId {
     }
 }
 
+impl From<String> for UserId {
+    fn from(id: String) -> Self {
+        UserId { id }
+    }
+}
+
 impl core::fmt::Display for UserId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.id)
@@ -18,8 +24,28 @@ impl core::fmt::Display for UserId {
 }
 
 pub struct StoryId(pub ID);
+
+impl From<ID> for StoryId {
+    fn from(id: ID) -> Self {
+        StoryId(id)
+    }
+}
+
 pub struct ChapterId(pub ID);
+
+impl From<ID> for ChapterId {
+    fn from(id: ID) -> Self {
+        ChapterId(id)
+    }
+}
+
 pub struct ClientRequestId(pub ID);
+
+impl From<ID> for ClientRequestId {
+    fn from(id: ID) -> Self {
+        ClientRequestId(id)
+    }
+}
 
 #[cfg(test)]
 mod tests {

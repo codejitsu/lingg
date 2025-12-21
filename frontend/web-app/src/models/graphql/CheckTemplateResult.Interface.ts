@@ -6,5 +6,7 @@ export interface CheckTemplateResult {
         errors: { message: string }[]
         mistakes: MistakeInterface[]
         chapter: ChapterInterface
+        score: number | null
+        maxPossibleScore: number | null
     }
 }

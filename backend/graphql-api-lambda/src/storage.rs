@@ -448,15 +448,17 @@ pub async fn store_story(
     }
 }
 
-// Just update the only user_input field of the chapter
+// Update the user_input, score, and max_possible_score fields of the chapter
 // PK = USER#<user_id>
 // SK = STORY#<story_id>#CHAP#<chapter_id>
-pub async fn store_user_input_for_chapter(
+pub async fn store_user_input_and_scores_for_chapter(
     user_id: &UserId,
     story_id: &StoryId,
     chapter_id: &ChapterId,
     _client_request_id: &ClientRequestId,
     user_input: &Vec<UserInputValueInput>,
+    score: Option<usize>,
+    max_possible_score: Option<usize>,
 ) -> Result<(), StorageError> {
     let client = dynamodb();
     let table_name = table_name();
@@ -475,7 +477,14 @@ pub async fn store_user_input_for_chapter(
             AttributeValue::S(format!("USER#{}", user_id.to_string())),
         )
         .key("SK", AttributeValue::S(sk))
-        .update_expression("SET user_input = :user_input, chapter_status = :chapter_status, completed_at = :completed_at")
+        .update_expression(
+            "SET 
+            user_input = :user_input, 
+            chapter_status = :chapter_status, 
+            completed_at = :completed_at, 
+            score = :score, 
+            max_possible_score = :max_possible_score",
+        )
         .expression_attribute_values(
             ":chapter_status",
             AttributeValue::S(ChapterStatus::Completed.to_string()),
@@ -501,6 +510,20 @@ pub async fn store_user_input_for_chapter(
                     })
                     .collect(),
             ),
+        )
+        .expression_attribute_values(
+            ":score",
+            match score {
+                Some(s) => AttributeValue::N(s.to_string()),
+                None => AttributeValue::Null(true),
+            },
+        )
+        .expression_attribute_values(
+            ":max_possible_score",
+            match max_possible_score {
+                Some(ms) => AttributeValue::N(ms.to_string()),
+                None => AttributeValue::Null(true),
+            },
         )
         .condition_expression("attribute_exists(PK) AND attribute_exists(SK)")
         .send()
@@ -584,6 +607,20 @@ pub async fn store_chapter(user_id: &UserId, chapter: &Chapter) -> Result<(), St
             "completed_at",
             match &chapter.completed_at {
                 Some(val) => AttributeValue::S(val.to_string()),
+                None => AttributeValue::Null(true),
+            },
+        )
+        .item(
+            "score",
+            match chapter.score {
+                Some(s) => AttributeValue::N(s.to_string()),
+                None => AttributeValue::Null(true),
+            },
+        )
+        .item(
+            "max_possible_score",
+            match chapter.max_possible_score {
+                Some(ms) => AttributeValue::N(ms.to_string()),
                 None => AttributeValue::Null(true),
             },
         )

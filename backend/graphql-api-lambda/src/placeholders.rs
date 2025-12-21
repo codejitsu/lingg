@@ -138,6 +138,33 @@ pub fn validate_user_input_values(
     }
 }
 
+pub fn simple_score_for_chapter(original_placeholders: &HashMap<String, String>, user_input: &Vec<UserInputValueInput>) -> (usize, usize) {
+    let points_per_character = 10;
+
+    let max_score: usize = original_placeholders
+        .values()
+        .map(|v| v.graphemes(true).count() * points_per_character)
+        .sum();
+
+    let user_score = user_input
+        .iter()
+        .map(|input| {
+            original_placeholders
+                .get(&input.name)
+                .map(|original_text| {
+                    if original_text == &input.text {
+                        original_text.graphemes(true).count() * points_per_character
+                    } else {
+                        0
+                    }
+                })
+                .unwrap_or(0)
+        })
+        .sum();
+
+    (user_score, max_score)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -502,5 +529,41 @@ mod tests {
         let user_inputs = vec![];
         let result = validate_user_input_values(&user_inputs);
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_simple_score_for_chapter() {
+        let original_placeholders = HashMap::from([
+            ("word1".to_string(), "hello".to_string()),
+            ("word2".to_string(), "world".to_string()),
+        ]);
+
+        let user_input_correct = vec![
+            UserInputValueInput {
+                name: "word1".to_string(),
+                text: "hello".to_string(),
+            },
+            UserInputValueInput {
+                name: "word2".to_string(),
+                text: "world".to_string(),
+            },
+        ];
+
+        let user_input_incorrect = vec![
+            UserInputValueInput {
+                name: "word1".to_string(),
+                text: "helloo".to_string(),
+            },
+            UserInputValueInput {
+                name: "word2".to_string(),
+                text: "world".to_string(),
+            },
+        ];
+
+        let (score_correct, max_score) = simple_score_for_chapter(&original_placeholders, &user_input_correct);
+        assert_eq!(score_correct, max_score);
+
+        let (score_incorrect, _) = simple_score_for_chapter(&original_placeholders, &user_input_incorrect);
+        assert!(score_incorrect < max_score);
     }
 }

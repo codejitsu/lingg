@@ -34,6 +34,8 @@ export const FETCH_STORY_BY_ID = gql`
                     name
                     text
                 }
+                score
+                maxPossibleScore
             }
         }
     }
@@ -76,6 +78,8 @@ export const START_STORY = gql`
                         name
                         text
                     }
+                    score
+                    maxPossibleScore
                 }
             }
         }
@@ -114,6 +118,8 @@ export const CHECK_TEMPLATE = gql`
                     text
                 }
                 completedAt
+                score
+                maxPossibleScore
             }
             errors {
                 message
@@ -126,6 +132,8 @@ export const CHECK_TEMPLATE = gql`
                     text
                 }
             }
+            score
+            maxPossibleScore
         }
     }
 `

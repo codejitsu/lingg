@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils'
 import {
     ArrowUp,
     Copy,
+    CircleCheckBig,
     CheckCheck,
     Pencil,
     Trash,
@@ -25,6 +26,7 @@ import {
     TargetIcon,
     SparkleIcon,
     SquirrelIcon,
+    StarIcon
 } from 'lucide-react'
 
 import { Loader } from '@/components/prompt-kit/loader'
@@ -52,7 +54,6 @@ import {
     EXPLAIN_LANGUAGES,
     STORY_TYPES,
 } from '@/models/constants'
-import { StarIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Container } from './landing/Container'
 import { ButtonGroup } from '@/components/ui/button-group'
@@ -356,6 +357,7 @@ function ChatContent({
                                                     />
                                                 )}
                                             </div>
+                                            {isCompletedChapter ? (
                                             <MessageActions className="-ml-2.5 self-end flex gap-0 py-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100 text-right opacity-100">
                                                 <MessageAction
                                                     tooltip="Completed"
@@ -375,10 +377,16 @@ function ChatContent({
                                                     variant="secondary"
                                                     className="bg-blue-500 text-white dark:bg-blue-600"
                                                 >
-                                                    <StarIcon className="text-yellow-500 fill-yellow-300" />
-                                                    42
+                                                    {
+                                                        message.score !== null && message.maxPossibleScore !== null && message.score === message.maxPossibleScore ? <StarIcon className="text-yellow-500 fill-yellow-300" /> : <CircleCheckBig className="text-white" />
+                                                    }
+                                                    
+                                                    {
+                                                        message.score !== null && message.maxPossibleScore !== null ? `${message.score}` : '-'
+                                                    }
                                                 </Badge>
                                             </MessageActions>
+                                            ) : null}
                                         </div>
                                     ) : (
                                         <div className="group flex flex-col items-end gap-1">
@@ -566,6 +574,8 @@ function FullChatApp() {
                     placeholders: chapter.placeholders,
                     status: chapter.status,
                     mistakes: [],
+                    score: chapter.score,
+                    maxPossibleScore: chapter.maxPossibleScore,
                 })),
             )
         }
@@ -643,6 +653,8 @@ function FullChatApp() {
                             data.startStory.story.chapters[0].placeholders,
                         status: data.startStory.story.chapters[0].status,
                         mistakes: [],
+                        score: data.startStory.story.chapters[0].score,
+                        maxPossibleScore: data.startStory.story.chapters[0].maxPossibleScore,
                     },
                 ])
 
@@ -753,6 +765,20 @@ function FullChatApp() {
                     return updated
                 })
 
+                // Update the previous message with score and maxPossibleScore
+                setChatMessages((prev) => {
+                    if (prev.length === 0) return prev
+                    const updated = [...prev]
+                    updated[updated.length - 1] = {
+                        ...updated[updated.length - 1],
+                        status: ChapterStatusInterface.Completed,
+                        score: data?.checkTemplate?.score,
+                        maxPossibleScore: data?.checkTemplate?.maxPossibleScore,
+                    }
+                    return updated
+                })
+
+                // Then add the new chapter without score
                 setChatMessages((prev) => [
                     ...prev,
                     {
@@ -765,6 +791,8 @@ function FullChatApp() {
                         placeholders: data?.checkTemplate?.chapter.placeholders,
                         status: data?.checkTemplate?.chapter.status,
                         mistakes: [],
+                        score: data?.checkTemplate?.chapter.score,
+                        maxPossibleScore: data?.checkTemplate?.chapter.maxPossibleScore,
                     },
                 ])
             }

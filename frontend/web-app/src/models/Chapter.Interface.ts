@@ -8,4 +8,6 @@ export interface ChapterInterface {
     finalizedContent?: string
     template: string
     placeholders: PlaceholderInterface[]
+    score?: number | null
+    maxPossibleScore?: number | null
 }

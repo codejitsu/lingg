@@ -19,7 +19,7 @@ variable "aws_profile" {
 variable "bedrock_model_id" {
   description = "The model ID to use for Bedrock."
   type        = string
-  default     = "us.anthropic.claude-sonnet-4-20250514-v1:0"
+  default     = "us.amazon.nova-micro-v1:0"
 }
 
 variable "google_client_id" {

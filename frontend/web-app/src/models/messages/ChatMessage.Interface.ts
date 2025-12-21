@@ -11,4 +11,6 @@ export interface ChatMessage {
     placeholders: PlaceholderInterface[]
     status?: ChapterStatusInterface
     mistakes: MistakeInterface[]
+    score?: number | null
+    maxPossibleScore?: number | null
 }

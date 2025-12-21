@@ -314,7 +314,7 @@ fn chapter_error(message: &str) -> CheckTemplatePayload {
         }],
         vec![],
         None,
-        None, 
+        None,
         None,
     )
 }

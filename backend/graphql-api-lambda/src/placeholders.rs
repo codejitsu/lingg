@@ -565,5 +565,5 @@ mod tests {
 
         let (score_incorrect, _) = simple_score_for_chapter(&original_placeholders, &user_input_incorrect);
         assert!(score_incorrect < max_score);
-    }    
+    }
 }

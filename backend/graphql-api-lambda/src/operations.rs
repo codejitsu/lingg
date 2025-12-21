@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 
 use crate::models::{StoryId, UserId};
-use crate::placeholders::{apply_template, validate_user_input_values};
+use crate::placeholders::{apply_template, validate_user_input_values, simple_score_for_chapter};
 use crate::spellchecker::check_spelling_with_template;
 use crate::storage::{
     get_chapter_by_id, get_stories_by_user_id, get_story_with_chapters_by_id, store_chapter,
-    store_story, store_user_input_for_chapter,
+    store_story, store_user_input_and_scores_for_chapter,
 };
 
 use crate::ai::{build_story_id, generate_new_chapter, generate_new_story};
@@ -14,7 +14,7 @@ use lambda_appsync::{appsync_operation, AppsyncError, AppsyncEvent, AppsyncIdent
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::{
-    Chapter, ChapterStatus, CheckTemplateError, CheckTemplateInput, CheckTemplatePayload,
+    ChapterStatus, CheckTemplateError, CheckTemplateInput, CheckTemplatePayload,
     MistakeExplanation, Operation, Placeholder, StartStoryInput, StartStoryPayload, Story,
 };
 
@@ -145,6 +145,8 @@ pub async fn check_template(
             }],
             mistakes,
             None,
+            None,
+            None,
         ));
     }
 
@@ -228,14 +230,19 @@ pub async fn check_template(
         .collect();
 
     // 6. if no mistakes, store user input and generate next chapter for the story
-    let next_chapter: Option<Chapter> = if mistakes.is_empty() {
+    let (next_chapter, score, max_possible_score) = if mistakes.is_empty() {
+        let (score, max_possible_score) =
+            simple_score_for_chapter(&placeholder_map, &input.placeholders);
+
         // TODO think about partial failure handling here (transaction or saga pattern)
-        let input_stored = store_user_input_for_chapter(
+        let input_stored = store_user_input_and_scores_for_chapter(
             &user_id,
             &input.story_id.into(),
             &input.chapter_id.into(),
             &input.client_request_id.into(),
             &input.placeholders,
+            Some(score),
+            Some(max_possible_score),
         )
         .await;
 
@@ -274,19 +281,20 @@ pub async fn check_template(
                     "Stored next chapter for story: {:?}, chapter: {:?}",
                     story.story_id, next_chapter.chapter_id
                 );
-                Some(next_chapter)
+
+                (Some(next_chapter), Some(score), Some(max_possible_score))
             }
             Err(e) => {
                 println!("Error storing final placeholders for chapter: {:?} of story: {:?} for user: {:?}, error: {:?}", 
                     input.chapter_id, input.story_id, user_id, e);
-                None
+                (None, None, None)
             }
         }
     } else {
-        None
+        (None, None, None)
     };
 
-    Ok(CheckTemplatePayload::new(vec![], mistakes, next_chapter))
+    Ok(CheckTemplatePayload::new(vec![], mistakes, next_chapter, score, max_possible_score))
 }
 
 // Cannot use ID here because of Google auth specific ID format.
@@ -305,6 +313,8 @@ fn chapter_error(message: &str) -> CheckTemplatePayload {
             message: message.to_string(),
         }],
         vec![],
+        None,
+        None, 
         None,
     )
 }

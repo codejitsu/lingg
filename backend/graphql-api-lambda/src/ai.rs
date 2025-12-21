@@ -105,6 +105,8 @@ fn process_model_output(
         user_input: vec![],
         completed_at: None,
         finalized_content: None,
+        score: None,
+        max_possible_score: None,
     };
 
     let story = Story {
@@ -234,6 +236,8 @@ pub async fn generate_new_chapter(
         user_input: vec![],
         completed_at: None,
         finalized_content: None,
+        score: None,
+        max_possible_score: None,
     })
 }
 

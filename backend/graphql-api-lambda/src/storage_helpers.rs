@@ -58,6 +58,16 @@ impl TryFrom<&HashMap<String, AttributeValue>> for Chapter {
             vec![]
         };
 
+        let score = item
+            .get("score")
+            .and_then(|v| v.as_n().ok())
+            .and_then(|s| s.parse::<i32>().ok());
+
+        let max_possible_score = item
+            .get("max_possible_score")
+            .and_then(|v| v.as_n().ok())
+            .and_then(|s| s.parse::<i32>().ok());
+
         let user_input = if let Some(attr) = item.get("user_input") {
             if let Ok(list) = attr.as_l() {
                 list.iter()
@@ -98,6 +108,8 @@ impl TryFrom<&HashMap<String, AttributeValue>> for Chapter {
             } else {
                 None
             },
+            score,
+            max_possible_score,
         })
     }
 }
@@ -150,8 +162,20 @@ mod tests {
             .collect();
         item.insert("placeholders".to_string(), AttributeValue::L(list));
 
+        item.insert(
+            "score".to_string(),
+            AttributeValue::N("85".to_string()),
+        );
+
+        item.insert(
+            "max_possible_score".to_string(),
+            AttributeValue::N("100".to_string()),
+        );
+
         item
     }
+
+    // TODO add more tests for score and max_possible_score fields
 
     #[test]
     fn test_try_from_valid_item() {

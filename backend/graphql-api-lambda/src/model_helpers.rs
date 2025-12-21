@@ -51,11 +51,15 @@ impl CheckTemplatePayload {
         errors: Vec<CheckTemplateError>,
         mistakes: Vec<MistakeExplanation>,
         chapter: Option<Chapter>,
+        score: Option<usize>,
+        max_score: Option<usize>,
     ) -> Self {
         CheckTemplatePayload {
             errors,
             mistakes,
             chapter,
+            score: score.map(|s| s as i32),
+            max_possible_score: max_score.map(|ms| ms as i32),
         }
     }
 }

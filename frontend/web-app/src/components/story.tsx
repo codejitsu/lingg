@@ -26,7 +26,7 @@ import {
     TargetIcon,
     SparkleIcon,
     SquirrelIcon,
-    StarIcon    
+    StarIcon
 } from 'lucide-react'
 
 import { Loader } from '@/components/prompt-kit/loader'

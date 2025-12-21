@@ -382,7 +382,7 @@ function ChatContent({
                                                     }
                                                     
                                                     {
-                                                        message.score !== null && message.maxPossibleScore !== null ? `${message.score}` : '0'
+                                                        message.score !== null && message.maxPossibleScore !== null ? `${message.score}` : '-'
                                                     }
                                                 </Badge>
                                             </MessageActions>

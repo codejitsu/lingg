@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { FullChatApp } from '@/components/story'
 import { Header } from '@/components/landing/Header'
+import { HeaderStories } from '@/components/landing/HeaderStories'
 import { Footer } from '@/components/landing/Footer'
 import { Landing } from '@/routes/Landing'
 import { Login } from '@/routes/Login'
@@ -72,11 +73,10 @@ function App() {
 
     return (
         <HashRouter>
-            <div className="min-h-screen flex flex-col">
-                <Header signOut={signOut} />
+            <div className="min-h-screen flex flex-col">                
                 <main className="flex-grow">
                     <Routes>
-                        <Route path="/" element={<Landing />} />
+                        <Route path="/" element={<><Header signOut={signOut} /><Landing /></>} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
                         <Route
@@ -89,7 +89,9 @@ function App() {
                             path="/my-stories"
                             element={
                                 isAuthenticated ? (
+                                    <><HeaderStories signOut={signOut} />
                                     <FullChatApp />
+                                    </>
                                 ) : (
                                     <Navigate to="/login" replace />
                                 )
@@ -99,7 +101,9 @@ function App() {
                             path="/story/:storyId"
                             element={
                                 isAuthenticated ? (
+                                    <><HeaderStories signOut={signOut} />
                                     <FullChatApp />
+                                    </>
                                 ) : (
                                     <Navigate to="/login" replace />
                                 )

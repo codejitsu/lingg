@@ -404,7 +404,7 @@ function ChatContent({
                                                         />
                                                     </Button>
                                                 </MessageAction>
-                                            </MessageActions>                                                
+                                            </MessageActions>
                                             )}
                                         </div>
                                     ) : (

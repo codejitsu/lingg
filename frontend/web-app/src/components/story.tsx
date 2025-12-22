@@ -72,6 +72,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import type { StartStoryResult } from '@/models/graphql/StartStoryResult.Interface'
 import type { CheckTemplateResult } from '@/models/graphql/CheckTemplateResult.Interface'
+import { Skeleton } from "@/components/ui/skeleton"
 
 const targetLanguage = 'German'
 const explainLanguage = 'Russian'
@@ -81,6 +82,7 @@ function ChatSidebar({
     newStoryId,
     currentStoryId,
     onNewStory,
+    loading,
 }: {
     stories: StoryInterface[]
     newStoryId?: string
@@ -89,7 +91,8 @@ function ChatSidebar({
         storyType: string | null,
         targetLanguage: string | null,
         explainLanguage: string | null,
-    ) => void
+    ) => void,
+    loading: boolean,
 }) {
     const [hidden, setHidden] = useState(false)
 
@@ -243,6 +246,15 @@ function ChatSidebar({
                     </DropdownMenu>
                 </ButtonGroup>
             </div>
+            {loading && (
+            <div className="flex items-center justify-between px-4 pt-10 dark:bg-gray-900/95">
+                <div className="space-y-2">
+                    <Skeleton className="h-4 w-[200px]" />
+                    <Skeleton className="h-4 w-[150px]" />
+                    <Skeleton className="h-4 w-[180px]" />                    
+                </div>
+            </div>
+            )}
             <HistoryLinks
                 stories={stories}
                 newStoryId={newStoryId}
@@ -489,7 +501,7 @@ function FullChatApp() {
 
     console.log('currentStoryId:', currentStoryId)
 
-    const { data } = useQuery<{ listStories: StoryInterface[] }>(
+    const { loading, error, data } = useQuery<{ listStories: StoryInterface[] }>(
         LIST_ALL_STORIES,
     )
 
@@ -832,6 +844,7 @@ function FullChatApp() {
                             newStoryId={newStoryId}
                             currentStoryId={currentStoryId}
                             onNewStory={onCreateNewStory}
+                            loading={loading}
                         />
                         <SidebarInset className="bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
                             <ChatContent

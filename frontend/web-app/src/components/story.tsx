@@ -399,9 +399,7 @@ function ChatContent({
                                                         className='bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600'
                                                     >
                                                         Review chapter
-                                                        <SpellCheck2Icon
-                                                            className={`size-4 ${isCompletedChapter ? 'text-green-500' : ''}`}
-                                                        />
+                                                        <SpellCheck2Icon className="size-4" />
                                                     </Button>
                                                 </MessageAction>
                                             </MessageActions>

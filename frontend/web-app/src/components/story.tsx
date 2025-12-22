@@ -501,7 +501,7 @@ function FullChatApp() {
 
     console.log('currentStoryId:', currentStoryId)
 
-    const { loading, error, data } = useQuery<{ listStories: StoryInterface[] }>(
+    const { loading, data } = useQuery<{ listStories: StoryInterface[] }>(
         LIST_ALL_STORIES,
     )
 

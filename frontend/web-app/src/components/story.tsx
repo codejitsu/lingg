@@ -15,7 +15,6 @@ import { Button } from '@/components/ui/button'
 import { Sidebar, SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
 import {
-    ArrowUp,
     Copy,
     CircleCheckBig,
     CheckCheck,
@@ -26,7 +25,8 @@ import {
     TargetIcon,
     SparkleIcon,
     SquirrelIcon,
-    StarIcon
+    StarIcon,
+    SpellCheck2Icon
 } from 'lucide-react'
 
 import { Loader } from '@/components/prompt-kit/loader'
@@ -386,7 +386,26 @@ function ChatContent({
                                                     }
                                                 </Badge>
                                             </MessageActions>
-                                            ) : null}
+                                            ) : (
+                                            <MessageActions className="-ml-2.5 self-end flex gap-0 py-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100 text-right opacity-100">
+                                                <MessageAction
+                                                    tooltip="Review chapter"
+                                                    delayDuration={100}
+                                                >
+                                                    <Button
+                                                        variant="default"
+                                                        size="sm"
+                                                        onClick={() => onVerifyChapter()}
+                                                        className='bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600'
+                                                    >
+                                                        Review chapter
+                                                        <SpellCheck2Icon
+                                                            className={`size-4 ${isCompletedChapter ? 'text-green-500' : ''}`}
+                                                        />
+                                                    </Button>
+                                                </MessageAction>
+                                            </MessageActions>                                                
+                                            )}
                                         </div>
                                     ) : (
                                         <div className="group flex flex-col items-end gap-1">
@@ -445,28 +464,6 @@ function ChatContent({
                         <ScrollButton className="shadow-sm" />
                     </div>
                 </ChatContainerRoot>
-            </div>
-
-            <div
-                className={`bg-background dark:bg-gray-900 z-10 shrink-0 px-3 pb-3 md:px-5 md:pb-5 ${currentStoryId ? '' : 'hidden'}`}
-            >
-                <div className="mx-auto max-w-3xl">
-                    <div className="flex justify-center mb-4">
-                        <Button
-                            size="lg"
-                            disabled={isLoading}
-                            onClick={() => onVerifyChapter()}
-                            className="bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600"
-                        >
-                            Verify Chapter
-                            {!isLoading ? (
-                                <ArrowUp size={18} />
-                            ) : (
-                                <span className="size-3 rounded-xs bg-white" />
-                            )}
-                        </Button>
-                    </div>
-                </div>
             </div>
         </main>
     )

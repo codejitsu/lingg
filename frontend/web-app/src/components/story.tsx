@@ -251,7 +251,7 @@ function ChatSidebar({
                 <div className="space-y-2">
                     <Skeleton className="h-4 w-[200px]" />
                     <Skeleton className="h-4 w-[150px]" />
-                    <Skeleton className="h-4 w-[180px]" />                    
+                    <Skeleton className="h-4 w-[180px]" />
                 </div>
             </div>
             )}
